@@ -1,0 +1,55 @@
+<!DOCTYPE html><html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>كملت جمعتنا</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f6f3ed;color:#17243b}
+header{background:#17243b;color:#d8b56d;text-align:center;padding:30px 15px;border-bottom:4px solid #d8b56d}
+header h1{margin:0;font-size:30px}
+header p{margin:12px 0 0;color:#fff}
+main{padding:20px;max-width:600px;margin:auto}
+h2{text-align:center}
+.search{width:100%;padding:14px;border:1px solid #d8b56d;border-radius:10px;font-size:16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
+.card{background:white;border-radius:14px;padding:20px 8px;text-align:center;box-shadow:0 2px 8px #0001;border:1px solid #eee}
+.icon{font-size:32px}
+.card h3{font-size:16px;margin-bottom:6px}
+.card p{font-size:13px;color:#666}
+button{background:#17243b;color:#d8b56d;border:0;border-radius:9px;padding:12px;width:100%;font-size:16px;margin-top:10px}
+footer{text-align:center;padding:25px;color:#666;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+<h1>كملت جمعتنا</h1>
+<p>كل مناسباتك بمكان واحد ✨</p>
+</header>
+<main>
+<h2>شو مناسبتك اليوم؟</h2>
+<input class="search" id="search" placeholder="ابحث عن خدمة..." oninput="filterCards()">
+<div class="grid" id="grid">
+<div class="card"><div class="icon">💍</div><h3>أفراح وأعراس</h3><p>كل ما يلزم لفرحتك</p><button onclick="showService('أفراح وأعراس')">اكتشف</button></div>
+<div class="card"><div class="icon">🏡</div><h3>صالات ومزارع</h3><p>أماكن مميزة لمناسبتك</p><button onclick="showService('صالات ومزارع')">اكتشف</button></div>
+<div class="card"><div class="icon">🎤</div><h3>مطربون وفرق</h3><p>أجواء الفرح والطرب</p><button onclick="showService('مطربون وفرق')">اكتشف</button></div>
+<div class="card"><div class="icon">🍽️</div><h3>طعام وضيافة</h3><p>ضيافة تليق بضيوفك</p><button onclick="showService('طعام وضيافة')">اكتشف</button></div>
+<div class="card"><div class="icon">📸</div><h3>تصوير</h3><p>ذكريات تبقى للأبد</p><button onclick="showService('تصوير')">اكتشف</button></div>
+<div class="card"><div class="icon">🌸</div><h3>تزيين وورد</h3><p>لمسات جمالية لمناسبتك</p><button onclick="showService('تزيين وورد')">اكتشف</button></div>
+</div>
+<div id="message"></div>
+</main>
+<footer>كملت جمعتنا © كل مناسباتك بمكان واحد</footer>
+<script>
+function showService(name){
+document.getElementById('message').innerHTML='<div class="card"><h3>'+name+'</h3><p>قريباً ستتمكن من مشاهدة مقدمي الخدمات في درعا.</p></div>';
+}
+function filterCards(){
+let q=document.getElementById('search').value.trim();
+document.querySelectorAll('.card').forEach(c=>{
+if(c.querySelector('button')) c.style.display=c.innerText.includes(q)?'block':'none';
+});
+}
+</script>
+</body>
+</html>مت
