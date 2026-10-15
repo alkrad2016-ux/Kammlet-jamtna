@@ -145,5 +145,17 @@ footer {
   كملت جمعتنا © 2026
 </footer>
 
+<script>
+document.querySelectorAll('.card').forEach(function(card) {
+  card.style.cursor = 'pointer';
+
+  card.addEventListener('click', function() {
+    var title = card.querySelector('h3').textContent;
+
+    alert('أهلاً بك في قسم ' + title +
+      '\nسيتم إضافة مقدمي الخدمات قريباً ❤️');
+  });
+});
+</script>
 </body>
 </html>
