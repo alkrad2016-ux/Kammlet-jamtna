@@ -151,7 +151,7 @@ document.querySelectorAll('.card').forEach(function(card) {
 
   card.addEventListener('click', function() {
     var title = card.querySelector('h3').textContent;
-
+window.selectedService = title;
     alert('أهلاً بك في قسم ' + title +
       '\nسيتم إضافة مقدمي الخدمات قريباً ❤️');
   });
@@ -173,7 +173,8 @@ function bookOnWhatsApp() {
     alert("رقم واتساب الإدارة قيد التجهيز. يرجى المحاولة لاحقاً.");
     return;
   }
-  const message = "مرحباً، أريد الاستفسار عن الحجز في كملت جمعتنا.";
+  const selectedService = window.selectedService || "خدمات المناسبات";
+const message = "مرحباً، أريد الاستفسار عن الحجز في كملت جمعتنا.\nالخدمة المطلوبة: " + selectedService;
   window.open(
     "https://wa.me/" + phone + "?text=" + encodeURIComponent(message),
     "_blank"
