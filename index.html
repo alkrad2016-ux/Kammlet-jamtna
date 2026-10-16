@@ -148,91 +148,24 @@ footer {
 
 <script>document.querySelectorAll('.card').forEach(function(card) {
 card.style.cursor = 'pointer';
+book.onclick = function() {
+modal.remove();
 
-card.addEventListener('click', function() {
-var title = card.querySelector('h3').textContent.trim();
 window.selectedService = title;
 
-var services = {
-  'أفراح وأعراس': [
-    'تنظيم حفلات الزفاف',
-    'تزيين العرسان وتنسيق الورود',
-    'تجهيزات الأفراح'
-  ],
-  'صالات ومزارع': [
-    'صالات أفراح ومناسبات',
-    'مزارع للاحتفالات العائلية',
-    'أماكن للمناسبات الخاصة'
-  ],
-  'مطربين وفرق': [
-    'مطربون للأفراح',
-    'فرق موسيقية ودبكات شعبية',
-    'فقرات فنية للمناسبات'
-  ],
-  'طعام وضيافة': [
-    'وجبات وبوفيهات',
-    'حلويات وضيافة عربية',
-    'قهوة ومشروبات'
-  ],
-  'تصوير ومصورون': [
-    'تصوير فوتوغرافي',
-    'تصوير فيديو',
-    'توثيق حفلات الزفاف'
-  ],
-  'ديكور وورد': [
-    'تزيين القاعات',
-    'تنسيق الورود',
-    'ديكورات الطاولات'
-  ]
+var bookingBox = document.getElementById('booking-box');
+
+bookingBox.scrollIntoView({
+behavior: 'smooth',
+block: 'start'
+});
+
+var serviceField = document.getElementById('selected-service');
+
+if (serviceField) {
+serviceField.value = title;
+}
 };
-
-var modal = document.createElement('div');
-modal.style.cssText =
-  'position:fixed;inset:0;background:rgba(0,0,0,.65);' +
-  'z-index:9999;display:flex;align-items:center;' +
-  'justify-content:center;padding:16px;';
-
-var box = document.createElement('div');
-box.style.cssText =
-  'background:#fff;border:2px solid #d4af37;' +
-  'border-radius:16px;padding:22px;width:100%;' +
-  'max-width:420px;max-height:85vh;overflow:auto;' +
-  'direction:rtl;color:#14213d;text-align:right;';
-
-var heading = document.createElement('h2');
-heading.textContent = title;
-heading.style.cssText =
-  'text-align:center;color:#14213d;margin-top:0;';
-
-var list = document.createElement('ul');
-list.style.cssText = 'line-height:2;padding-right:22px;';
-
-(services[title] || ['سيتم إضافة الخدمات قريباً.'])
-  .forEach(function(service) {
-    var item = document.createElement('li');
-    item.textContent = service;
-    list.appendChild(item);
-  });
-
-var price = document.createElement('p');
-price.textContent = '💰 السعر يُحدَّد حسب الطلب والتفاصيل.';
-price.style.cssText =
-  'background:#f7f5f0;padding:12px;border-radius:8px;' +
-  'text-align:center;font-weight:bold;';
-
-var book = document.createElement('button');
-book.textContent = '📲 اطلب الخدمة عبر واتساب';
-book.style.cssText =
-  'width:100%;padding:14px;background:#d4af37;' +
-  'color:#14213d;border:0;border-radius:9px;' +
-  'font-size:16px;font-weight:bold;';
-
-book.onclick = function() {
-  modal.remove();
-  document.getElementById('booking-box').scrollIntoView({
-    behavior: 'smooth',
-    block: 'start'
-  });
 };
 
 var close = document.createElement('button');
@@ -264,7 +197,8 @@ document.body.appendChild(modal);
 
 </script><!-- نموذج الحجز --><div id="booking-box" style="text-align:center; margin:25px auto; padding:20px; direction:rtl; max-width:500px;">
   <h2 style="color:#d4af37;">جاهز تحجز مناسبتك؟</h2>
-  <p>عبّي معلوماتك لنبعت طلب الحجز لإدارة كملت جمعتنا.</p>  <form onsubmit="bookOnWhatsApp(event)" style="text-align:right;">
+  <p>عبّي معلوماتك لنبعت طلب الحجز لإدارة كملت جمعتنا.</p>  <form onsubmit="bookOnWhatsApp(event)" style="text-align:right;"><label for="selected-service">الخدمة المطلوبة:</label>
+<input id="selected-service" type="text" readonly placeholder="اختر الخدمة من الأقسام أعلاه" style="width:100%; padding:12px; margin:8px 0 16px; background:#f7f5f0;">
     <label for="customer-name">الاسم الكامل:</label>
     <input id="customer-name" type="text" required placeholder="اكتب اسمك" style="width:100%; padding:12px; margin:8px 0 16px;"><label for="customer-phone">رقم الهاتف:</label>
 <input id="customer-phone" type="tel" required placeholder="اكتب رقم هاتفك" style="width:100%; padding:12px; margin:8px 0 16px;">
