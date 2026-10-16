@@ -177,19 +177,58 @@ alert('قسم ' + title + '\n\nالخدمات المتوفرة:\n' +
   </button>
 </div>
 
+<script><div id="booking-box" style="text-align:center; margin:25px auto; padding:20px; direction:rtl; max-width:500px;">
+  <h2 style="color:#d4af37;">جاهز تحجز مناسبتك؟</h2>
+  <p>عبّي معلوماتك لنبعت طلب الحجز لإدارة كملت جمعتنا.</p>
+
+  <form onsubmit="bookOnWhatsApp(event)" style="text-align:right;">
+    <label>الاسم الكامل:</label>
+    <input id="customer-name" type="text" required style="width:100%; padding:12px; margin:8px 0 16px;">
+
+    <label>رقم الهاتف:</label>
+    <input id="customer-phone" type="tel" required style="width:100%; padding:12px; margin:8px 0 16px;">
+
+    <label>تاريخ المناسبة:</label>
+    <input id="service-date" type="date" required style="width:100%; padding:12px; margin:8px 0 16px;">
+
+    <label>المدينة أو المنطقة:</label>
+    <input id="service-location" type="text" required placeholder="مثلاً: درعا" style="width:100%; padding:12px; margin:8px 0 16px;">
+
+    <label>تفاصيل إضافية:</label>
+    <textarea id="service-details" rows="4" style="width:100%; padding:12px; margin:8px 0 16px;"></textarea>
+
+    <button type="submit" style="background:#d4af37; color:#101a33; border:none; padding:14px; border-radius:10px; font-size:18px; font-weight:bold; width:100%;">
+      إرسال طلب الحجز عبر واتساب
+    </button>
+  </form>
+</div>
+
 <script>
-function bookOnWhatsApp() {const phone = "963942340147";
-  if (!phone) {
-    alert("رقم واتساب الإدارة قيد التجهيز. يرجى المحاولة لاحقاً.");
-    return;
-  }
-  const selectedService = window.selectedService || "خدمات المناسبات";
-const message = "مرحباً، أريد الاستفسار عن الحجز في كملت جمعتنا.\nالخدمة المطلوبة: " + selectedService;
+function bookOnWhatsApp(event) {
+  event.preventDefault();
+
+  const phone = "963942340147";
+  const name = document.getElementById("customer-name").value.trim();
+  const customerPhone = document.getElementById("customer-phone").value.trim();
+  const date = document.getElementById("service-date").value;
+  const location = document.getElementById("service-location").value.trim();
+  const details = document.getElementById("service-details").value.trim();
+  const service = window.selectedService || "لم يتم تحديد قسم";
+
+  const message =
+    "طلب حجز - كملت جمعتنا\n\n" +
+    "الاسم: " + name + "\n" +
+    "رقم الهاتف: " + customerPhone + "\n" +
+    "تاريخ المناسبة: " + date + "\n" +
+    "المنطقة: " + location + "\n" +
+    "الخدمة: " + service + "\n" +
+    "التفاصيل: " + (details || "لا يوجد");
+
   window.open(
     "https://wa.me/" + phone + "?text=" + encodeURIComponent(message),
     "_blank"
   );
 }
-</script>
+  </script>
 </body>
 </html>
