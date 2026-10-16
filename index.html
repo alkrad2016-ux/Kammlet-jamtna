@@ -157,5 +157,28 @@ document.querySelectorAll('.card').forEach(function(card) {
   });
 });
 </script>
+<!-- زر الحجز والتواصل عبر واتساب -->
+<div id="booking-box" style="text-align:center; margin:25px auto; padding:20px; direction:rtl;">
+  <h2 style="color:#d4af37;">جاهز تحجز مناسبتك؟</h2>
+  <p>تواصل مع إدارة كملت جمعتنا لنساعدك باختيار الخدمة المناسبة.</p>
+  <button onclick="bookOnWhatsApp()" style="background:#d4af37; color:#101a33; border:none; padding:14px 28px; border-radius:10px; font-size:18px; font-weight:bold; cursor:pointer;">
+    احجز الآن عبر واتساب
+  </button>
+</div>
+
+<script>
+function bookOnWhatsApp() {
+  const phone = ""; // أضف رقم واتساب الإدارة لاحقاً مع رمز الدولة
+  if (!phone) {
+    alert("رقم واتساب الإدارة قيد التجهيز. يرجى المحاولة لاحقاً.");
+    return;
+  }
+  const message = "مرحباً، أريد الاستفسار عن الحجز في كملت جمعتنا.";
+  window.open(
+    "https://wa.me/" + phone + "?text=" + encodeURIComponent(message),
+    "_blank"
+  );
+}
+</script>
 </body>
 </html>
