@@ -167,14 +167,27 @@ alert('قسم ' + title + '\n\nالخدمات المتوفرة:\n' +
 (services[title] || 'سيتم إضافة تفاصيل الخدمات قريباً.'));
 });
 });
-</script>
-<!-- زر الحجز والتواصل عبر واتساب -->
-<div id="booking-box" style="text-align:center; margin:25px auto; padding:20px; direction:rtl;">
+</script><!-- نموذج الحجز --><div id="booking-box" style="text-align:center; margin:25px auto; padding:20px; direction:rtl; max-width:500px;">
   <h2 style="color:#d4af37;">جاهز تحجز مناسبتك؟</h2>
-  <p>تواصل مع إدارة كملت جمعتنا لنساعدك باختيار الخدمة المناسبة.</p>
-  <button onclick="bookOnWhatsApp()" style="background:#d4af37; color:#101a33; border:none; padding:14px 28px; border-radius:10px; font-size:18px; font-weight:bold; cursor:pointer;">
-    احجز الآن عبر واتساب
-  </button>
+  <p>عبّي معلوماتك لنبعت طلب الحجز لإدارة كملت جمعتنا.</p>  <form onsubmit="bookOnWhatsApp(event)" style="text-align:right;">
+    <label for="customer-name">الاسم الكامل:</label>
+    <input id="customer-name" type="text" required placeholder="اكتب اسمك" style="width:100%; padding:12px; margin:8px 0 16px;"><label for="customer-phone">رقم الهاتف:</label>
+<input id="customer-phone" type="tel" required placeholder="اكتب رقم هاتفك" style="width:100%; padding:12px; margin:8px 0 16px;">
+
+<label for="service-date">تاريخ المناسبة:</label>
+<input id="service-date" type="date" required style="width:100%; padding:12px; margin:8px 0 16px;">
+
+<label for="service-location">المدينة أو المنطقة:</label>
+<input id="service-location" type="text" required placeholder="مثلاً: درعا" style="width:100%; padding:12px; margin:8px 0 16px;">
+
+<label for="service-details">تفاصيل إضافية:</label>
+<textarea id="service-details" rows="4" placeholder="اكتب تفاصيل المناسبة" style="width:100%; padding:12px; margin:8px 0 16px;"></textarea>
+
+<button type="submit" style="background:#d4af37; color:#101a33; border:none; padding:14px; border-radius:10px; font-size:18px; font-weight:bold; width:100%;">
+  إرسال طلب الحجز عبر واتساب
+</button>
+
+  </form>
 </div>
 
 <script><div id="booking-box" style="text-align:center; margin:25px auto; padding:20px; direction:rtl; max-width:500px;">
