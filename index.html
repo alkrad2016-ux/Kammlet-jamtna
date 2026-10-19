@@ -645,7 +645,7 @@ async function testSupabaseConnection() {
     }
 
     const services = await response.json();
-    console.log("الخدمات المتوفرة بقاعدة البيانات:", services);
+    alert("نجح الاتصال بقاعدة البيانات! عدد الخدمات المتاحة: " + services.length);
   } catch (error) {
     console.error("خطأ بالاتصال:", error);
   }
