@@ -622,7 +622,36 @@ function bookOnWhatsApp(event) {
   window.open(whatsappURL, "_blank");
 }
 
-renderCart();
+renderCart();// الاتصال بقاعدة بيانات كملت جمعتنا
+const SUPABASE_URL = "https://qkzdbbqkkxnrgcpcvjvp.supabase.co";
+const SUPABASE_KEY = "sb_publishable_LiOa9cR2KhHDaEvA2_205Q_XL2OSrfp";
+
+async function testSupabaseConnection() {
+  try {
+    const response = await fetch(
+      SUPABASE_URL +
+      "/rest/v1/services?select=id,name,description,price,category_id&is_available=eq.true",
+      {
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": "Bearer " + SUPABASE_KEY
+        }
+      }
+    );
+
+    if (!response.ok) {
+      console.error("تعذر جلب الخدمات:", response.status);
+      return;
+    }
+
+    const services = await response.json();
+    console.log("الخدمات المتوفرة بقاعدة البيانات:", services);
+  } catch (error) {
+    console.error("خطأ بالاتصال:", error);
+  }
+}
+
+testSupabaseConnection();
 </script>
 
 </body>
