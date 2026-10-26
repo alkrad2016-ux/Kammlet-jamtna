@@ -1,0 +1,109 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إدارة كملت جمعتنا</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #f7f5f0;
+      color: #14213d;
+    }
+    .container {
+      max-width: 650px;
+      margin: 30px auto;
+    }
+    header {
+      background: #14213d;
+      color: white;
+      padding: 24px;
+      text-align: center;
+      border-radius: 16px;
+      border-bottom: 4px solid #d4af37;
+      margin-bottom: 20px;
+    }
+    h1 { margin: 0 0 8px; }
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 3px 12px #14213d12;
+    }
+    label {
+      display: block;
+      margin: 14px 0 6px;
+      font-weight: bold;
+    }
+    input, textarea, button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    input, textarea {
+      border: 1px solid #ccc;
+      background: white;
+    }
+    button {
+      margin-top: 14px;
+      border: 0;
+      background: #14213d;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button.gold { background: #d4af37; color: #14213d; }
+    .note { line-height: 1.8; color: #555; }
+    #status { white-space: pre-wrap; line-height: 1.8; }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>كملت جمعتنا 🎉</h1>
+      <div>لوحة الإدارة</div>
+    </header>
+
+    <section class="card">
+      <h2>تسجيل دخول الإدارة</h2>
+      <p class="note">سجّل الدخول بحساب الإدارة الذي أنشأته في Supabase.</p>
+      <form id="loginForm">
+        <label for="email">البريد الإلكتروني</label>
+        <input id="email" type="email" autocomplete="username" required>
+
+        <label for="password">كلمة المرور</label>
+        <input id="password" type="password" autocomplete="current-password" required>
+
+        <button type="submit">تسجيل الدخول</button>
+      </form>
+      <button id="logoutButton" class="gold" hidden>تسجيل الخروج</button>
+      <p id="status" role="status">الصفحة تحتاج إلى إعداد اتصال Supabase قبل استخدامها.</p>
+    </section>
+
+    <section class="card">
+      <h2>إدارة الخدمات</h2>
+      <p class="note">سنفعّل إضافة الخدمات وتعديل الأسعار والتوفر بعد ضبط اتصال قاعدة البيانات وصلاحيات الإدارة.</p>
+    </section>
+
+    <section class="card">
+      <h2>طلبات الحجز</h2>
+      <p class="note">ستظهر الطلبات بعد تفعيل صلاحيات قراءة الحجوزات لحساب الإدارة فقط.</p>
+    </section>
+  </main>
+
+  <script type="module">
+    const status = document.getElementById("status");
+    document.getElementById("loginForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      status.textContent =
+        "لم يتم إعداد الاتصال بعد. لا تدخل بياناتك حتى نربط Supabase ونختبر الحماية.";
+    });
+  </script>
+</body>
+</html>
