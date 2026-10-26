@@ -2,108 +2,289 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>إدارة كملت جمعتنا</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      padding: 20px;
-      font-family: Arial, sans-serif;
-      background: #f7f5f0;
-      color: #14213d;
-    }
-    .container {
-      max-width: 650px;
-      margin: 30px auto;
-    }
-    header {
-      background: #14213d;
-      color: white;
-      padding: 24px;
-      text-align: center;
-      border-radius: 16px;
-      border-bottom: 4px solid #d4af37;
-      margin-bottom: 20px;
-    }
-    h1 { margin: 0 0 8px; }
-    .card {
-      background: white;
-      border-radius: 14px;
-      padding: 20px;
-      margin-bottom: 18px;
-      box-shadow: 0 3px 12px #14213d12;
-    }
-    label {
-      display: block;
-      margin: 14px 0 6px;
-      font-weight: bold;
-    }
-    input, textarea, button {
-      width: 100%;
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-    input, textarea {
-      border: 1px solid #ccc;
-      background: white;
-    }
-    button {
-      margin-top: 14px;
-      border: 0;
-      background: #14213d;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    button.gold { background: #d4af37; color: #14213d; }
-    .note { line-height: 1.8; color: #555; }
-    #status { white-space: pre-wrap; line-height: 1.8; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>إدارة كملت جمعتنا</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:16px;font-family:Arial,sans-serif;background:#f7f5f0;color:#14213d}
+.container{max-width:700px;margin:20px auto}
+header{background:#14213d;color:white;padding:24px;text-align:center;border-radius:16px;border-bottom:4px solid #d4af37;margin-bottom:20px}
+.card{background:white;border-radius:14px;padding:18px;margin-bottom:18px;box-shadow:0 3px 12px #14213d12}
+label{display:block;margin:12px 0 6px;font-weight:bold}
+input,textarea,button{width:100%;padding:12px;border-radius:8px;font-size:16px}
+input,textarea{border:1px solid #ccc;background:white;color:#14213d}
+button{margin-top:12px;border:0;background:#14213d;color:white;font-weight:bold;cursor:pointer}
+button.gold{background:#d4af37;color:#14213d}
+button.secondary{background:#e9edf3;color:#14213d}
+.note{line-height:1.8;color:#555}
+#status{white-space:pre-wrap;line-height:1.8}
+.item{border:1px solid #ddd;border-radius:10px;padding:12px;margin-top:12px;line-height:1.8}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row button{flex:1;min-width:120px}
+.hidden{display:none}
+</style>
 </head>
 <body>
-  <main class="container">
-    <header>
-      <h1>كملت جمعتنا 🎉</h1>
-      <div>لوحة الإدارة</div>
-    </header>
+<main class="container">
+<header>
+<h1>كملت جمعتنا 🎉</h1>
+<div>لوحة الإدارة</div>
+</header>
 
-    <section class="card">
-      <h2>تسجيل دخول الإدارة</h2>
-      <p class="note">سجّل الدخول بحساب الإدارة الذي أنشأته في Supabase.</p>
-      <form id="loginForm">
-        <label for="email">البريد الإلكتروني</label>
-        <input id="email" type="email" autocomplete="username" required>
+<section class="card" id="loginCard">
+<h2>تسجيل دخول الإدارة</h2>
+<p class="note">استخدم حساب الإدارة الذي أنشأته في Supabase.</p>
+<form id="loginForm">
+<label for="email">البريد الإلكتروني</label>
+<input id="email" type="email" autocomplete="username" required>
+<label for="password">كلمة المرور</label>
+<input id="password" type="password" autocomplete="current-password" required>
+<button type="submit">تسجيل الدخول</button>
+</form>
+<p id="status" role="status">أدخل بيانات حساب الإدارة للمتابعة.</p>
+</section>
 
-        <label for="password">كلمة المرور</label>
-        <input id="password" type="password" autocomplete="current-password" required>
+<section class="card hidden" id="adminPanel">
+<div class="row">
+<button type="button" class="gold" id="logoutButton">تسجيل الخروج</button>
+<button type="button" class="secondary" id="refreshButton">تحديث البيانات</button>
+</div>
 
-        <button type="submit">تسجيل الدخول</button>
-      </form>
-      <button id="logoutButton" class="gold" hidden>تسجيل الخروج</button>
-      <p id="status" role="status">الصفحة تحتاج إلى إعداد اتصال Supabase قبل استخدامها.</p>
-    </section>
+<h2>إضافة خدمة أو تعديلها</h2>
+<form id="serviceForm">
+<input type="hidden" id="serviceId">
+<label for="serviceName">اسم الخدمة</label>
+<input id="serviceName" required>
+<label for="serviceDescription">وصف الخدمة</label>
+<textarea id="serviceDescription" rows="3"></textarea>
+<label for="servicePrice">السعر</label>
+<input id="servicePrice" type="number" min="0" step="0.01" required>
+<label>
+<input id="serviceAvailable" type="checkbox" checked style="width:auto">
+الخدمة متاحة للحجز
+</label>
+<button type="submit">حفظ الخدمة</button>
+<button type="button" class="secondary" id="clearForm">إلغاء التعديل / تفريغ الحقول</button>
+</form>
 
-    <section class="card">
-      <h2>إدارة الخدمات</h2>
-      <p class="note">سنفعّل إضافة الخدمات وتعديل الأسعار والتوفر بعد ضبط اتصال قاعدة البيانات وصلاحيات الإدارة.</p>
-    </section>
+<h2>الخدمات الموجودة</h2>
+<div id="servicesList" class="note">سيتم عرض الخدمات بعد نجاح الاتصال والصلاحيات.</div>
 
-    <section class="card">
-      <h2>طلبات الحجز</h2>
-      <p class="note">ستظهر الطلبات بعد تفعيل صلاحيات قراءة الحجوزات لحساب الإدارة فقط.</p>
-    </section>
-  </main>
+<h2>طلبات الحجز</h2>
+<div id="bookingsList" class="note">سيتم عرض الطلبات بعد ضبط صلاحيات قراءة الحجوزات للإدارة.</div>
+</section>
+</main>
 
-  <script type="module">
-    const status = document.getElementById("status");
-    document.getElementById("loginForm").addEventListener("submit", (event) => {
-      event.preventDefault();
-      status.textContent =
-        "لم يتم إعداد الاتصال بعد. لا تدخل بياناتك حتى نربط Supabase ونختبر الحماية.";
+<script type="module">
+import { createClient } from
+'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+const SUPABASE_URL = 'https://qkzdbbqkkxnrgcpcvjvp.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_LiOa9cR2KhHDaEvA2_205Q_XL2OSrfp';
+
+const statusEl = document.getElementById('status');
+const loginCard = document.getElementById('loginCard');
+const adminPanel = document.getElementById('adminPanel');
+const servicesList = document.getElementById('servicesList');
+const bookingsList = document.getElementById('bookingsList');
+
+const configured =
+  SUPABASE_PUBLISHABLE_KEY !== 'PASTE_YOUR_PUBLISHABLE_KEY_HERE';
+
+const supabase = configured
+  ? createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
+  : null;
+
+function showStatus(message) {
+  statusEl.textContent = message;
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  })[char]);
+}
+
+function clearServiceForm() {
+  document.getElementById('serviceForm').reset();
+  document.getElementById('serviceId').value = '';
+  document.getElementById('serviceAvailable').checked = true;
+}
+
+async function loadServices() {
+  servicesList.textContent = 'جاري تحميل الخدمات...';
+
+  const { data, error } = await supabase
+    .from('services')
+    .select('id,name,description,price,is_available')
+    .order('id', { ascending: true });
+
+  if (error) {
+    servicesList.textContent =
+      'تعذّر تحميل الخدمات. قد نحتاج إلى ضبط صلاحيات الإدارة في Supabase.\n' +
+      error.message;
+    return;
+  }
+
+  if (!data.length) {
+    servicesList.textContent = 'ما في خدمات مسجلة حالياً.';
+    return;
+  }
+
+  servicesList.innerHTML = '';
+
+  data.forEach(service => {
+    const item = document.createElement('div');
+    item.className = 'item';
+    item.innerHTML = `
+      <strong>${escapeHtml(service.name)}</strong><br>
+      الوصف: ${escapeHtml(service.description || 'لا يوجد')}<br>
+      السعر: ${escapeHtml(service.price ?? 'غير محدد')}<br>
+      التوفر: ${service.is_available ? 'متاحة' : 'غير متاحة'}
+      <div class="row">
+        <button type="button" class="edit">تعديل</button>
+        <button type="button" class="toggle secondary">
+          ${service.is_available ? 'إخفاء الخدمة' : 'إتاحة الخدمة'}
+        </button>
+      </div>`;
+
+    item.querySelector('.edit').addEventListener('click', () => {
+      document.getElementById('serviceId').value = service.id;
+      document.getElementById('serviceName').value = service.name || '';
+      document.getElementById('serviceDescription').value =
+        service.description || '';
+      document.getElementById('servicePrice').value = service.price ?? '';
+      document.getElementById('serviceAvailable').checked =
+        Boolean(service.is_available);
+      document.getElementById('serviceForm').scrollIntoView({
+        behavior: 'smooth', block: 'start'
+      });
     });
-  </script>
+
+    item.querySelector('.toggle').addEventListener('click', async () => {
+      const { error } = await supabase.from('services')
+        .update({ is_available: !service.is_available })
+        .eq('id', service.id);
+
+      if (error) {
+        alert('ما قدرنا نغيّر التوفر. تأكد من صلاحيات الإدارة في Supabase.');
+        return;
+      }
+      await loadServices();
+    });
+
+    servicesList.appendChild(item);
+  });
+}
+
+async function loadBookings() {
+  bookingsList.textContent = 'جاري تحميل طلبات الحجز...';
+
+  // قد يكون اسم الجدول الفعلي مختلفاً حسب طريقة إنشائه في Supabase.
+  const { data, error } = await supabase
+    .from('Bookings')
+    .select('id,customer_name,customer_phone,service_date,service_location,service_details,status,created_at')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    bookingsList.textContent =
+      'لم نتمكن من قراءة الطلبات. لن نفتح صلاحيات عامة للحجوزات؛ ' +
+      'سنضبط صلاحيات حساب الإدارة أولاً.\n' + error.message;
+    return;
+  }
+
+  if (!data.length) {
+    bookingsList.textContent = 'ما في طلبات حجز حالياً.';
+    return;
+  }
+
+  bookingsList.innerHTML = '';
+  data.forEach(booking => {
+    const item = document.createElement('div');
+    item.className = 'item';
+    item.innerHTML = `
+      <strong>طلب رقم: ${escapeHtml(booking.id)}</strong><br>
+      الاسم: ${escapeHtml(booking.customer_name)}<br>
+      الهاتف: ${escapeHtml(booking.customer_phone)}<br>
+      التاريخ: ${escapeHtml(booking.service_date)}<br>
+      الموقع: ${escapeHtml(booking.service_location)}<br>
+      التفاصيل: ${escapeHtml(booking.service_details)}<br>
+      الحالة: ${escapeHtml(booking.status || 'قيد الانتظار')}`;
+    bookingsList.appendChild(item);
+  });
+}
+
+document.getElementById('loginForm').addEventListener('submit', async event => {
+  event.preventDefault();
+
+  if (!configured) {
+    showStatus('أولاً ضع مفتاح Publishable داخل الكود مكان النص المحدد، ثم احفظ الملف.');
+    return;
+  }
+
+  showStatus('جاري تسجيل الدخول...');
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    showStatus('تعذّر تسجيل الدخول: ' + error.message);
+    return;
+  }
+
+  loginCard.classList.add('hidden');
+  adminPanel.classList.remove('hidden');
+  showStatus('تم تسجيل الدخول. جاري فحص صلاحيات الإدارة...');
+  await loadServices();
+  await loadBookings();
+});
+
+document.getElementById('serviceForm').addEventListener('submit', async event => {
+  event.preventDefault();
+  if (!supabase) return;
+
+  const id = document.getElementById('serviceId').value;
+  const service = {
+    name: document.getElementById('serviceName').value.trim(),
+    description: document.getElementById('serviceDescription').value.trim(),
+    price: Number(document.getElementById('servicePrice').value),
+    is_available: document.getElementById('serviceAvailable').checked
+  };
+
+  const result = id
+    ? await supabase.from('services').update(service).eq('id', id)
+    : await supabase.from('services').insert(service);
+
+  if (result.error) {
+    alert('تعذّر حفظ الخدمة. تأكد من سياسات الإدارة في Supabase.\n' +
+      result.error.message);
+    return;
+  }
+
+  alert('تم حفظ الخدمة.');
+  clearServiceForm();
+  await loadServices();
+});
+
+document.getElementById('clearForm').addEventListener('click', clearServiceForm);
+document.getElementById('refreshButton').addEventListener('click', async () => {
+  await loadServices();
+  await loadBookings();
+});
+
+document.getElementById('logoutButton').addEventListener('click', async () => {
+  await supabase.auth.signOut();
+  adminPanel.classList.add('hidden');
+  loginCard.classList.remove('hidden');
+  document.getElementById('password').value = '';
+  showStatus('تم تسجيل الخروج.');
+});
+
+if (!configured) {
+  showStatus('الاتصال غير مكتمل. سنضع مفتاح Publishable في مكانه قبل الاختبار.');
+}
+</script>
 </body>
 </html>
