@@ -12,17 +12,20 @@ body{margin:0;padding:16px;font-family:Arial,sans-serif;background:#f7f5f0;color
 header{background:#14213d;color:white;padding:24px;text-align:center;border-radius:16px;border-bottom:4px solid #d4af37;margin-bottom:20px}
 .card{background:white;border-radius:14px;padding:18px;margin-bottom:18px;box-shadow:0 3px 12px #14213d12}
 label{display:block;margin:12px 0 6px;font-weight:bold}
-input,textarea,button{width:100%;padding:12px;border-radius:8px;font-size:16px}
-input,textarea{border:1px solid #ccc;background:white;color:#14213d}
+input,textarea,select,button{width:100%;padding:12px;border-radius:8px;font-size:16px}
+input,textarea,select{border:1px solid #ccc;background:white;color:#14213d}
 button{margin-top:12px;border:0;background:#14213d;color:white;font-weight:bold;cursor:pointer}
 button.gold{background:#d4af37;color:#14213d}
 button.secondary{background:#e9edf3;color:#14213d}
+button.danger{background:#a83232;color:white}
 .note{line-height:1.8;color:#555}
 #status{white-space:pre-wrap;line-height:1.8}
-.item{border:1px solid #ddd;border-radius:10px;padding:12px;margin-top:12px;line-height:1.8}
+.item{border:1px solid #ddd;border-radius:10px;padding:12px;margin-top:12px;line-height:1.8;overflow-wrap:anywhere}
 .row{display:flex;gap:8px;flex-wrap:wrap}
 .row button{flex:1;min-width:120px}
 .hidden{display:none}
+.booking-message{white-space:pre-wrap;font-size:14px;color:#555}
+.pill{display:inline-block;padding:3px 9px;border-radius:20px;background:#eee}
 </style>
 </head>
 <body>
@@ -34,7 +37,7 @@ button.secondary{background:#e9edf3;color:#14213d}
 
 <section class="card" id="loginCard">
 <h2>تسجيل دخول الإدارة</h2>
-<p class="note">استخدم حساب الإدارة الذي أنشأته في Supabase.</p>
+<p class="note">استخدم حساب الإدارة المسجّل في Supabase.</p>
 <form id="loginForm">
 <label for="email">البريد الإلكتروني</label>
 <input id="email" type="email" autocomplete="username" required>
@@ -65,14 +68,15 @@ button.secondary{background:#e9edf3;color:#14213d}
 الخدمة متاحة للحجز
 </label>
 <button type="submit">حفظ الخدمة</button>
-<button type="button" class="secondary" id="clearForm">إلغاء التعديل / تفريغ الحقول</button>
+<button type="button" class="secondary" id="clearForm">تفريغ الحقول</button>
 </form>
 
 <h2>الخدمات الموجودة</h2>
-<div id="servicesList" class="note">سيتم عرض الخدمات بعد نجاح الاتصال والصلاحيات.</div>
+<div id="servicesList" class="note">بانتظار تسجيل الدخول.</div>
 
 <h2>طلبات الحجز</h2>
-<div id="bookingsList" class="note">سيتم عرض الطلبات بعد ضبط صلاحيات قراءة الحجوزات للإدارة.</div>
+<p class="note">غيّر حالة الطلب بعد التأكد من توفر الخدمة والتنسيق مع الزبون.</p>
+<div id="bookingsList" class="note">بانتظار تسجيل الدخول.</div>
 </section>
 </main>
 
@@ -83,18 +87,18 @@ import { createClient } from
 const SUPABASE_URL = 'https://qkzdbbqkkxnrgcpcvjvp.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_LiOa9cR2KhHDaEvA2_205Q_XL2OSrfp';
 
+const supabase = createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
+
 const statusEl = document.getElementById('status');
 const loginCard = document.getElementById('loginCard');
 const adminPanel = document.getElementById('adminPanel');
 const servicesList = document.getElementById('servicesList');
 const bookingsList = document.getElementById('bookingsList');
 
-const configured =
-  SUPABASE_PUBLISHABLE_KEY !== 'PASTE_YOUR_PUBLISHABLE_KEY_HERE';
-
-const supabase = configured
-  ? createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
-  : null;
+let busy = false;
 
 function showStatus(message) {
   statusEl.textContent = message;
@@ -102,8 +106,21 @@ function showStatus(message) {
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, char => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
   })[char]);
+}
+
+function statusLabel(value) {
+  const labels = {
+    pending: 'قيد الانتظار',
+    confirmed: 'تم التأكيد',
+    cancelled: 'ملغي'
+  };
+  return labels[value] || value || 'قيد الانتظار';
 }
 
 function clearServiceForm() {
@@ -122,12 +139,11 @@ async function loadServices() {
 
   if (error) {
     servicesList.textContent =
-      'تعذّر تحميل الخدمات. قد نحتاج إلى ضبط صلاحيات الإدارة في Supabase.\n' +
-      error.message;
+      'تعذّر تحميل الخدمات:\n' + error.message;
     return;
   }
 
-  if (!data.length) {
+  if (!data || data.length === 0) {
     servicesList.textContent = 'ما في خدمات مسجلة حالياً.';
     return;
   }
@@ -137,6 +153,7 @@ async function loadServices() {
   data.forEach(service => {
     const item = document.createElement('div');
     item.className = 'item';
+
     item.innerHTML = `
       <strong>${escapeHtml(service.name)}</strong><br>
       الوصف: ${escapeHtml(service.description || 'لا يوجد')}<br>
@@ -147,30 +164,41 @@ async function loadServices() {
         <button type="button" class="toggle secondary">
           ${service.is_available ? 'إخفاء الخدمة' : 'إتاحة الخدمة'}
         </button>
-      </div>`;
+      </div>
+      <p class="booking-message"></p>`;
 
     item.querySelector('.edit').addEventListener('click', () => {
       document.getElementById('serviceId').value = service.id;
       document.getElementById('serviceName').value = service.name || '';
       document.getElementById('serviceDescription').value =
         service.description || '';
-      document.getElementById('servicePrice').value = service.price ?? '';
+      document.getElementById('servicePrice').value =
+        service.price ?? '';
       document.getElementById('serviceAvailable').checked =
         Boolean(service.is_available);
+
       document.getElementById('serviceForm').scrollIntoView({
-        behavior: 'smooth', block: 'start'
+        behavior: 'smooth',
+        block: 'start'
       });
     });
 
-    item.querySelector('.toggle').addEventListener('click', async () => {
-      const { error } = await supabase.from('services')
+    item.querySelector('.toggle').addEventListener('click', async event => {
+      const button = event.currentTarget;
+      button.disabled = true;
+
+      const { error } = await supabase
+        .from('services')
         .update({ is_available: !service.is_available })
         .eq('id', service.id);
 
+      button.disabled = false;
+
       if (error) {
-        alert('ما قدرنا نغيّر التوفر. تأكد من صلاحيات الإدارة في Supabase.');
+        alert('تعذّر تغيير توفر الخدمة:\n' + error.message);
         return;
       }
+
       await loadServices();
     });
 
@@ -181,7 +209,6 @@ async function loadServices() {
 async function loadBookings() {
   bookingsList.textContent = 'جاري تحميل طلبات الحجز...';
 
-  // قد يكون اسم الجدول الفعلي مختلفاً حسب طريقة إنشائه في Supabase.
   const { data, error } = await supabase
     .from('Bookings')
     .select('id,customer_name,customer_phone,service_date,service_location,service_details,status,created_at')
@@ -189,20 +216,21 @@ async function loadBookings() {
 
   if (error) {
     bookingsList.textContent =
-      'لم نتمكن من قراءة الطلبات. لن نفتح صلاحيات عامة للحجوزات؛ ' +
-      'سنضبط صلاحيات حساب الإدارة أولاً.\n' + error.message;
+      'تعذّر تحميل الحجوزات:\n' + error.message;
     return;
   }
 
-  if (!data.length) {
+  if (!data || data.length === 0) {
     bookingsList.textContent = 'ما في طلبات حجز حالياً.';
     return;
   }
 
   bookingsList.innerHTML = '';
+
   data.forEach(booking => {
     const item = document.createElement('div');
     item.className = 'item';
+
     item.innerHTML = `
       <strong>طلب رقم: ${escapeHtml(booking.id)}</strong><br>
       الاسم: ${escapeHtml(booking.customer_name)}<br>
@@ -210,42 +238,110 @@ async function loadBookings() {
       التاريخ: ${escapeHtml(booking.service_date)}<br>
       الموقع: ${escapeHtml(booking.service_location)}<br>
       التفاصيل: ${escapeHtml(booking.service_details)}<br>
-      الحالة: ${escapeHtml(booking.status || 'قيد الانتظار')}`;
+      الحالة الحالية:
+      <span class="pill">${escapeHtml(statusLabel(booking.status))}</span>
+      <label>تغيير حالة الطلب</label>
+      <select class="booking-status">
+        <option value="pending">قيد الانتظار</option>
+        <option value="confirmed">تم التأكيد</option>
+        <option value="cancelled">ملغي</option>
+      </select>
+      <button type="button" class="save-status">حفظ الحالة</button>
+      <p class="booking-message" role="status"></p>`;
+
+    const select = item.querySelector('.booking-status');
+    const button = item.querySelector('.save-status');
+    const message = item.querySelector('.booking-message');
+
+    const currentStatus = booking.status || 'pending';
+
+    select.value = [
+      'pending',
+      'confirmed',
+      'cancelled'
+    ].includes(currentStatus) ? currentStatus : 'pending';
+
+    button.addEventListener('click', async () => {
+      if (busy) return;
+
+      if (!['pending', 'confirmed', 'cancelled'].includes(select.value)) {
+        message.textContent = 'الحالة المختارة غير صحيحة.';
+        return;
+      }
+
+      busy = true;
+      button.disabled = true;
+      message.textContent = 'جاري حفظ الحالة...';
+
+      try {
+        const { data: updated, error: updateError } = await supabase
+          .from('Bookings')
+          .update({ status: select.value })
+          .eq('id', booking.id)
+          .select('id,status');
+
+        if (updateError) {
+          message.textContent =
+            'تعذّر حفظ الحالة. قد تحتاج صلاحية UPDATE للإدارة في Supabase.\n' +
+            updateError.message;
+          return;
+        }
+
+        if (!updated || updated.length === 0) {
+          message.textContent =
+            'لم يتم تحديث الطلب. تأكد من سياسة UPDATE وصلاحيات الإدارة.';
+          return;
+        }
+
+        message.textContent = 'تم حفظ الحالة بنجاح.';
+        await loadBookings();
+      } catch (err) {
+        message.textContent =
+          'حدث خطأ غير متوقع أثناء الحفظ.';
+      } finally {
+        busy = false;
+        button.disabled = false;
+      }
+    });
+
     bookingsList.appendChild(item);
   });
+}
+
+async function refreshAll() {
+  await loadServices();
+  await loadBookings();
 }
 
 document.getElementById('loginForm').addEventListener('submit', async event => {
   event.preventDefault();
 
-  if (!configured) {
-    showStatus('أولاً ضع مفتاح Publishable داخل الكود مكان النص المحدد، ثم احفظ الملف.');
-    return;
-  }
-
   showStatus('جاري تسجيل الدخول...');
+
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  });
 
   if (error) {
-    showStatus('تعذّر تسجيل الدخول: ' + error.message);
+    showStatus('تعذّر تسجيل الدخول:\n' + error.message);
     return;
   }
 
   loginCard.classList.add('hidden');
   adminPanel.classList.remove('hidden');
-  showStatus('تم تسجيل الدخول. جاري فحص صلاحيات الإدارة...');
-  await loadServices();
-  await loadBookings();
+  showStatus('تم تسجيل الدخول. جاري تحميل البيانات...');
+  await refreshAll();
 });
 
 document.getElementById('serviceForm').addEventListener('submit', async event => {
   event.preventDefault();
-  if (!supabase) return;
 
   const id = document.getElementById('serviceId').value;
+
   const service = {
     name: document.getElementById('serviceName').value.trim(),
     description: document.getElementById('serviceDescription').value.trim(),
@@ -253,37 +349,50 @@ document.getElementById('serviceForm').addEventListener('submit', async event =>
     is_available: document.getElementById('serviceAvailable').checked
   };
 
+  if (!service.name || !Number.isFinite(service.price) || service.price < 0) {
+    alert('تأكد من اسم الخدمة والسعر.');
+    return;
+  }
+
   const result = id
     ? await supabase.from('services').update(service).eq('id', id)
     : await supabase.from('services').insert(service);
 
   if (result.error) {
-    alert('تعذّر حفظ الخدمة. تأكد من سياسات الإدارة في Supabase.\n' +
-      result.error.message);
+    alert('تعذّر حفظ الخدمة:\n' + result.error.message);
     return;
   }
 
-  alert('تم حفظ الخدمة.');
+  alert('تم حفظ الخدمة بنجاح.');
   clearServiceForm();
   await loadServices();
 });
 
 document.getElementById('clearForm').addEventListener('click', clearServiceForm);
-document.getElementById('refreshButton').addEventListener('click', async () => {
-  await loadServices();
-  await loadBookings();
-});
+
+document.getElementById('refreshButton').addEventListener('click', refreshAll);
 
 document.getElementById('logoutButton').addEventListener('click', async () => {
-  await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut();
+
+  if (error) {
+    alert('تعذّر تسجيل الخروج:\n' + error.message);
+    return;
+  }
+
   adminPanel.classList.add('hidden');
   loginCard.classList.remove('hidden');
   document.getElementById('password').value = '';
   showStatus('تم تسجيل الخروج.');
 });
 
-if (!configured) {
-  showStatus('الاتصال غير مكتمل. سنضع مفتاح Publishable في مكانه قبل الاختبار.');
+const { data: { session } } = await supabase.auth.getSession();
+
+if (session) {
+  loginCard.classList.add('hidden');
+  adminPanel.classList.remove('hidden');
+  showStatus('تم استعادة جلسة الإدارة. جاري تحميل البيانات...');
+  await refreshAll();
 }
 </script>
 </body>
