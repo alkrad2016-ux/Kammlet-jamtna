@@ -318,8 +318,9 @@
       const bookingRecord = {
         'Customer name': name,
         'Customer phone number': customerPhone,
+        'Service location': location,
         'Service-date': date,
-        'Service details': `المنطقة: ${location}\nالخدمات المطلوبة:\n${servicesText}${details ? `\nالتفاصيل الإضافية: ${details}` : ''}`
+        'Service details': `الخدمات المطلوبة:\n${servicesText}${details ? `\nالتفاصيل الإضافية: ${details}` : ''}`
       };
 
       try {
