@@ -421,14 +421,16 @@
       showStatus('عم نحفظ طلبك بقاعدة البيانات. لحظة من فضلك…', 'info');
 
       // أسماء الأعمدة مطابقة للأسماء التي ذكرتها في جدول Bookings.
-      const bookingRecord = {
-        'customer-name': name,
-        'customer-phone': customerPhone,
-        'service-date': date,
-        'service-location': location,
-        'service-details': `الخدمات المطلوبة:\n${servicesText}${details ? `\nالتفاصيل الإضافية: ${details}` : ''}`,
-        'status': 'pending'
-      };
+      
+const bookingRecord = {
+  customer_name: name,
+  customer_phone: customerPhone,
+  service_date: date,
+  service_location: location,
+  service_details: `الخدمات المطلوبة:\n${servicesText}${details ? `\nالتفاصيل الإضافية: ${details}` : ''}`,
+  status: 'pending'
+};
+
 
       try {
         const response = await fetch(BOOKINGS_ENDPOINT, {
