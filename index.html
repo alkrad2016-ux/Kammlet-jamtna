@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -74,6 +75,7 @@
     <h1>كملت جمعتنا 🎉</h1>
     <p>كل مناسباتك بمكان واحد</p>
   </header>
+
   <main>
     <section class="intro">
       <h2>خلّي مناسبتك علينا</h2>
@@ -82,12 +84,12 @@
 
     <h2 class="section-title">خدماتنا</h2>
     <section class="service-grid" id="service-grid" aria-label="أقسام الخدمات">
-      <button class="service-card" type="button" data-service="أفراح وأعراس" onclick="showService('أفراح وأعراس')"><span class="service-icon">💍</span><strong>أفراح وأعراس</strong><small>كل تفاصيل فرحتك</small></button>
-      <button class="service-card" type="button" data-service="صالات ومزارع" onclick="showService('صالات ومزارع')"><span class="service-icon">🏡</span><strong>صالات ومزارع</strong><small>أماكن لمناسبتك</small></button>
-      <button class="service-card" type="button" data-service="طعام وضيافة" onclick="showService('طعام وضيافة')"><span class="service-icon">🍽️</span><strong>طعام وضيافة</strong><small>ضيافة بتليق بضيوفك</small></button>
-      <button class="service-card" type="button" data-service="مطربين وفرق" onclick="showService('مطربين وفرق')"><span class="service-icon">🎤</span><strong>مطربين وفرق</strong><small>أجواء وفرح</small></button>
-      <button class="service-card" type="button" data-service="تصوير ومصورون" onclick="showService('تصوير ومصورون')"><span class="service-icon">📸</span><strong>تصوير ومصورون</strong><small>ذكريات بتبقى</small></button>
-      <button class="service-card" type="button" data-service="ديكور وورد" onclick="showService('ديكور وورد')"><span class="service-icon">🌷</span><strong>ديكور وورد</strong><small>لمسات بتكمّل المناسبة</small></button>
+      <button class="service-card" type="button" onclick="showService('أفراح وأعراس')"><span class="service-icon">💍</span><strong>أفراح وأعراس</strong><small>كل تفاصيل فرحتك</small></button>
+      <button class="service-card" type="button" onclick="showService('صالات ومزارع')"><span class="service-icon">🏡</span><strong>صالات ومزارع</strong><small>أماكن لمناسبتك</small></button>
+      <button class="service-card" type="button" onclick="showService('طعام وضيافة')"><span class="service-icon">🍽️</span><strong>طعام وضيافة</strong><small>ضيافة بتليق بضيوفك</small></button>
+      <button class="service-card" type="button" onclick="showService('مطربين وفرق')"><span class="service-icon">🎤</span><strong>مطربين وفرق</strong><small>أجواء وفرح</small></button>
+      <button class="service-card" type="button" onclick="showService('تصوير ومصورون')"><span class="service-icon">📸</span><strong>تصوير ومصورون</strong><small>ذكريات بتبقى</small></button>
+      <button class="service-card" type="button" onclick="showService('ديكور وورد')"><span class="service-icon">🌷</span><strong>ديكور وورد</strong><small>لمسات بتكمّل المناسبة</small></button>
     </section>
 
     <section class="db-services" id="db-services-section">
@@ -119,6 +121,7 @@
         <div id="form-status" class="status-message" role="status" aria-live="polite"></div>
       </form>
     </section>
+
     <footer>كملت جمعتنا — كل مناسباتك بمكان واحد</footer>
   </main>
 
@@ -126,16 +129,20 @@
     <div class="modal">
       <h2 id="modal-title"></h2>
       <p id="modal-description"></p>
-      <div class="modal-actions"><button type="button" class="modal-add" id="modal-add-button" onclick="addModalServiceToCart()">أضف إلى السلة</button><button type="button" class="modal-close" onclick="closeServiceModal()">إغلاق</button></div>
+      <div class="modal-actions">
+        <button type="button" class="modal-add" id="modal-add-button" onclick="addModalServiceToCart()">أضف إلى السلة</button>
+        <button type="button" class="modal-close" onclick="closeServiceModal()">إغلاق</button>
+      </div>
     </div>
   </div>
 
   <script>
-    // إعدادات مشروع Supabase
     const SUPABASE_URL = 'https://qkzdbbqkkxnrgcpcvjvp.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_LiOa9cR2KhHDaEvA2_205Q_XL2OSrfp';
     const WHATSAPP_NUMBER = '963942340147';
-    const SERVICES_ENDPOINT = `${SUPABASE_URL}/rest/v1/services?select=id,name,description,is_available&is_available=eq.true&order=id.asc`;
+
+    const SERVICES_ENDPOINT =
+      `${SUPABASE_URL}/rest/v1/services?select=id,name,description,is_available&is_available=eq.true&order=id.asc`;
     const BOOKINGS_ENDPOINT = `${SUPABASE_URL}/rest/v1/Bookings`;
 
     const serviceDetails = {
@@ -146,7 +153,16 @@
       'تصوير ومصورون': 'تصوير فوتوغرافي وفيديو لتوثيق أجمل لحظات مناسبتك.',
       'ديكور وورد': 'ديكور وتنسيق وورد ولمسات جمالية بتناسب مناسبتك.'
     };
-    const serviceIcons = {'أفراح وأعراس':'💍','صالات ومزارع':'🏡','طعام وضيافة':'🍽️','مطربين وفرق':'🎤','تصوير ومصورون':'📸','ديكور وورد':'🌷'};
+
+    const serviceIcons = {
+      'أفراح وأعراس':'💍',
+      'صالات ومزارع':'🏡',
+      'طعام وضيافة':'🍽️',
+      'مطربين وفرق':'🎤',
+      'تصوير ومصورون':'📸',
+      'ديكور وورد':'🌷'
+    };
+
     let cart = [];
     let dbServices = [];
     let currentModalService = '';
@@ -157,153 +173,242 @@
       box.textContent = message;
       box.className = `status-message show ${type}`;
     }
+
     function hideStatus() {
       const box = document.getElementById('form-status');
       box.textContent = '';
       box.className = 'status-message';
     }
-    function serviceAlreadyInCart(name) { return cart.some(item => item.name === name); }
+
+    function serviceAlreadyInCart(name) {
+      return cart.some(item => item.name === name);
+    }
+
     function addToCart(name, description='') {
       if (serviceAlreadyInCart(name)) {
         showStatus('هالخدمة موجودة بالسلة من قبل.', 'info');
-      } else {
-        cart.push({name, description});
-        renderCart();
-        hideStatus();
-      }
-    }
-    function addDbServiceToCart(service) {
-      const name = `أفراح وأعراس — ${service.name}`;
-      const description = service.description || '';
-      if (serviceAlreadyInCart(name)) {
-        const btn = document.getElementById(`add-db-${service.id}`);
-        if (btn) { btn.textContent = 'مضافة للسلة'; btn.disabled = true; }
         return;
       }
-      addToCart(name, description);
-      const btn = document.getElementById(`add-db-${service.id}`);
-      if (btn) { btn.textContent = 'مضافة للسلة'; btn.disabled = true; }
+      cart.push({name, description});
+      renderCart();
+      hideStatus();
     }
+
+    function addDbServiceToCart(service) {
+      const name = `أفراح وأعراس — ${service.name}`;
+      if (serviceAlreadyInCart(name)) return;
+
+      addToCart(name, service.description || '');
+
+      const button = document.getElementById(`add-db-${service.id}`);
+      if (button) {
+        button.textContent = 'مضافة للسلة';
+        button.disabled = true;
+      }
+    }
+
     function removeFromCart(index) {
       const removed = cart[index];
       cart.splice(index, 1);
       renderCart();
+
       if (removed) {
-        const matching = dbServices.find(s => `أفراح وأعراس — ${s.name}` === removed.name);
+        const matching = dbServices.find(
+          service => `أفراح وأعراس — ${service.name}` === removed.name
+        );
         if (matching) {
-          const btn = document.getElementById(`add-db-${matching.id}`);
-          if (btn) { btn.textContent = 'أضف للسلة'; btn.disabled = false; }
+          const button = document.getElementById(`add-db-${matching.id}`);
+          if (button) {
+            button.textContent = 'أضف للسلة';
+            button.disabled = false;
+          }
         }
       }
     }
+
     function renderCart() {
       const list = document.getElementById('cart-list');
       const empty = document.getElementById('empty-cart');
       const count = document.getElementById('cart-count');
       const selected = document.getElementById('selected-services');
+
       list.innerHTML = '';
       count.textContent = `عدد الخدمات: ${cart.length}`;
       empty.style.display = cart.length ? 'none' : 'block';
+
       cart.forEach((item, index) => {
         const row = document.createElement('div');
         row.className = 'cart-item';
+
         const name = document.createElement('span');
         name.textContent = `${serviceIcons[item.name] || '✓'} ${item.name}`;
+
         const remove = document.createElement('button');
-        remove.type = 'button'; remove.className = 'remove-btn'; remove.textContent = 'حذف';
+        remove.type = 'button';
+        remove.className = 'remove-btn';
+        remove.textContent = 'حذف';
         remove.setAttribute('aria-label', `حذف ${item.name} من السلة`);
         remove.addEventListener('click', () => removeFromCart(index));
-        row.append(name, remove); list.appendChild(row);
+
+        row.append(name, remove);
+        list.appendChild(row);
       });
-      selected.value = cart.map((item, i) => `${i + 1}. ${item.name}${item.description ? ` — ${item.description}` : ''}`).join('\n');
+
+      selected.value = cart.map((item, index) =>
+        `${index + 1}. ${item.name}${item.description ? ` — ${item.description}` : ''}`
+      ).join('\n');
     }
+
     function showService(title) {
       currentModalService = title;
-      document.getElementById('modal-title').textContent = `${serviceIcons[title] || '🎉'} ${title}`;
-      document.getElementById('modal-description').textContent = serviceDetails[title] || 'أضف الخدمة للسلة، والإدارة بتتواصل معك لتأكيد التفاصيل.';
-      const addButton = document.getElementById('modal-add-button');
-      addButton.textContent = serviceAlreadyInCart(title) ? 'مضافة للسلة' : 'أضف إلى السلة';
-      addButton.disabled = serviceAlreadyInCart(title);
+      document.getElementById('modal-title').textContent =
+        `${serviceIcons[title] || '🎉'} ${title}`;
+      document.getElementById('modal-description').textContent =
+        serviceDetails[title] || 'أضف الخدمة للسلة، والإدارة بتتواصل معك لتأكيد التفاصيل.';
+
+      const button = document.getElementById('modal-add-button');
+      button.textContent = serviceAlreadyInCart(title) ? 'مضافة للسلة' : 'أضف إلى السلة';
+      button.disabled = serviceAlreadyInCart(title);
+
       document.getElementById('service-modal').classList.add('show');
     }
+
     function addModalServiceToCart() {
       if (!currentModalService) return;
-      addToCart(currentModalService, serviceDetails[currentModalService] || '');
+
+      addToCart(
+        currentModalService,
+        serviceDetails[currentModalService] || ''
+      );
+
       document.getElementById('modal-add-button').textContent = 'مضافة للسلة';
       document.getElementById('modal-add-button').disabled = true;
       closeServiceModal();
     }
-    function closeServiceModal() { document.getElementById('service-modal').classList.remove('show'); }
-    function closeModalFromBackdrop(event) { if (event.target.id === 'service-modal') closeServiceModal(); }
+
+    function closeServiceModal() {
+      document.getElementById('service-modal').classList.remove('show');
+    }
+
+    function closeModalFromBackdrop(event) {
+      if (event.target.id === 'service-modal') closeServiceModal();
+    }
+
     function goToBooking() {
       if (!cart.length) {
         showStatus('أضف خدمة واحدة على الأقل إلى السلة قبل إرسال الطلب.', 'error');
-        document.getElementById('cart-section').scrollIntoView({behavior:'smooth',block:'center'});
+        document.getElementById('cart-section').scrollIntoView({
+          behavior:'smooth',
+          block:'center'
+        });
         return;
       }
-      document.getElementById('booking-section').scrollIntoView({behavior:'smooth',block:'start'});
+
+      document.getElementById('booking-section').scrollIntoView({
+        behavior:'smooth',
+        block:'start'
+      });
       document.getElementById('customer-name').focus({preventScroll:true});
     }
 
     async function loadServices() {
       const container = document.getElementById('db-services-list');
+
       try {
         const response = await fetch(SERVICES_ENDPOINT, {
           method: 'GET',
-          headers: {'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`}
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`
+          }
         });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+
         const rows = await response.json();
         dbServices = Array.isArray(rows) ? rows : [];
         container.innerHTML = '';
+
         if (!dbServices.length) {
           const empty = document.createElement('p');
           empty.className = 'empty-cart';
-          empty.textContent = 'ما في خدمات متاحة بهالقسم حالياً. فيك تضيف القسم للسلة لحتى تتواصل معك الإدارة.';
+          empty.textContent =
+            'ما في خدمات متاحة بهالقسم حالياً. فيك تضيف القسم للسلة لحتى تتواصل معك الإدارة.';
           container.appendChild(empty);
           return;
         }
+
         dbServices.forEach(service => {
           const row = document.createElement('div');
           row.className = 'db-service';
-          const details = document.createElement('div'); details.className = 'details';
-          const name = document.createElement('strong'); name.textContent = service.name || 'خدمة';
+
+          const details = document.createElement('div');
+          details.className = 'details';
+
+          const name = document.createElement('strong');
+          name.textContent = service.name || 'خدمة';
           details.appendChild(name);
+
           if (service.description) {
-            const desc = document.createElement('p'); desc.textContent = service.description; details.appendChild(desc);
+            const description = document.createElement('p');
+            description.textContent = service.description;
+            details.appendChild(description);
           }
+
           const button = document.createElement('button');
-          button.type = 'button'; button.className = 'small-btn'; button.id = `add-db-${service.id}`;
-          button.textContent = serviceAlreadyInCart(`أفراح وأعراس — ${service.name}`) ? 'مضافة للسلة' : 'أضف للسلة';
-          button.disabled = serviceAlreadyInCart(`أفراح وأعراس — ${service.name}`);
+          button.type = 'button';
+          button.className = 'small-btn';
+          button.id = `add-db-${service.id}`;
+
+          const itemName = `أفراح وأعراس — ${service.name}`;
+          button.textContent = serviceAlreadyInCart(itemName) ? 'مضافة للسلة' : 'أضف للسلة';
+          button.disabled = serviceAlreadyInCart(itemName);
           button.addEventListener('click', () => addDbServiceToCart(service));
-          row.append(details, button); container.appendChild(row);
+
+          row.append(details, button);
+          container.appendChild(row);
         });
       } catch (error) {
         container.innerHTML = '';
+
         const message = document.createElement('p');
         message.className = 'empty-cart';
-        message.textContent = 'ما قدرنا نحمّل الخدمات حالياً. جرّب تحدّث الصفحة، أو تواصل مع الإدارة.';
+        message.textContent =
+          'ما قدرنا نحمّل الخدمات حالياً. جرّب تحدّث الصفحة، أو تواصل مع الإدارة.';
         container.appendChild(message);
+
         console.error('تعذر تحميل الخدمات:', error);
       }
     }
 
     async function bookOnWhatsApp(event) {
       event.preventDefault();
+
       if (isSubmitting) return false;
       hideStatus();
+
       if (!cart.length) {
         showStatus('أضف خدمة واحدة على الأقل إلى السلة قبل إرسال الطلب.', 'error');
-        document.getElementById('cart-section').scrollIntoView({behavior:'smooth',block:'center'});
+        document.getElementById('cart-section').scrollIntoView({
+          behavior:'smooth',
+          block:'center'
+        });
         return false;
       }
+
       const name = document.getElementById('customer-name').value.trim();
       const customerPhone = document.getElementById('customer-phone').value.trim();
       const date = document.getElementById('service-date').value;
       const location = document.getElementById('service-location').value.trim();
       const details = document.getElementById('service-details').value.trim();
-      const servicesText = cart.map((item, i) => `${i + 1}. ${item.name}${item.description ? ` — ${item.description}` : ''}`).join('\n');
+
+      const servicesText = cart.map((item, index) =>
+        `${index + 1}. ${item.name}${item.description ? ` — ${item.description}` : ''}`
+      ).join('\n');
+
       if (!name || !customerPhone || !date || !location) {
         showStatus('تأكد من تعبئة الاسم ورقم الهاتف والتاريخ والمنطقة.', 'error');
         return false;
@@ -315,12 +420,14 @@
       submitButton.textContent = 'عم نحفظ طلبك…';
       showStatus('عم نحفظ طلبك بقاعدة البيانات. لحظة من فضلك…', 'info');
 
+      // أسماء الأعمدة مطابقة للأسماء التي ذكرتها في جدول Bookings.
       const bookingRecord = {
-        'Customer name': name,
-        'Customer phone number': customerPhone,
-        'Service location': location,
-        'Service-date': date,
-        'Service details': `الخدمات المطلوبة:\n${servicesText}${details ? `\nالتفاصيل الإضافية: ${details}` : ''}`
+        'customer-name': name,
+        'customer-phone': customerPhone,
+        'service-date': date,
+        'service-location': location,
+        'service-details': `الخدمات المطلوبة:\n${servicesText}${details ? `\nالتفاصيل الإضافية: ${details}` : ''}`,
+        'status': 'pending'
       };
 
       try {
@@ -334,25 +441,62 @@
           },
           body: JSON.stringify(bookingRecord)
         });
+
         if (!response.ok) {
-          let extra = '';
-          try { const errorBody = await response.json(); extra = errorBody.message || errorBody.details || errorBody.hint || ''; } catch (_) {}
-          console.error('Supabase booking error:', response.status, extra);
-          throw new Error(extra ? `تعذر حفظ الطلب: ${extra}` : `تعذر حفظ الطلب (رمز ${response.status}).`);
+          let errorMessage = '';
+
+          try {
+            const errorBody = await response.json();
+            errorMessage =
+              errorBody.message ||
+              errorBody.details ||
+              errorBody.hint ||
+              errorBody.code ||
+              '';
+          } catch (_) {}
+
+          console.error('Supabase booking error:', response.status, errorMessage);
+
+          throw new Error(
+            errorMessage
+              ? `تعذر حفظ الطلب: ${errorMessage}`
+              : `تعذر حفظ الطلب (رمز ${response.status}).`
+          );
         }
 
-        showStatus('تم حفظ طلبك بنجاح. رح نفتح واتساب لتبعت الطلب للإدارة.', 'success');
-        const whatsappMessage = `مرحبا، بدي قدّم طلب حجز جديد من تطبيق كملت جمعتنا.\n\nالاسم: ${name}\nرقم الهاتف: ${customerPhone}\nتاريخ المناسبة: ${date}\nالمنطقة: ${location}\n\nالخدمات المطلوبة:\n${servicesText}${details ? `\n\nتفاصيل إضافية: ${details}` : ''}\n\nبعرف إنو الطلب بحاجة لتأكيد التوفر والتفاصيل من الإدارة.`;
-        const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappMessage)}`;
+        showStatus(
+          'تم حفظ طلبك بنجاح. رح نفتح واتساب لتبعت الطلب للإدارة.',
+          'success'
+        );
+
+        const whatsappMessage =
+          `مرحبا، بدي قدّم طلب حجز جديد من تطبيق كملت جمعتنا.\n\n` +
+          `الاسم: ${name}\n` +
+          `رقم الهاتف: ${customerPhone}\n` +
+          `تاريخ المناسبة: ${date}\n` +
+          `المنطقة: ${location}\n\n` +
+          `الخدمات المطلوبة:\n${servicesText}` +
+          `${details ? `\n\nتفاصيل إضافية: ${details}` : ''}\n\n` +
+          `بعرف إنو الطلب بحاجة لتأكيد التوفر والتفاصيل من الإدارة.`;
+
+        const whatsappURL =
+          `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappMessage)}`;
+
         window.location.href = whatsappURL;
+
       } catch (error) {
         console.error('خطأ بإرسال طلب الحجز:', error);
-        showStatus(`${error.message || 'صار خطأ غير متوقع'} ما فتحنا واتساب، لحتى ما يضيع طلبك. جرّب مرة تانية أو تواصل مع الإدارة.`, 'error');
+
+        showStatus(
+          `${error.message || 'صار خطأ غير متوقع'} ما فتحنا واتساب، لحتى ما يضيع طلبك. جرّب مرة تانية أو تواصل مع الإدارة.`,
+          'error'
+        );
       } finally {
         isSubmitting = false;
         submitButton.disabled = false;
         submitButton.textContent = 'إرسال الطلب عبر واتساب';
       }
+
       return false;
     }
 
