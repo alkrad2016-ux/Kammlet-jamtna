@@ -3,735 +3,421 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>إدارة كملت جمعتنا</title>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
-:root {
-  --navy: #14213d;
-  --gold: #d4af37;
-  --bg: #f7f5f0;
-  --white: #ffffff;
-  --green: #16834a;
-  --red: #b42318;
-}
-* { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  padding: 16px;
-  background: var(--bg);
-  color: var(--navy);
-  font-family: Arial, sans-serif;
-  line-height: 1.7;
-}
-
-header {
-  background: var(--navy);
-  color: white;
-  padding: 20px 14px;
-  border-bottom: 4px solid var(--gold);
-  border-radius: 14px;
-  text-align: center;
-  margin-bottom: 18px;
-}
-
-header h1 { margin: 0; font-size: 25px; }
-header p { margin: 5px 0 0; }
-
-main {
-  max-width: 850px;
-  margin: auto;
-}
-
-.panel {
-  background: white;
-  border-radius: 14px;
-  padding: 18px;
-  margin-bottom: 18px;
-  box-shadow: 0 3px 12px #14213d12;
-}
-
-h2 {
-  color: var(--navy);
-  border-bottom: 2px solid var(--gold);
-  padding-bottom: 8px;
-  font-size: 21px;
-}
-
-input, textarea, select {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #c8c8c8;
-  border-radius: 8px;
-  margin: 5px 0 12px;
-  font: inherit;
-  background: white;
-}
-
-textarea {
-  min-height: 80px;
-  resize: vertical;
-}
-
-button {
-  border: 0;
-  border-radius: 8px;
-  padding: 11px 16px;
-  font: inherit;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.primary {
-  background: var(--navy);
-  color: white;
-}
-
-.gold {
-  background: var(--gold);
-  color: var(--navy);
-}
-
-.logout {
-  background: #eeeeee;
-  color: var(--navy);
-}
-
-button:disabled {
-  opacity: .6;
-  cursor: wait;
-}
-
-.hidden { display: none !important; }
-
-.message {
-  padding: 10px;
-  border-radius: 8px;
-  margin: 10px 0;
-  overflow-wrap: anywhere;
-}
-
-.success { background: #e5f6eb; color: #126537; }
-.error { background: #fde9e7; color: #9c2118; }
-.info { background: #edf1f8; color: var(--navy); }
-
-.service-card, .booking-card {
-  border: 1px solid #e2dfd6;
-  border-radius: 12px;
-  padding: 14px;
-  margin: 12px 0;
-  background: white;
-}
-
-.service-card h3, .booking-card h3 {
-  margin: 0 0 8px;
-}
-
-.service-status {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px;
-  border-radius: 8px;
-  margin: 12px 0;
-  background: #f7f5f0;
-}
-
-.service-status input {
-  width: 22px;
-  height: 22px;
-  margin: 0;
-  accent-color: var(--green);
-  flex-shrink: 0;
-}
-
-.status-available { color: var(--green); font-weight: bold; }
-.status-unavailable { color: var(--red); font-weight: bold; }
-
-.small {
-  font-size: 13px;
-  color: #555;
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.booking-details {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-
-label { font-weight: bold; }
-
-footer {
-  text-align: center;
-  padding: 16px;
-  color: #666;
-  font-size: 13px;
-}
-
+:root{--navy:#14213d;--gold:#d4af37;--bg:#f7f5f0;--green:#16834a;--red:#b42318}
+*{box-sizing:border-box}
+body{margin:0;padding:15px;background:var(--bg);color:var(--navy);font-family:Arial,sans-serif;line-height:1.7}
+header{background:var(--navy);color:white;padding:20px;text-align:center;border-bottom:4px solid var(--gold);border-radius:14px;margin-bottom:18px}
+header h1{margin:0}
+main{max-width:850px;margin:auto}
+.panel,.service-card,.booking-card{background:white;border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:0 2px 10px #14213d12}
+h2{font-size:21px;border-bottom:2px solid var(--gold);padding-bottom:7px}
+input,textarea,select{display:block;width:100%;padding:11px;margin:5px 0 12px;border:1px solid #ccc;border-radius:8px;font:inherit;background:white}
+textarea{min-height:75px}
+button{padding:11px 15px;border:0;border-radius:8px;font:inherit;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.6}
+.primary{background:var(--navy);color:white}
+.gold{background:var(--gold);color:var(--navy)}
+.logout{background:#eee;color:var(--navy)}
+.hidden{display:none!important}
+.message{padding:10px;border-radius:8px;margin:10px 0;overflow-wrap:anywhere}
+.success{background:#e5f6eb;color:#126537}
+.error{background:#fde9e7;color:#9c2118}
+.info{background:#edf1f8;color:var(--navy)}
+.small{font-size:13px;color:#555}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.service-status{display:flex;align-items:center;gap:10px;background:var(--bg);padding:10px;border-radius:8px;margin:12px 0}
+.service-status input{width:22px;height:22px;margin:0;accent-color:var(--green)}
+.status-available{color:var(--green);font-weight:bold}
+.status-unavailable{color:var(--red);font-weight:bold}
+.booking-details{white-space:pre-wrap;overflow-wrap:anywhere}
+footer{text-align:center;color:#666;padding:15px}
+label{font-weight:bold}
 </style>
 </head>
-
 <body>
-
 <header>
-  <h1>🎉 كملت جمعتنا</h1>
-  <p>لوحة الإدارة</p>
+<h1>🎉 كملت جمعتنا</h1>
+<div>لوحة الإدارة</div>
 </header>
 
 <main>
+<section id="login-panel" class="panel">
+<h2>تسجيل دخول الإدارة</h2>
+<form id="login-form">
+<label for="email">البريد الإلكتروني</label>
+<input id="email" type="email" autocomplete="username" required>
+<label for="password">كلمة المرور</label>
+<input id="password" type="password" autocomplete="current-password" required>
+<button class="primary" id="login-button" type="submit">تسجيل الدخول</button>
+</form>
+<div id="login-message" aria-live="polite"></div>
+</section>
 
-  <section id="login-panel" class="panel">
-    <h2>تسجيل دخول الإدارة</h2>
+<section id="admin-panel" class="hidden">
+<div class="panel">
+<div class="actions" style="justify-content:space-between">
+<h2 style="border:0">أهلاً بك بالإدارة</h2>
+<button id="logout-button" class="logout">تسجيل الخروج</button>
+</div>
+<div id="general-message" aria-live="polite"></div>
+</div>
 
-    <form id="login-form">
-      <label for="email">البريد الإلكتروني</label>
-      <input id="email" type="email" autocomplete="username" required>
+<section class="panel">
+<h2>إضافة خدمة جديدة</h2>
+<form id="add-service-form">
+<label for="new-name">اسم الخدمة</label>
+<input id="new-name" maxlength="150" required>
+<label for="new-description">وصف الخدمة</label>
+<textarea id="new-description"></textarea>
+<label for="new-price">السعر (اختياري)</label>
+<input id="new-price" type="number" min="0" step="0.01">
+<label class="service-status">
+<input id="new-available" type="checkbox" checked>
+<span>الخدمة متاحة للزبائن</span>
+</label>
+<button class="gold" id="add-button" type="submit">إضافة الخدمة</button>
+</form>
+</section>
 
-      <label for="password">كلمة المرور</label>
-      <input id="password" type="password"
-             autocomplete="current-password" required>
+<section class="panel">
+<div class="actions" style="justify-content:space-between">
+<h2>إدارة الخدمات</h2>
+<button class="primary" id="refresh-services" type="button">تحديث الخدمات</button>
+</div>
+<p class="small">غيّر الإتاحة واحفظها. الخدمة غير المتاحة لا تظهر للزبائن إذا كان الموقع يعرض الخدمات المتاحة فقط.</p>
+<div id="services-message" aria-live="polite"></div>
+<div id="services-list">جاري تحميل الخدمات...</div>
+</section>
 
-      <button class="primary" type="submit" id="login-button">
-        تسجيل الدخول
-      </button>
-    </form>
-
-    <div id="login-message" aria-live="polite"></div>
-  </section>
-
-  <section id="admin-panel" class="hidden">
-
-    <div class="panel">
-      <div class="actions" style="justify-content:space-between;align-items:center">
-        <h2 style="border:0;margin:0">مرحباً بالإدارة</h2>
-        <button class="logout" id="logout-button">تسجيل الخروج</button>
-      </div>
-      <div id="general-message" aria-live="polite"></div>
-    </div>
-
-    <section class="panel">
-      <h2>إضافة خدمة جديدة</h2>
-
-      <form id="add-service-form">
-        <label for="new-name">اسم الخدمة</label>
-        <input id="new-name" required maxlength="150"
-               placeholder="مثال: تنسيق حفلات">
-
-        <label for="new-description">وصف الخدمة</label>
-        <textarea id="new-description"
-                  placeholder="اكتب تفاصيل الخدمة"></textarea>
-
-        <label for="new-price">السعر (اختياري)</label>
-        <input id="new-price" type="number" min="0" step="0.01"
-               placeholder="السعر">
-
-        <label class="service-status">
-          <input id="new-available" type="checkbox" checked>
-          <span>الخدمة متاحة للزبائن</span>
-        </label>
-
-        <button class="gold" type="submit" id="add-button">
-          إضافة الخدمة
-        </button>
-      </form>
-    </section>
-
-    <section class="panel">
-      <div class="actions" style="justify-content:space-between;align-items:center">
-        <h2 style="border:0;margin:0">إدارة الخدمات</h2>
-        <button class="primary" id="refresh-services">تحديث الخدمات</button>
-      </div>
-
-      <p class="small">
-        أزل علامة الصح عن «متاحة للزبائن» ثم اضغط «حفظ الإتاحة».
-        الخدمة غير المتاحة لن تظهر في الموقع العام إذا كان الموقع
-        يقرأ الخدمات التي is_available فيها تساوي true.
-      </p>
-
-      <div id="services-message" aria-live="polite"></div>
-      <div id="services-list">جاري تحميل الخدمات...</div>
-    </section>
-
-    <section class="panel">
-      <div class="actions" style="justify-content:space-between;align-items:center">
-        <h2 style="border:0;margin:0">طلبات الحجوزات</h2>
-        <button class="primary" id="refresh-bookings">تحديث الحجوزات</button>
-      </div>
-
-      <div id="bookings-message" aria-live="polite"></div>
-      <div id="bookings-list">جاري تحميل الحجوزات...</div>
-    </section>
-
-  </section>
-
+<section class="panel">
+<div class="actions" style="justify-content:space-between">
+<h2>طلبات الحجوزات</h2>
+<button class="primary" id="refresh-bookings" type="button">تحديث الحجوزات</button>
+</div>
+<div id="bookings-message" aria-live="polite"></div>
+<div id="bookings-list">جاري تحميل الحجوزات...</div>
+</section>
+</section>
 </main>
 
 <footer>كملت جمعتنا — كل مناسباتك بمكان واحد</footer>
 
 <script>
-const SUPABASE_URL = 'https://qkzdbbqkkxnrgcpcvjvp.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY =
-  'sb_publishable_LiOa9cR2KhHDaEvA2_205Q_XL2OSrfp';
+/* تحميل مكتبة Supabase مع بديل إذا تعذّر تحميل المصدر الأول */
+(function loadSupabaseLibrary(){
+  const sources = [
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
+    'https://unpkg.com/@supabase/supabase-js@2'
+  ];
+  let index = 0;
 
-const supabase = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
-);
-
-const $ = id => document.getElementById(id);
-
-function showMessage(id, message, type = 'info') {
-  const el = $(id);
-  el.className = 'message ' + type;
-  el.textContent = message;
-}
-
-function clearMessage(id) {
-  $(id).textContent = '';
-  $(id).className = '';
-}
-
-function safeText(value) {
-  return value == null || value === '' ? '—' : String(value);
-}
-
-function escapeHTML(value) {
-  return String(value ?? '').replace(/[&<>"']/g, char => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;'
-  })[char]);
-}
-
-function formatDate(value) {
-  if (!value) return '—';
-  const date = new Date(value);
-  return Number.isNaN(date.getTime())
-    ? safeText(value)
-    : date.toLocaleString('ar');
-}
-
-function statusLabel(status) {
-  return ({
-    pending: 'قيد الانتظار',
-    confirmed: 'تم التأكيد',
-    cancelled: 'ملغي'
-  })[status] || safeText(status);
-}
-
-async function checkSession() {
-  const { data, error } = await supabase.auth.getSession();
-
-  if (error) {
-    showMessage('login-message', error.message, 'error');
-    return;
+  function loadNext(){
+    if (window.supabase && window.supabase.createClient) {
+      startApp();
+      return;
+    }
+    if (index >= sources.length) {
+      const msg = document.getElementById('login-message');
+      msg.className = 'message error';
+      msg.textContent = 'تعذر تحميل مكتبة الاتصال. تأكد من الإنترنت، ثم حدّث الصفحة.';
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = sources[index++];
+    script.onload = function(){
+      if (window.supabase && window.supabase.createClient) startApp();
+      else loadNext();
+    };
+    script.onerror = loadNext;
+    document.head.appendChild(script);
   }
 
-  if (data.session) {
-    $('login-panel').classList.add('hidden');
-    $('admin-panel').classList.remove('hidden');
-    await loadAll();
-  } else {
-    $('login-panel').classList.remove('hidden');
-    $('admin-panel').classList.add('hidden');
+  loadNext();
+})();
+
+function startApp(){
+  if (window.appStarted) return;
+  window.appStarted = true;
+
+  const SUPABASE_URL = 'https://qkzdbbqkkxnrgcpcvjvp.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_LiOa9cR2KhHDaEvA2_205Q_XL2OSrfp';
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  const $ = id => document.getElementById(id);
+
+  function message(id, text, type='info'){
+    const el=$(id);
+    el.className='message '+type;
+    el.textContent=text;
   }
-}
+  function clearMessage(id){
+    $(id).textContent='';
+    $(id).className='';
+  }
+  function esc(value){
+    return String(value ?? '').replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    })[c]);
+  }
+  function val(value){return value==null || value===''?'—':String(value);}
+  function dateText(value){
+    if(!value)return '—';
+    const d=new Date(value);
+    return Number.isNaN(d.getTime())?val(value):d.toLocaleString('ar');
+  }
+  function statusText(s){
+    return ({pending:'قيد الانتظار',confirmed:'تم التأكيد',cancelled:'ملغي'})[s] || val(s);
+  }
 
-$('login-form').addEventListener('submit', async event => {
-  event.preventDefault();
+  async function checkSession(){
+    try{
+      const {data,error}=await db.auth.getSession();
+      if(error)throw error;
+      if(data.session){
+        $('login-panel').classList.add('hidden');
+        $('admin-panel').classList.remove('hidden');
+        await loadAll();
+      }else{
+        $('login-panel').classList.remove('hidden');
+        $('admin-panel').classList.add('hidden');
+      }
+    }catch(e){
+      message('login-message','تعذر فحص جلسة الدخول: '+e.message,'error');
+    }
+  }
 
-  const button = $('login-button');
-  button.disabled = true;
-  clearMessage('login-message');
+  $('login-form').addEventListener('submit',async e=>{
+    e.preventDefault();
+    const button=$('login-button');
+    button.disabled=true;
+    button.textContent='جاري تسجيل الدخول...';
+    clearMessage('login-message');
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email: $('email').value.trim(),
-    password: $('password').value
+    try{
+      const {data,error}=await db.auth.signInWithPassword({
+        email:$('email').value.trim(),
+        password:$('password').value
+      });
+      if(error)throw error;
+      if(!data.session)throw new Error('لم يتم إنشاء جلسة دخول.');
+      $('password').value='';
+      await checkSession();
+    }catch(err){
+      message('login-message','تعذر تسجيل الدخول: '+(err.message || 'خطأ غير معروف'),'error');
+    }finally{
+      button.disabled=false;
+      button.textContent='تسجيل الدخول';
+    }
   });
 
-  button.disabled = false;
+  $('logout-button').addEventListener('click',async()=>{
+    const {error}=await db.auth.signOut();
+    if(error){message('general-message','تعذر تسجيل الخروج: '+error.message,'error');return;}
+    $('admin-panel').classList.add('hidden');
+    $('login-panel').classList.remove('hidden');
+    message('login-message','تم تسجيل الخروج.','success');
+  });
 
-  if (error) {
-    showMessage('login-message',
-      'تعذر تسجيل الدخول: ' + error.message, 'error');
-    return;
+  async function loadAll(){
+    await Promise.all([loadServices(),loadBookings()]);
+  }
+  $('refresh-services').addEventListener('click',loadServices);
+  $('refresh-bookings').addEventListener('click',loadBookings);
+
+  async function loadServices(){
+    const list=$('services-list');
+    list.textContent='جاري تحميل الخدمات...';
+    clearMessage('services-message');
+    try{
+      const {data,error}=await db.from('services')
+        .select('id,name,description,price,is_available').order('id');
+      if(error)throw error;
+      list.textContent='';
+      if(!data || !data.length){list.textContent='لا توجد خدمات حالياً.';return;}
+
+      data.forEach(s=>{
+        const card=document.createElement('article');
+        card.className='service-card';
+        const available=s.is_available===true;
+
+        card.innerHTML=`
+          <h3>${esc(s.name)}</h3>
+          <div class="small">رقم الخدمة: ${esc(s.id)}</div>
+          <div class="service-status">
+            <input class="avail" id="avail-${esc(s.id)}" type="checkbox" ${available?'checked':''}>
+            <label for="avail-${esc(s.id)}">متاحة للزبائن</label>
+            <span class="avail-label ${available?'status-available':'status-unavailable'}">${available?'متاحة':'غير متاحة'}</span>
+          </div>
+          <button type="button" class="gold save-avail">حفظ الإتاحة</button>
+          <h4>تعديل بيانات الخدمة</h4>
+          <label>اسم الخدمة</label><input class="edit-name" maxlength="150" value="${esc(s.name)}">
+          <label>الوصف</label><textarea class="edit-description">${esc(s.description||'')}</textarea>
+          <label>السعر</label><input class="edit-price" type="number" min="0" step="0.01" value="${s.price==null?'':esc(s.price)}">
+          <button type="button" class="primary save-edit">حفظ التعديلات</button>
+          <div class="card-message" aria-live="polite"></div>`;
+
+        const check=card.querySelector('.avail');
+        const availLabel=card.querySelector('.avail-label');
+        const note=card.querySelector('.card-message');
+
+        check.addEventListener('change',()=>{
+          availLabel.textContent=check.checked?'متاحة':'غير متاحة';
+          availLabel.className='avail-label '+(check.checked?'status-available':'status-unavailable');
+          note.className='message info';
+          note.textContent='اضغط «حفظ الإتاحة» لتثبيت التغيير.';
+        });
+
+        card.querySelector('.save-avail').addEventListener('click',async e=>{
+          const btn=e.currentTarget;
+          btn.disabled=true;
+          note.className='message info';
+          note.textContent='جاري حفظ الإتاحة...';
+          try{
+            const {data,error}=await db.from('services')
+              .update({is_available:check.checked})
+              .eq('id',s.id).select('id,is_available');
+            if(error)throw error;
+            if(!data || !data.length)throw new Error('لم يتغير أي صف. تحقق من سياسة UPDATE للإدارة.');
+            const saved=data[0].is_available===true;
+            check.checked=saved;
+            availLabel.textContent=saved?'متاحة':'غير متاحة';
+            availLabel.className='avail-label '+(saved?'status-available':'status-unavailable');
+            note.className='message success';
+            note.textContent=saved?'تم حفظ الخدمة كمتاحة.':'تم حفظ الخدمة كغير متاحة.';
+          }catch(err){
+            note.className='message error';
+            note.textContent='تعذر حفظ الإتاحة: '+err.message;
+          }finally{btn.disabled=false;}
+        });
+
+        card.querySelector('.save-edit').addEventListener('click',async e=>{
+          const btn=e.currentTarget;
+          const name=card.querySelector('.edit-name').value.trim();
+          const description=card.querySelector('.edit-description').value.trim();
+          const p=card.querySelector('.edit-price').value.trim();
+          const price=p===''?null:Number(p);
+          if(!name){messageNote('اكتب اسم الخدمة أولاً.');return;}
+          if(price!==null&&(!Number.isFinite(price)||price<0)){messageNote('السعر غير صحيح.');return;}
+          btn.disabled=true;
+          try{
+            const {data,error}=await db.from('services').update({name,description,price})
+              .eq('id',s.id).select('id');
+            if(error)throw error;
+            if(!data||!data.length)throw new Error('لم يتم تأكيد الحفظ. تحقق من صلاحيات الإدارة.');
+            note.className='message success';note.textContent='تم حفظ التعديلات بنجاح.';
+            await loadServices();
+          }catch(err){
+            note.className='message error';note.textContent='تعذر حفظ التعديلات: '+err.message;
+          }finally{btn.disabled=false;}
+          function messageNote(t){note.className='message error';note.textContent=t;}
+        });
+
+        list.appendChild(card);
+      });
+    }catch(err){
+      list.textContent='';
+      message('services-message','تعذر تحميل الخدمات: '+err.message,'error');
+    }
   }
 
-  $('password').value = '';
-  await checkSession();
-});
+  $('add-service-form').addEventListener('submit',async e=>{
+    e.preventDefault();
+    const btn=$('add-button');
+    const name=$('new-name').value.trim();
+    const description=$('new-description').value.trim();
+    const p=$('new-price').value.trim();
+    const price=p===''?null:Number(p);
+    const is_available=$('new-available').checked;
 
-$('logout-button').addEventListener('click', async () => {
-  const { error } = await supabase.auth.signOut();
+    if(!name){message('general-message','اكتب اسم الخدمة.','error');return;}
+    if(price!==null&&(!Number.isFinite(price)||price<0)){message('general-message','السعر غير صحيح.','error');return;}
 
-  if (error) {
-    showMessage('general-message',
-      'تعذر تسجيل الخروج: ' + error.message, 'error');
-    return;
-  }
-
-  $('admin-panel').classList.add('hidden');
-  $('login-panel').classList.remove('hidden');
-  showMessage('login-message', 'تم تسجيل الخروج.', 'success');
-});
-
-async function loadAll() {
-  await Promise.all([loadServices(), loadBookings()]);
-}
-
-$('refresh-services').addEventListener('click', loadServices);
-$('refresh-bookings').addEventListener('click', loadBookings);
-
-async function loadServices() {
-  const list = $('services-list');
-  list.textContent = 'جاري تحميل الخدمات...';
-  clearMessage('services-message');
-
-  const { data, error } = await supabase
-    .from('services')
-    .select('id,name,description,price,is_available')
-    .order('id', { ascending: true });
-
-  if (error) {
-    list.textContent = '';
-    showMessage('services-message',
-      'تعذر تحميل الخدمات: ' + error.message, 'error');
-    return;
-  }
-
-  list.textContent = '';
-
-  if (!data || data.length === 0) {
-    list.textContent = 'لا توجد خدمات حالياً.';
-    return;
-  }
-
-  data.forEach(service => {
-    const card = document.createElement('article');
-    card.className = 'service-card';
-
-    const available = service.is_available === true;
-
-    card.innerHTML = `
-      <h3>${escapeHTML(service.name)}</h3>
-      <p>${escapeHTML(safeText(service.description))}</p>
-      <p><strong>السعر:</strong> ${escapeHTML(safeText(service.price))}</p>
-
-      <div class="service-status">
-        <input type="checkbox"
-          class="availability-checkbox"
-          id="availability-${escapeHTML(service.id)}"
-          ${available ? 'checked' : ''}>
-        <label for="availability-${escapeHTML(service.id)}">
-          متاحة للزبائن
-        </label>
-        <span class="${available ? 'status-available' : 'status-unavailable'}">
-          ${available ? 'متاحة' : 'غير متاحة'}
-        </span>
-      </div>
-
-      <div class="small">
-        رقم الخدمة: ${escapeHTML(service.id)}
-      </div>
-
-      <h4>تعديل بيانات الخدمة</h4>
-
-      <label>اسم الخدمة</label>
-      <input class="edit-name" maxlength="150"
-        value="${escapeHTML(service.name)}">
-
-      <label>الوصف</label>
-      <textarea class="edit-description">${escapeHTML(service.description || '')}</textarea>
-
-      <label>السعر</label>
-      <input class="edit-price" type="number" min="0" step="0.01"
-        value="${service.price == null ? '' : escapeHTML(service.price)}">
-
-      <div class="actions">
-        <button class="gold save-availability">حفظ الإتاحة</button>
-        <button class="primary save-service">حفظ التعديلات</button>
-      </div>
-
-      <div class="card-message" aria-live="polite"></div>
-    `;
-
-    const checkbox = card.querySelector('.availability-checkbox');
-    const availabilityLabel = card.querySelector('.service-status span');
-    const cardMessage = card.querySelector('.card-message');
-    const saveAvailability = card.querySelector('.save-availability');
-    const saveService = card.querySelector('.save-service');
-
-    checkbox.addEventListener('change', () => {
-      availabilityLabel.textContent =
-        checkbox.checked ? 'متاحة' : 'غير متاحة';
-
-      availabilityLabel.className =
-        checkbox.checked ? 'status-available' : 'status-unavailable';
-
-      cardMessage.textContent =
-        'لم يُحفظ التغيير بعد. اضغط «حفظ الإتاحة».';
-      cardMessage.className = 'message info';
-    });
-
-    saveAvailability.addEventListener('click', async () => {
-      saveAvailability.disabled = true;
-      cardMessage.textContent = 'جاري حفظ الإتاحة...';
-      cardMessage.className = 'message info';
-
-      const { data: updated, error: updateError } = await supabase
-        .from('services')
-        .update({ is_available: checkbox.checked })
-        .eq('id', service.id)
-        .select('id,is_available');
-
-      saveAvailability.disabled = false;
-
-      if (updateError) {
-        cardMessage.textContent =
-          'تعذر حفظ الإتاحة: ' + updateError.message;
-        cardMessage.className = 'message error';
-        return;
-      }
-
-      if (!updated || updated.length === 0) {
-        cardMessage.textContent =
-          'لم يتم تأكيد الحفظ. تحقق من سياسة UPDATE وصلاحيات الإدارة.';
-        cardMessage.className = 'message error';
-        return;
-      }
-
-      const savedValue = updated[0].is_available === true;
-      checkbox.checked = savedValue;
-
-      availabilityLabel.textContent =
-        savedValue ? 'متاحة' : 'غير متاحة';
-      availabilityLabel.className =
-        savedValue ? 'status-available' : 'status-unavailable';
-
-      cardMessage.textContent = savedValue
-        ? 'تم حفظ الخدمة كمتاحة بنجاح.'
-        : 'تم حفظ الخدمة كغير متاحة بنجاح.';
-      cardMessage.className = 'message success';
-    });
-
-    saveService.addEventListener('click', async () => {
-      const name = card.querySelector('.edit-name').value.trim();
-      const description =
-        card.querySelector('.edit-description').value.trim();
-      const priceText = card.querySelector('.edit-price').value.trim();
-
-      if (!name) {
-        cardMessage.textContent = 'اكتب اسم الخدمة أولاً.';
-        cardMessage.className = 'message error';
-        return;
-      }
-
-      const price = priceText === '' ? null : Number(priceText);
-
-      if (price !== null && (!Number.isFinite(price) || price < 0)) {
-        cardMessage.textContent = 'السعر لازم يكون رقماً صحيحاً أو صفراً.';
-        cardMessage.className = 'message error';
-        return;
-      }
-
-      saveService.disabled = true;
-      cardMessage.textContent = 'جاري حفظ التعديلات...';
-      cardMessage.className = 'message info';
-
-      const { data: updated, error: updateError } = await supabase
-        .from('services')
-        .update({ name, description, price })
-        .eq('id', service.id)
-        .select('id');
-
-      saveService.disabled = false;
-
-      if (updateError) {
-        cardMessage.textContent =
-          'تعذر حفظ التعديلات: ' + updateError.message;
-        cardMessage.className = 'message error';
-        return;
-      }
-
-      if (!updated || updated.length === 0) {
-        cardMessage.textContent =
-          'لم يتم تأكيد حفظ التعديلات. تحقق من صلاحيات الإدارة.';
-        cardMessage.className = 'message error';
-        return;
-      }
-
-      cardMessage.textContent = 'تم حفظ التعديلات بنجاح.';
-      cardMessage.className = 'message success';
+    btn.disabled=true;
+    try{
+      const {data,error}=await db.from('services')
+        .insert([{name,description,price,is_available}]).select('id,name');
+      if(error)throw error;
+      if(!data||!data.length)throw new Error('لم يصل تأكيد الإضافة.');
+      $('add-service-form').reset();
+      $('new-available').checked=true;
+      message('general-message','تمت إضافة الخدمة بنجاح: '+data[0].name,'success');
       await loadServices();
-    });
-
-    list.appendChild(card);
+    }catch(err){
+      message('general-message','تعذر إضافة الخدمة: '+err.message,'error');
+    }finally{btn.disabled=false;}
   });
-}
 
-$('add-service-form').addEventListener('submit', async event => {
-  event.preventDefault();
+  async function loadBookings(){
+    const list=$('bookings-list');
+    list.textContent='جاري تحميل الحجوزات...';
+    clearMessage('bookings-message');
+    try{
+      const {data,error}=await db.from('Bookings')
+        .select('id,customer_name,customer_phone,service_date,service_location,service_details,status,created_at')
+        .order('created_at',{ascending:false});
+      if(error)throw error;
+      list.textContent='';
+      if(!data||!data.length){list.textContent='لا توجد حجوزات حالياً.';return;}
 
-  const button = $('add-button');
-  const name = $('new-name').value.trim();
-  const description = $('new-description').value.trim();
-  const priceText = $('new-price').value.trim();
-  const is_available = $('new-available').checked;
+      data.forEach(b=>{
+        const card=document.createElement('article');
+        card.className='booking-card';
+        const st=['pending','confirmed','cancelled'].includes(b.status)?b.status:'pending';
+        card.innerHTML=`
+          <h3>طلب حجز رقم ${esc(b.id)}</h3>
+          <p><strong>اسم الزبون:</strong> ${esc(val(b.customer_name))}</p>
+          <p><strong>رقم الهاتف:</strong> ${esc(val(b.customer_phone))}</p>
+          <p><strong>التاريخ:</strong> ${esc(val(b.service_date))}</p>
+          <p><strong>الموقع:</strong> ${esc(val(b.service_location))}</p>
+          <p><strong>التفاصيل:</strong></p>
+          <div class="booking-details">${esc(val(b.service_details))}</div>
+          <p><strong>تاريخ وصول الطلب:</strong> ${esc(dateText(b.created_at))}</p>
+          <label>حالة الحجز</label>
+          <select class="booking-status">
+            <option value="pending" ${st==='pending'?'selected':''}>قيد الانتظار</option>
+            <option value="confirmed" ${st==='confirmed'?'selected':''}>تم التأكيد</option>
+            <option value="cancelled" ${st==='cancelled'?'selected':''}>ملغي</option>
+          </select>
+          <button class="gold save-booking" type="button">حفظ الحالة</button>
+          <div class="booking-message" aria-live="polite"></div>`;
+        const select=card.querySelector('.booking-status');
+        const btn=card.querySelector('.save-booking');
+        const note=card.querySelector('.booking-message');
 
-  if (!name) {
-    showMessage('general-message', 'اكتب اسم الخدمة.', 'error');
-    return;
+        btn.addEventListener('click',async()=>{
+          btn.disabled=true;
+          note.className='message info';note.textContent='جاري حفظ الحالة...';
+          try{
+            const {data,error}=await db.from('Bookings').update({status:select.value})
+              .eq('id',b.id).select('id,status');
+            if(error)throw error;
+            if(!data||!data.length)throw new Error('لم يتم تأكيد الحفظ. تحقق من صلاحيات الإدارة.');
+            note.className='message success';
+            note.textContent='تم حفظ الحالة: '+statusText(data[0].status);
+          }catch(err){
+            note.className='message error';
+            note.textContent='تعذر حفظ الحالة: '+err.message;
+          }finally{btn.disabled=false;}
+        });
+        list.appendChild(card);
+      });
+    }catch(err){
+      list.textContent='';
+      message('bookings-message','تعذر تحميل الحجوزات: '+err.message,'error');
+    }
   }
 
-  const price = priceText === '' ? null : Number(priceText);
-
-  if (price !== null && (!Number.isFinite(price) || price < 0)) {
-    showMessage('general-message', 'السعر غير صحيح.', 'error');
-    return;
-  }
-
-  button.disabled = true;
-
-  const { data, error } = await supabase
-    .from('services')
-    .insert([{ name, description, price, is_available }])
-    .select('id,name');
-
-  button.disabled = false;
-
-  if (error) {
-    showMessage('general-message',
-      'تعذر إضافة الخدمة: ' + error.message, 'error');
-    return;
-  }
-
-  if (!data || data.length === 0) {
-    showMessage('general-message',
-      'لم يصل تأكيد الإضافة. حدّث قائمة الخدمات للتحقق.', 'error');
-    return;
-  }
-
-  $('add-service-form').reset();
-  $('new-available').checked = true;
-
-  showMessage('general-message',
-    'تمت إضافة الخدمة بنجاح: ' + data[0].name, 'success');
-
-  await loadServices();
-});
-
-async function loadBookings() {
-  const list = $('bookings-list');
-  list.textContent = 'جاري تحميل الحجوزات...';
-  clearMessage('bookings-message');
-
-  const { data, error } = await supabase
-    .from('Bookings')
-    .select('id,customer_name,customer_phone,service_date,service_location,service_details,status,created_at')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    list.textContent = '';
-    showMessage('bookings-message',
-      'تعذر تحميل الحجوزات: ' + error.message, 'error');
-    return;
-  }
-
-  list.textContent = '';
-
-  if (!data || data.length === 0) {
-    list.textContent = 'لا توجد حجوزات حالياً.';
-    return;
-  }
-
-  data.forEach(booking => {
-    const card = document.createElement('article');
-    card.className = 'booking-card';
-
-    const currentStatus = [
-      'pending', 'confirmed', 'cancelled'
-    ].includes(booking.status) ? booking.status : 'pending';
-
-    card.innerHTML = `
-      <h3>طلب حجز رقم ${escapeHTML(booking.id)}</h3>
-      <p><strong>اسم الزبون:</strong> ${escapeHTML(safeText(booking.customer_name))}</p>
-      <p><strong>رقم الهاتف:</strong> ${escapeHTML(safeText(booking.customer_phone))}</p>
-      <p><strong>التاريخ المطلوب:</strong> ${escapeHTML(safeText(booking.service_date))}</p>
-      <p><strong>الموقع:</strong> ${escapeHTML(safeText(booking.service_location))}</p>
-      <p><strong>التفاصيل:</strong></p>
-      <div class="booking-details">${escapeHTML(safeText(booking.service_details))}</div>
-      <p><strong>تاريخ وصول الطلب:</strong> ${escapeHTML(formatDate(booking.created_at))}</p>
-
-      <label>حالة الحجز</label>
-      <select class="booking-status">
-        <option value="pending" ${currentStatus === 'pending' ? 'selected' : ''}>قيد الانتظار</option>
-        <option value="confirmed" ${currentStatus === 'confirmed' ? 'selected' : ''}>تم التأكيد</option>
-        <option value="cancelled" ${currentStatus === 'cancelled' ? 'selected' : ''}>ملغي</option>
-      </select>
-
-      <button class="gold save-booking">حفظ الحالة</button>
-      <div class="booking-message" aria-live="polite"></div>
-    `;
-
-    const select = card.querySelector('.booking-status');
-    const saveButton = card.querySelector('.save-booking');
-    const message = card.querySelector('.booking-message');
-
-    saveButton.addEventListener('click', async () => {
-      saveButton.disabled = true;
-      message.textContent = 'جاري حفظ الحالة...';
-      message.className = 'message info';
-
-      const { data: updated, error: updateError } = await supabase
-        .from('Bookings')
-        .update({ status: select.value })
-        .eq('id', booking.id)
-        .select('id,status');
-
-      saveButton.disabled = false;
-
-      if (updateError) {
-        message.textContent =
-          'تعذر حفظ الحالة: ' + updateError.message;
-        message.className = 'message error';
-        return;
-      }
-
-      if (!updated || updated.length === 0) {
-        message.textContent =
-          'لم يتم تأكيد الحفظ. تحقق من صلاحيات UPDATE وSELECT.';
-        message.className = 'message error';
-        return;
-      }
-
-      message.textContent =
-        'تم حفظ الحالة: ' + statusLabel(updated[0].status);
-      message.className = 'message success';
-    });
-
-    list.appendChild(card);
+  db.auth.onAuthStateChange((event,session)=>{
+    if(event==='SIGNED_OUT'||!session){
+      $('admin-panel').classList.add('hidden');
+      $('login-panel').classList.remove('hidden');
+    }
   });
+
+  checkSession();
 }
-
-supabase.auth.onAuthStateChange((event, session) => {
-  if (event === 'SIGNED_OUT' || !session) {
-    $('admin-panel').classList.add('hidden');
-    $('login-panel').classList.remove('hidden');
-  }
-});
-
-checkSession();
 </script>
-
 </body>
 </html>
