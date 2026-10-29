@@ -46,6 +46,7 @@ h2 {
   border-bottom:2px solid var(--gold);
   padding-bottom:7px;
 }
+h3 { overflow-wrap:anywhere; }
 input,textarea,select {
   display:block;
   width:100%;
@@ -55,6 +56,7 @@ input,textarea,select {
   border-radius:8px;
   font:inherit;
   background:white;
+  color:var(--navy);
 }
 textarea { min-height:75px; }
 button {
@@ -95,6 +97,7 @@ button:disabled { opacity:.6; cursor:wait; }
   padding:10px;
   border-radius:8px;
   margin:12px 0;
+  flex-wrap:wrap;
 }
 .service-status input {
   width:22px;
@@ -104,7 +107,10 @@ button:disabled { opacity:.6; cursor:wait; }
 }
 .status-available { color:var(--green); font-weight:bold; }
 .status-unavailable { color:var(--red); font-weight:bold; }
-.booking-details { white-space:pre-wrap; overflow-wrap:anywhere; }
+.booking-details {
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
 footer { text-align:center; color:#666; padding:15px; }
 label { font-weight:bold; }
 </style>
@@ -119,6 +125,7 @@ label { font-weight:bold; }
 <main>
   <section id="login-panel" class="panel">
     <h2>تسجيل دخول الإدارة</h2>
+
     <form id="login-form">
       <label for="email">البريد الإلكتروني</label>
       <input id="email" type="email" autocomplete="username" required>
@@ -130,6 +137,7 @@ label { font-weight:bold; }
         تسجيل الدخول
       </button>
     </form>
+
     <div id="login-message" aria-live="polite"></div>
   </section>
 
@@ -137,17 +145,26 @@ label { font-weight:bold; }
     <div class="panel">
       <div class="actions" style="justify-content:space-between">
         <h2 style="border:0">أهلاً بك بالإدارة</h2>
-        <button id="logout-button" class="logout">تسجيل الخروج</button>
+        <button id="logout-button" class="logout" type="button">
+          تسجيل الخروج
+        </button>
       </div>
+
       <div id="general-message" aria-live="polite"></div>
       <div id="account-info" class="message info"></div>
     </div>
 
     <section class="panel">
       <h2>إضافة خدمة جديدة</h2>
+
       <form id="add-service-form">
         <label for="new-name">اسم الخدمة</label>
         <input id="new-name" maxlength="150" required>
+
+        <label for="new-category">قسم الخدمة</label>
+        <select id="new-category" required>
+          <option value="">جاري تحميل الأقسام...</option>
+        </select>
 
         <label for="new-description">وصف الخدمة</label>
         <textarea id="new-description"></textarea>
@@ -175,8 +192,8 @@ label { font-weight:bold; }
       </div>
 
       <p class="small">
-        غيّر الإتاحة واحفظها. الخدمة غير المتاحة لا تظهر للزبائن
-        إذا كان الموقع يعرض الخدمات المتاحة فقط.
+        يمكنك تعديل اسم الخدمة ووصفها وسعرها وقسمها.
+        الخدمة غير المتاحة لا تظهر للزبائن.
       </p>
 
       <div id="services-message" aria-live="polite"></div>
@@ -257,6 +274,8 @@ function startApp() {
 
   const $ = id => document.getElementById(id);
 
+  let categories = [];
+
   function message(id, text, type = 'info') {
     const el = $(id);
     el.className = 'message ' + type;
@@ -298,6 +317,36 @@ function startApp() {
       confirmed:'تم التأكيد',
       cancelled:'ملغي'
     })[status] || val(status);
+  }
+
+  function categoryName(id) {
+    const category = categories.find(
+      c => String(c.id) === String(id)
+    );
+
+    return category ? category.name : 'غير محدد';
+  }
+
+  async function loadCategories() {
+    const { data, error } = await db
+      .from('categories')
+      .select('id,name')
+      .order('id');
+
+    if (error) throw error;
+
+    categories = data || [];
+
+    if (!categories.length) {
+      throw new Error('جدول الأقسام لا يحتوي على أقسام.');
+    }
+
+    const options = categories.map(c =>
+      `<option value="${esc(c.id)}">${esc(c.name)}</option>`
+    ).join('');
+
+    $('new-category').innerHTML =
+      '<option value="">اختر قسم الخدمة</option>' + options;
   }
 
   async function showAccountInfo() {
@@ -408,21 +457,39 @@ function startApp() {
     $('admin-panel').classList.add('hidden');
     $('login-panel').classList.remove('hidden');
 
-    message(
-      'login-message',
-      'تم تسجيل الخروج.',
-      'success'
-    );
+    message('login-message', 'تم تسجيل الخروج.', 'success');
   });
 
   async function loadAll() {
+    try {
+      await loadCategories();
+    } catch (error) {
+      message(
+        'services-message',
+        'تعذر تحميل الأقسام: ' + error.message,
+        'error'
+      );
+    }
+
     await Promise.all([
       loadServices(),
       loadBookings()
     ]);
   }
 
-  $('refresh-services').addEventListener('click', loadServices);
+  $('refresh-services').addEventListener('click', async () => {
+    try {
+      await loadCategories();
+      await loadServices();
+    } catch (error) {
+      message(
+        'services-message',
+        'تعذر تحديث الأقسام: ' + error.message,
+        'error'
+      );
+    }
+  });
+
   $('refresh-bookings').addEventListener('click', loadBookings);
 
   async function loadServices() {
@@ -433,7 +500,7 @@ function startApp() {
     try {
       const { data, error } = await db
         .from('services')
-        .select('id,name,description,price,is_available')
+        .select('id,name,description,price,is_available,category_id')
         .order('id');
 
       if (error) throw error;
@@ -451,11 +518,21 @@ function startApp() {
 
         const available = s.is_available === true;
 
+        const categoryOptions = categories.map(c =>
+          `<option value="${esc(c.id)}" ${
+            String(c.id) === String(s.category_id) ? 'selected' : ''
+          }>${esc(c.name)}</option>`
+        ).join('');
+
         card.innerHTML = `
           <h3>${esc(s.name)}</h3>
 
           <div class="small">
             رقم الخدمة: ${esc(s.id)}
+          </div>
+
+          <div class="small">
+            القسم الحالي: ${esc(categoryName(s.category_id))}
           </div>
 
           <div class="service-status">
@@ -484,23 +561,21 @@ function startApp() {
           <h4>تعديل بيانات الخدمة</h4>
 
           <label>اسم الخدمة</label>
-          <input
-            class="edit-name"
-            maxlength="150"
-            value="${esc(s.name)}"
-          >
+          <input class="edit-name" maxlength="150"
+            value="${esc(s.name)}">
+
+          <label>قسم الخدمة</label>
+          <select class="edit-category" required>
+            <option value="">اختر قسم الخدمة</option>
+            ${categoryOptions}
+          </select>
 
           <label>الوصف</label>
           <textarea class="edit-description">${esc(s.description || '')}</textarea>
 
-          <label>السعر</label>
-          <input
-            class="edit-price"
-            type="number"
-            min="0"
-            step="0.01"
-            value="${s.price == null ? '' : esc(s.price)}"
-          >
+          <label>السعر (اتركه فارغاً إذا لم يتحدد)</label>
+          <input class="edit-price" type="number" min="0" step="0.01"
+            value="${s.price == null ? '' : esc(s.price)}">
 
           <button type="button" class="primary save-edit">
             حفظ التعديلات
@@ -515,21 +590,16 @@ function startApp() {
         const saveAvailButton = card.querySelector('.save-avail');
 
         check.addEventListener('change', () => {
-          availLabel.textContent = check.checked
-            ? 'متاحة'
-            : 'غير متاحة';
+          availLabel.textContent = check.checked ? 'متاحة' : 'غير متاحة';
 
           availLabel.className = 'avail-label ' +
-            (check.checked
-              ? 'status-available'
-              : 'status-unavailable');
+            (check.checked ? 'status-available' : 'status-unavailable');
 
           note.className = 'message info';
-          note.textContent =
-            'اضغط «حفظ الإتاحة» لتثبيت التغيير.';
+          note.textContent = 'اضغط «حفظ الإتاحة» لتثبيت التغيير.';
         });
 
-        // حفظ الإتاحة باستخدام دالة Supabase الآمنة.
+        // حفظ الإتاحة باستخدام دالة Supabase الموجودة.
         saveAvailButton.addEventListener('click', async () => {
           const requestedValue = check.checked;
 
@@ -546,9 +616,7 @@ function startApp() {
             if (sessionError) throw sessionError;
 
             if (!sessionData.session) {
-              throw new Error(
-                'انتهت جلسة الدخول. سجّل الدخول من جديد.'
-              );
+              throw new Error('انتهت جلسة الدخول. سجّل الدخول من جديد.');
             }
 
             const { data, error } = await db.rpc(
@@ -562,33 +630,22 @@ function startApp() {
             if (error) throw error;
 
             if (!data || data.error) {
-              throw new Error(
-                data?.error || 'لم يتم تأكيد تحديث الإتاحة.'
-              );
+              throw new Error(data?.error || 'لم يتم تأكيد تحديث الإتاحة.');
             }
 
             if (String(data.id) !== String(s.id)) {
-              throw new Error(
-                'لم يتم تأكيد تحديث الخدمة المطلوبة.'
-              );
+              throw new Error('لم يتم تأكيد تحديث الخدمة المطلوبة.');
             }
 
             if (data.is_available !== requestedValue) {
-              throw new Error(
-                'القيمة المحفوظة لا تطابق القيمة المطلوبة.'
-              );
+              throw new Error('القيمة المحفوظة لا تطابق القيمة المطلوبة.');
             }
 
             s.is_available = requestedValue;
 
-            availLabel.textContent = requestedValue
-              ? 'متاحة'
-              : 'غير متاحة';
-
+            availLabel.textContent = requestedValue ? 'متاحة' : 'غير متاحة';
             availLabel.className = 'avail-label ' +
-              (requestedValue
-                ? 'status-available'
-                : 'status-unavailable');
+              (requestedValue ? 'status-available' : 'status-unavailable');
 
             note.className = 'message success';
             note.textContent = requestedValue
@@ -597,44 +654,31 @@ function startApp() {
 
           } catch (err) {
             note.className = 'message error';
-            note.textContent =
-              'تعذر حفظ الإتاحة:\n' +
+            note.textContent = 'تعذر حفظ الإتاحة:\n' +
               (err.message || 'خطأ غير معروف');
 
-            // إعادة عرض الحالة السابقة المعروفة عند فشل الحفظ.
             check.checked = s.is_available === true;
-
-            availLabel.textContent = check.checked
-              ? 'متاحة'
-              : 'غير متاحة';
-
+            availLabel.textContent = check.checked ? 'متاحة' : 'غير متاحة';
             availLabel.className = 'avail-label ' +
-              (check.checked
-                ? 'status-available'
-                : 'status-unavailable');
+              (check.checked ? 'status-available' : 'status-unavailable');
           } finally {
             saveAvailButton.disabled = false;
             check.disabled = false;
           }
         });
 
-        // تعديل اسم الخدمة ووصفها وسعرها.
+        // حفظ الاسم والوصف والسعر والقسم.
         card.querySelector('.save-edit').addEventListener(
           'click',
           async e => {
             const btn = e.currentTarget;
 
-            const name = card
-              .querySelector('.edit-name')
-              .value.trim();
-
-            const description = card
-              .querySelector('.edit-description')
-              .value.trim();
-
-            const p = card
-              .querySelector('.edit-price')
-              .value.trim();
+            const name = card.querySelector('.edit-name').value.trim();
+            const description =
+              card.querySelector('.edit-description').value.trim();
+            const categoryValue =
+              card.querySelector('.edit-category').value;
+            const p = card.querySelector('.edit-price').value.trim();
 
             const price = p === '' ? null : Number(p);
 
@@ -644,21 +688,32 @@ function startApp() {
               return;
             }
 
-            if (
-              price !== null &&
-              (!Number.isFinite(price) || price < 0)
-            ) {
+            if (!categoryValue) {
+              note.className = 'message error';
+              note.textContent = 'اختر القسم الذي تتبعه الخدمة.';
+              return;
+            }
+
+            if (price !== null &&
+                (!Number.isFinite(price) || price < 0)) {
               note.className = 'message error';
               note.textContent = 'السعر غير صحيح.';
               return;
             }
 
             btn.disabled = true;
+            note.className = 'message info';
+            note.textContent = 'جاري حفظ التعديلات...';
 
             try {
               const { data, error } = await db
                 .from('services')
-                .update({ name, description, price })
+                .update({
+                  name,
+                  description,
+                  price,
+                  category_id: Number(categoryValue)
+                })
                 .eq('id', s.id)
                 .select('id');
 
@@ -676,8 +731,7 @@ function startApp() {
               await loadServices();
             } catch (err) {
               note.className = 'message error';
-              note.textContent =
-                'تعذر حفظ التعديلات: ' + err.message;
+              note.textContent = 'تعذر حفظ التعديلات: ' + err.message;
             } finally {
               btn.disabled = false;
             }
@@ -697,13 +751,14 @@ function startApp() {
     }
   }
 
-  // إضافة خدمة جديدة.
+  // إضافة خدمة جديدة مع اختيار قسمها.
   $('add-service-form').addEventListener('submit', async e => {
     e.preventDefault();
 
     const btn = $('add-button');
     const name = $('new-name').value.trim();
     const description = $('new-description').value.trim();
+    const categoryValue = $('new-category').value;
     const p = $('new-price').value.trim();
     const price = p === '' ? null : Number(p);
     const is_available = $('new-available').checked;
@@ -713,10 +768,13 @@ function startApp() {
       return;
     }
 
-    if (
-      price !== null &&
-      (!Number.isFinite(price) || price < 0)
-    ) {
+    if (!categoryValue) {
+      message('general-message', 'اختر قسم الخدمة.', 'error');
+      return;
+    }
+
+    if (price !== null &&
+        (!Number.isFinite(price) || price < 0)) {
       message('general-message', 'السعر غير صحيح.', 'error');
       return;
     }
@@ -730,7 +788,8 @@ function startApp() {
           name,
           description,
           price,
-          is_available
+          is_available,
+          category_id: Number(categoryValue)
         }])
         .select('id,name');
 
@@ -742,6 +801,7 @@ function startApp() {
 
       $('add-service-form').reset();
       $('new-available').checked = true;
+      $('new-category').value = '';
 
       message(
         'general-message',
@@ -761,7 +821,7 @@ function startApp() {
     }
   });
 
-  // عرض طلبات الحجوزات.
+  // عرض طلبات الحجوزات وتعديل حالتها.
   async function loadBookings() {
     const list = $('bookings-list');
     list.textContent = 'جاري تحميل الحجوزات...';
@@ -798,31 +858,13 @@ function startApp() {
         card.innerHTML = `
           <h3>طلب حجز رقم ${esc(b.id)}</h3>
 
-          <p>
-            <strong>اسم الزبون:</strong>
-            ${esc(val(b.customer_name))}
-          </p>
-
-          <p>
-            <strong>رقم الهاتف:</strong>
-            ${esc(val(b.customer_phone))}
-          </p>
-
-          <p>
-            <strong>التاريخ:</strong>
-            ${esc(val(b.service_date))}
-          </p>
-
-          <p>
-            <strong>الموقع:</strong>
-            ${esc(val(b.service_location))}
-          </p>
-
+          <p><strong>اسم الزبون:</strong> ${esc(val(b.customer_name))}</p>
+          <p><strong>رقم الهاتف:</strong> ${esc(val(b.customer_phone))}</p>
+          <p><strong>التاريخ:</strong> ${esc(val(b.service_date))}</p>
+          <p><strong>الموقع:</strong> ${esc(val(b.service_location))}</p>
           <p><strong>التفاصيل:</strong></p>
 
-          <div class="booking-details">
-            ${esc(val(b.service_details))}
-          </div>
+          <div class="booking-details">${esc(val(b.service_details))}</div>
 
           <p>
             <strong>تاريخ وصول الطلب:</strong>
@@ -830,19 +872,16 @@ function startApp() {
           </p>
 
           <label>حالة الحجز</label>
-
           <select class="booking-status">
-            <option value="pending" ${
-              st === 'pending' ? 'selected' : ''
-            }>قيد الانتظار</option>
-
-            <option value="confirmed" ${
-              st === 'confirmed' ? 'selected' : ''
-            }>تم التأكيد</option>
-
-            <option value="cancelled" ${
-              st === 'cancelled' ? 'selected' : ''
-            }>ملغي</option>
+            <option value="pending" ${st === 'pending' ? 'selected' : ''}>
+              قيد الانتظار
+            </option>
+            <option value="confirmed" ${st === 'confirmed' ? 'selected' : ''}>
+              تم التأكيد
+            </option>
+            <option value="cancelled" ${st === 'cancelled' ? 'selected' : ''}>
+              ملغي
+            </option>
           </select>
 
           <button class="gold save-booking" type="button">
@@ -882,8 +921,7 @@ function startApp() {
 
           } catch (err) {
             note.className = 'message error';
-            note.textContent =
-              'تعذر حفظ الحالة: ' + err.message;
+            note.textContent = 'تعذر حفظ الحالة: ' + err.message;
           } finally {
             btn.disabled = false;
           }
