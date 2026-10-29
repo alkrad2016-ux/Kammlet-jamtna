@@ -2,530 +2,631 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#14213d">
-  <title>كملت جمعتنا</title>
-  <style>
-    :root{--navy:#14213d;--gold:#d4af37;--cream:#f7f5f0;--white:#fff;--muted:#6b7280;--line:#e7e2d8;--green:#16834a;--red:#b42318}
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--cream);color:var(--navy);font-family:Tahoma,Arial,sans-serif;line-height:1.7}
-    header{background:var(--navy);color:#fff;text-align:center;padding:27px 16px 24px;border-bottom:4px solid var(--gold)}
-    header h1{margin:0;font-size:clamp(25px,6vw,35px);letter-spacing:.2px}
-    header p{margin:7px 0 0;color:#f0df9c;font-size:14px}
-    main{max-width:700px;margin:0 auto;padding:18px 14px 40px}
-    .intro{text-align:center;margin:7px 0 20px}
-    .intro h2{margin:0 0 5px;font-size:22px}
-    .intro p{margin:0;color:var(--muted);font-size:14px}
-    .section-title{font-size:19px;margin:22px 0 12px}
-    .service-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-    .service-card{background:var(--white);border:1px solid var(--line);border-radius:15px;padding:17px 12px;text-align:center;box-shadow:0 3px 12px #14213d0a;cursor:pointer;transition:transform .15s,border-color .15s;min-height:118px;color:var(--navy)}
-    .service-card:active{transform:scale(.98)}
-    .service-card:hover{border-color:var(--gold)}
-    .service-icon{font-size:29px;display:block;margin-bottom:5px}
-    .service-card strong{display:block;font-size:15px}
-    .service-card small{display:block;color:var(--muted);font-size:12px;margin-top:4px}
-    .db-services{margin-top:16px;background:#fff;border:1px solid var(--line);border-radius:15px;padding:15px}
-    .db-services h3{margin:0 0 10px;font-size:17px}
-    .service-list{display:grid;gap:9px}
-    .db-service{display:flex;align-items:flex-start;gap:10px;padding:11px;border:1px solid var(--line);border-radius:11px;background:#fffdf8}
-    .db-service .details{flex:1;min-width:0}
-    .db-service strong{display:block}
-    .db-service p{margin:3px 0 0;color:var(--muted);font-size:13px;overflow-wrap:anywhere}
-    .db-service .price{color:#806313;font-weight:bold;margin-top:5px}
-    button{font-family:inherit;cursor:pointer}
-    .small-btn{border:0;border-radius:9px;background:var(--navy);color:#fff;padding:8px 11px;font-size:13px;white-space:nowrap}
-    .small-btn:disabled{opacity:.55;cursor:not-allowed}
-    .cart-box,.booking-box{margin-top:19px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:17px;box-shadow:0 4px 16px #14213d08}
-    .cart-box h2,.booking-box h2{margin:0 0 9px;font-size:20px}
-    .cart-count{display:inline-block;background:#f5ebc6;color:#59450b;border-radius:20px;padding:2px 10px;font-size:12px;margin-right:5px}
-    .empty-cart{color:var(--muted);font-size:14px;margin:5px 0}
-    .cart-list{display:grid;gap:8px;margin:10px 0}
-    .cart-item{display:flex;align-items:center;gap:8px;border-bottom:1px solid #eee;padding:6px 0}
-    .cart-item span{flex:1;font-size:14px;overflow-wrap:anywhere}
-    .remove-btn{border:0;background:#fae8e7;color:var(--red);border-radius:8px;padding:5px 9px;font-size:12px}
-    .primary-btn{width:100%;border:0;background:var(--gold);color:var(--navy);font-weight:bold;border-radius:11px;padding:13px 15px;font-size:16px;margin-top:10px}
-    .primary-btn:disabled{opacity:.55;cursor:not-allowed}
-    .form-grid{display:grid;gap:12px}
-    label{display:block;font-size:14px;font-weight:bold;margin-bottom:5px}
-    input,textarea{width:100%;border:1px solid #d9d5cc;border-radius:10px;background:#fff;padding:12px;font:inherit;font-size:15px;color:var(--navy);outline:none}
-    input:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px #d4af3720}
-    textarea{min-height:100px;resize:vertical}
-    #selected-services{background:#f8f6ef;min-height:76px}
-    .note{font-size:12px;color:var(--muted);margin:9px 0 0}
-    .status-message{display:none;margin-top:12px;padding:11px 12px;border-radius:10px;font-size:14px;overflow-wrap:anywhere}
-    .status-message.show{display:block}
-    .status-message.success{background:#e8f6ed;color:#126637}
-    .status-message.error{background:#fff0ef;color:#a1221a}
-    .status-message.info{background:#eef3fb;color:#243b63}
-    .modal-backdrop{position:fixed;inset:0;background:#07101dcc;display:none;align-items:center;justify-content:center;padding:18px;z-index:10}
-    .modal-backdrop.show{display:flex}
-    .modal{background:#fff;border-radius:17px;padding:20px;width:100%;max-width:430px;max-height:85vh;overflow:auto;border-top:4px solid var(--gold)}
-    .modal h2{margin:0 0 8px}
-    .modal p{color:var(--muted);margin:0 0 15px;font-size:14px;white-space:pre-line}
-    .modal-actions{display:flex;gap:9px}
-    .modal-actions button{flex:1;border:0;border-radius:10px;padding:11px;font-size:14px}
-    .modal-add{background:var(--gold);color:var(--navy);font-weight:bold}
-    .modal-close{background:#eee;color:var(--navy)}
-    footer{text-align:center;color:var(--muted);font-size:12px;padding:18px 10px 0}
-    @media(max-width:380px){main{padding-left:10px;padding-right:10px}.service-card{padding:14px 8px}.db-service{flex-wrap:wrap}.small-btn{width:100%}}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#14213d">
+<title>كملت جمعتنا</title>
+
+<style>
+:root{
+  --navy:#14213d;
+  --gold:#d4af37;
+  --cream:#f7f5f0;
+  --white:#fff;
+  --muted:#6b7280;
+  --line:#e7e2d8;
+  --green:#16834a;
+  --red:#b42318;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--cream);color:var(--navy);
+  font-family:Tahoma,Arial,sans-serif;line-height:1.7
+}
+header{
+  background:var(--navy);color:#fff;text-align:center;
+  padding:27px 16px 24px;border-bottom:4px solid var(--gold)
+}
+header h1{margin:0;font-size:clamp(25px,6vw,35px)}
+header p{margin:7px 0 0;color:#f0df9c;font-size:14px}
+main{max-width:700px;margin:0 auto;padding:18px 14px 40px}
+.intro{text-align:center;margin:7px 0 20px}
+.intro h2{margin:0 0 5px;font-size:22px}
+.intro p{margin:0;color:var(--muted);font-size:14px}
+.section-title{font-size:19px;margin:22px 0 12px}
+.service-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px
+}
+.service-card{
+  background:var(--white);border:1px solid var(--line);
+  border-radius:15px;padding:17px 12px;text-align:center;
+  box-shadow:0 3px 12px #14213d0a;cursor:pointer;
+  transition:transform .15s,border-color .15s;min-height:118px;
+  color:var(--navy);font-family:inherit
+}
+.service-card:active{transform:scale(.98)}
+.service-card:hover,.service-card.active{
+  border-color:var(--gold);box-shadow:0 0 0 2px #d4af3725
+}
+.service-icon{font-size:29px;display:block;margin-bottom:5px}
+.service-card strong{display:block;font-size:15px}
+.service-card small{
+  display:block;color:var(--muted);font-size:12px;margin-top:4px
+}
+.db-services{
+  margin-top:16px;background:#fff;border:1px solid var(--line);
+  border-radius:15px;padding:15px
+}
+.db-services h3{margin:0 0 10px;font-size:17px}
+.service-list{display:grid;gap:9px}
+.db-service{
+  display:flex;align-items:flex-start;gap:10px;padding:11px;
+  border:1px solid var(--line);border-radius:11px;background:#fffdf8
+}
+.db-service .details{flex:1;min-width:0}
+.db-service strong{display:block}
+.db-service p{
+  margin:3px 0 0;color:var(--muted);font-size:13px;overflow-wrap:anywhere
+}
+.db-service .price{color:#806313;font-weight:bold;margin-top:5px}
+button{font-family:inherit;cursor:pointer}
+.small-btn{
+  border:0;border-radius:9px;background:var(--navy);color:#fff;
+  padding:8px 11px;font-size:13px;white-space:nowrap
+}
+.small-btn:disabled{opacity:.55;cursor:not-allowed}
+.cart-box,.booking-box{
+  margin-top:19px;background:#fff;border:1px solid var(--line);
+  border-radius:16px;padding:17px;box-shadow:0 4px 16px #14213d08
+}
+.cart-box h2,.booking-box h2{margin:0 0 9px;font-size:20px}
+.cart-count{
+  display:inline-block;background:#f5ebc6;color:#59450b;
+  border-radius:20px;padding:2px 10px;font-size:12px;margin-right:5px
+}
+.empty-cart{color:var(--muted);font-size:14px;margin:5px 0}
+.cart-list{display:grid;gap:8px;margin:10px 0}
+.cart-item{
+  display:flex;align-items:center;gap:8px;
+  border-bottom:1px solid #eee;padding:6px 0
+}
+.cart-item span{flex:1;font-size:14px;overflow-wrap:anywhere}
+.remove-btn{
+  border:0;background:#fae8e7;color:var(--red);
+  border-radius:8px;padding:5px 9px;font-size:12px
+}
+.primary-btn{
+  width:100%;border:0;background:var(--gold);color:var(--navy);
+  font-weight:bold;border-radius:11px;padding:13px 15px;
+  font-size:16px;margin-top:10px
+}
+.primary-btn:disabled{opacity:.55;cursor:not-allowed}
+.form-grid{display:grid;gap:12px}
+label{display:block;font-size:14px;font-weight:bold;margin-bottom:5px}
+input,textarea{
+  width:100%;border:1px solid #d9d5cc;border-radius:10px;
+  background:#fff;padding:12px;font:inherit;font-size:15px;
+  color:var(--navy);outline:none
+}
+input:focus,textarea:focus{
+  border-color:var(--gold);box-shadow:0 0 0 3px #d4af3720
+}
+textarea{min-height:100px;resize:vertical}
+#selected-services{background:#f8f6ef;min-height:76px}
+.note{font-size:12px;color:var(--muted);margin:9px 0 0}
+.status-message{
+  display:none;margin-top:12px;padding:11px 12px;
+  border-radius:10px;font-size:14px;overflow-wrap:anywhere
+}
+.status-message.show{display:block}
+.status-message.success{background:#e8f6ed;color:#126637}
+.status-message.error{background:#fff0ef;color:#a1221a}
+.status-message.info{background:#eef3fb;color:#243b63}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:18px 10px 0}
+@media(max-width:380px){
+  main{padding-left:10px;padding-right:10px}
+  .service-card{padding:14px 8px}
+  .db-service{flex-wrap:wrap}
+  .small-btn{width:100%}
+}
+</style>
 </head>
+
 <body>
-  <header>
-    <h1>كملت جمعتنا 🎉</h1>
-    <p>كل مناسباتك بمكان واحد</p>
-  </header>
+<header>
+  <h1>كملت جمعتنا 🎉</h1>
+  <p>كل مناسباتك بمكان واحد</p>
+</header>
 
-  <main>
-    <section class="intro">
-      <h2>خلّي مناسبتك علينا</h2>
-      <p>اختار الخدمات اللي بتحتاجها، واجمعها بسلة واحدة، ونحن منتواصل معك لتأكيد التفاصيل.</p>
-    </section>
+<main>
+  <section class="intro">
+    <h2>خلّي مناسبتك علينا</h2>
+    <p>اختار الخدمات اللي بتحتاجها، واجمعها بسلة واحدة، ونحن منتواصل معك لتأكيد التفاصيل.</p>
+  </section>
 
-    <h2 class="section-title">خدماتنا</h2>
-    <section class="service-grid" id="service-grid" aria-label="أقسام الخدمات">
-      <button class="service-card" type="button" onclick="showService('أفراح وأعراس')"><span class="service-icon">💍</span><strong>أفراح وأعراس</strong><small>كل تفاصيل فرحتك</small></button>
-      <button class="service-card" type="button" onclick="showService('صالات ومزارع')"><span class="service-icon">🏡</span><strong>صالات ومزارع</strong><small>أماكن لمناسبتك</small></button>
-      <button class="service-card" type="button" onclick="showService('طعام وضيافة')"><span class="service-icon">🍽️</span><strong>طعام وضيافة</strong><small>ضيافة بتليق بضيوفك</small></button>
-      <button class="service-card" type="button" onclick="showService('مطربين وفرق')"><span class="service-icon">🎤</span><strong>مطربين وفرق</strong><small>أجواء وفرح</small></button>
-      <button class="service-card" type="button" onclick="showService('تصوير ومصورون')"><span class="service-icon">📸</span><strong>تصوير ومصورون</strong><small>ذكريات بتبقى</small></button>
-      <button class="service-card" type="button" onclick="showService('ديكور وورد')"><span class="service-icon">🌷</span><strong>ديكور وورد</strong><small>لمسات بتكمّل المناسبة</small></button>
-    </section>
+  <h2 class="section-title">خدماتنا</h2>
 
-    <section class="db-services" id="db-services-section">
-      <h3>الخدمات المتاحة حالياً ضمن أفراح وأعراس</h3>
-      <div id="db-services-list" class="service-list"><p class="empty-cart">عم نحمّل الخدمات المتاحة…</p></div>
-      <p class="note">الخدمات والأسعار والتوفر النهائي بتتأكد من الإدارة قبل تثبيت الحجز.</p>
-    </section>
+  <section class="service-grid" id="service-grid" aria-label="أقسام الخدمات">
+    <button class="service-card active" type="button" data-category="1">
+      <span class="service-icon">💍</span>
+      <strong>أفراح وأعراس</strong>
+      <small>كل تفاصيل فرحتك</small>
+    </button>
 
-    <section class="cart-box" id="cart-section">
-      <h2>🛒 سلة حجوزاتي <span class="cart-count" id="cart-count">عدد الخدمات: 0</span></h2>
-      <p class="empty-cart" id="empty-cart">لسا ما أضفت أي خدمة للسلة.</p>
-      <div class="cart-list" id="cart-list"></div>
-      <button type="button" class="primary-btn" onclick="goToBooking()">متابعة وإرسال طلب الحجز</button>
-    </section>
+    <button class="service-card" type="button" data-category="2">
+      <span class="service-icon">🏡</span>
+      <strong>صالات ومزارع</strong>
+      <small>أماكن لمناسبتك</small>
+    </button>
 
-    <section class="booking-box" id="booking-section">
-      <h2>بيانات طلب الحجز</h2>
-      <p class="note">إرسال الطلب لا يعني تثبيت الحجز النهائي؛ الإدارة رح تتواصل معك لتأكيد التوفر والتفاصيل.</p>
-      <form id="booking-form" onsubmit="return bookOnWhatsApp(event)">
-        <div class="form-grid">
-          <div><label for="customer-name">الاسم الكامل</label><input id="customer-name" name="customer-name" autocomplete="name" required maxlength="120" placeholder="اكتب اسمك الكامل"></div>
-          <div><label for="customer-phone">رقم الهاتف</label><input id="customer-phone" name="customer-phone" type="tel" autocomplete="tel" required maxlength="40" placeholder="رقم للتواصل معك"></div>
-          <div><label for="service-date">تاريخ المناسبة</label><input id="service-date" name="service-date" type="date" required></div>
-          <div><label for="service-location">المنطقة / مكان المناسبة</label><input id="service-location" name="service-location" required maxlength="200" placeholder="مثلاً: درعا البلد"></div>
-          <div><label for="selected-services">الخدمات المطلوبة</label><textarea id="selected-services" name="selected-services" readonly required placeholder="أضف خدمة واحدة على الأقل إلى السلة"></textarea></div>
-          <div><label for="service-details">تفاصيل إضافية (اختياري)</label><textarea id="service-details" name="service-details" maxlength="2000" placeholder="عدد الضيوف أو أي تفاصيل بتساعدنا نخدمك"></textarea></div>
-        </div>
-        <button id="submit-booking" class="primary-btn" type="submit">إرسال الطلب عبر واتساب</button>
-        <div id="form-status" class="status-message" role="status" aria-live="polite"></div>
-      </form>
-    </section>
+    <button class="service-card" type="button" data-category="3">
+      <span class="service-icon">🎤</span>
+      <strong>مطربين وفرق</strong>
+      <small>أجواء وفرح</small>
+    </button>
 
-    <footer>كملت جمعتنا — كل مناسباتك بمكان واحد</footer>
-  </main>
+    <button class="service-card" type="button" data-category="4">
+      <span class="service-icon">🍽️</span>
+      <strong>الطعام وضيافة</strong>
+      <small>ضيافة بتليق بضيوفك</small>
+    </button>
 
-  <div class="modal-backdrop" id="service-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" onclick="closeModalFromBackdrop(event)">
-    <div class="modal">
-      <h2 id="modal-title"></h2>
-      <p id="modal-description"></p>
-      <div class="modal-actions">
-        <button type="button" class="modal-add" id="modal-add-button" onclick="addModalServiceToCart()">أضف إلى السلة</button>
-        <button type="button" class="modal-close" onclick="closeServiceModal()">إغلاق</button>
-      </div>
+    <button class="service-card" type="button" data-category="5">
+      <span class="service-icon">🍰</span>
+      <strong>حلويات</strong>
+      <small>حلويات لمناسبتك</small>
+    </button>
+
+    <button class="service-card" type="button" data-category="6">
+      <span class="service-icon">🪑</span>
+      <strong>كراسي وطاولات</strong>
+      <small>تجهيزات الضيافة والمناسبات</small>
+    </button>
+  </section>
+
+  <section class="db-services" id="db-services-section">
+    <h3 id="db-services-title">💍 الخدمات المتاحة ضمن أفراح وأعراس</h3>
+    <div id="db-services-list" class="service-list">
+      <p class="empty-cart">عم نحمّل الخدمات المتاحة…</p>
     </div>
-  </div>
+    <p class="note">الأسعار والتوفر النهائي بتتأكد من الإدارة قبل تثبيت الحجز.</p>
+  </section>
 
-  <script>
-    const SUPABASE_URL = 'https://qkzdbbqkkxnrgcpcvjvp.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_LiOa9cR2KhHDaEvA2_205Q_XL2OSrfp';
-    const WHATSAPP_NUMBER = '963942340147';
+  <section class="cart-box" id="cart-section">
+    <h2>🛒 سلة حجوزاتي
+      <span class="cart-count" id="cart-count">عدد الخدمات: 0</span>
+    </h2>
+    <p class="empty-cart" id="empty-cart">لسا ما أضفت أي خدمة للسلة.</p>
+    <div class="cart-list" id="cart-list"></div>
+    <button type="button" class="primary-btn" id="continue-booking">
+      متابعة وإرسال طلب الحجز
+    </button>
+  </section>
 
-    const SERVICES_ENDPOINT =
-      `${SUPABASE_URL}/rest/v1/services?select=id,name,description,price,is_available&is_available=eq.true&order=id.asc`;
-    const BOOKINGS_ENDPOINT = `${SUPABASE_URL}/rest/v1/Bookings`;
+  <section class="booking-box" id="booking-section">
+    <h2>بيانات طلب الحجز</h2>
+    <p class="note">إرسال الطلب لا يعني تثبيت الحجز النهائي؛ الإدارة رح تتواصل معك لتأكيد التوفر والتفاصيل.</p>
 
-    const serviceDetails = {
-      'أفراح وأعراس': 'اختار الخدمات المناسبة لفرحتك من الخدمات المتاحة، أو أضف القسم للسلة حتى تتواصل معك الإدارة وتساعدك بالتفاصيل.',
-      'صالات ومزارع': 'صالات ومزارع مناسبة لمختلف المناسبات. أضف طلبك للسلة والإدارة بتتأكد من المكان والتاريخ.',
-      'طعام وضيافة': 'خدمات الطعام والضيافة وتجهيزات استقبال الضيوف حسب حاجتك.',
-      'مطربين وفرق': 'مطربين وفرق فنية لإضافة أجواء مميزة لمناسبتك، حسب التوفر والتاريخ.',
-      'تصوير ومصورون': 'تصوير فوتوغرافي وفيديو لتوثيق أجمل لحظات مناسبتك.',
-      'ديكور وورد': 'ديكور وتنسيق وورد ولمسات جمالية بتناسب مناسبتك.'
-    };
+    <form id="booking-form">
+      <div class="form-grid">
+        <div>
+          <label for="customer-name">الاسم الكامل</label>
+          <input id="customer-name" name="customer-name" autocomplete="name"
+                 required maxlength="120" placeholder="اكتب اسمك الكامل">
+        </div>
 
-    const serviceIcons = {
-      'أفراح وأعراس':'💍',
-      'صالات ومزارع':'🏡',
-      'طعام وضيافة':'🍽️',
-      'مطربين وفرق':'🎤',
-      'تصوير ومصورون':'📸',
-      'ديكور وورد':'🌷'
-    };
+        <div>
+          <label for="customer-phone">رقم الهاتف</label>
+          <input id="customer-phone" name="customer-phone" type="tel"
+                 autocomplete="tel" required maxlength="40" placeholder="رقم للتواصل معك">
+        </div>
 
-    let cart = [];
-    let dbServices = [];
-    let currentModalService = '';
-    let isSubmitting = false;
+        <div>
+          <label for="service-date">تاريخ المناسبة</label>
+          <input id="service-date" name="service-date" type="date" required>
+        </div>
 
-    function showStatus(message, type='info') {
-      const box = document.getElementById('form-status');
-      box.textContent = message;
-      box.className = `status-message show ${type}`;
-    }
+        <div>
+          <label for="service-location">المنطقة / مكان المناسبة</label>
+          <input id="service-location" name="service-location" required
+                 maxlength="200" placeholder="مثلاً: درعا البلد">
+        </div>
 
-    function hideStatus() {
-      const box = document.getElementById('form-status');
-      box.textContent = '';
-      box.className = 'status-message';
-    }
+        <div>
+          <label for="selected-services">الخدمات المطلوبة</label>
+          <textarea id="selected-services" name="selected-services" readonly required
+                    placeholder="أضف خدمة واحدة على الأقل إلى السلة"></textarea>
+        </div>
 
-    function serviceAlreadyInCart(name) {
-      return cart.some(item => item.name === name);
-    }
+        <div>
+          <label for="service-details">تفاصيل إضافية (اختياري)</label>
+          <textarea id="service-details" name="service-details" maxlength="2000"
+                    placeholder="عدد الضيوف أو أي تفاصيل بتساعدنا نخدمك"></textarea>
+        </div>
+      </div>
 
-    function addToCart(name, description='') {
-      if (serviceAlreadyInCart(name)) {
-        showStatus('هالخدمة موجودة بالسلة من قبل.', 'info');
-        return;
-      }
-      cart.push({name, description});
-      renderCart();
-      hideStatus();
-    }
+      <button id="submit-booking" class="primary-btn" type="submit">
+        إرسال الطلب عبر واتساب
+      </button>
+      <div id="form-status" class="status-message" role="status" aria-live="polite"></div>
+    </form>
+  </section>
 
-    function addDbServiceToCart(service) {
-      const name = `أفراح وأعراس — ${service.name}`;
-      if (serviceAlreadyInCart(name)) return;
+  <footer>كملت جمعتنا — كل مناسباتك بمكان واحد</footer>
+</main>
 
-      const descriptionParts = [];
-      if (service.description) descriptionParts.push(service.description);
-      if (service.price !== null && service.price !== undefined && String(service.price).trim() !== '') {
-        descriptionParts.push(`السعر المسجل: ${service.price}`);
-      }
+<script>
+const SUPABASE_URL = 'https://qkzdbbqkkxnrgcpcvjvp.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_LiOa9cR2KhHDaEvA2_205Q_XL2OSrfp';
+const WHATSAPP_NUMBER = '963942340147';
 
-      addToCart(name, descriptionParts.join(' — '));
+const SERVICES_ENDPOINT =
+  `${SUPABASE_URL}/rest/v1/services?select=id,name,description,price,is_available,category_id&is_available=eq.true&order=id.asc`;
 
-      const button = document.getElementById(`add-db-${service.id}`);
-      if (button) {
-        button.textContent = 'مضافة للسلة';
-        button.disabled = true;
-      }
-    }
+const BOOKINGS_ENDPOINT = `${SUPABASE_URL}/rest/v1/Bookings`;
 
-    function removeFromCart(index) {
-      const removed = cart[index];
+const categories = {
+  1: {name:'أفراح وأعراس', icon:'💍'},
+  2: {name:'صالات ومزارع', icon:'🏡'},
+  3: {name:'مطربين وفرق', icon:'🎤'},
+  4: {name:'الطعام وضيافة', icon:'🍽️'},
+  5: {name:'حلويات', icon:'🍰'},
+  6: {name:'كراسي وطاولات', icon:'🪑'}
+};
+
+let cart = [];
+let dbServices = [];
+let selectedCategoryId = 1;
+let isSubmitting = false;
+
+function showStatus(message, type='info') {
+  const box = document.getElementById('form-status');
+  box.textContent = message;
+  box.className = `status-message show ${type}`;
+}
+
+function hideStatus() {
+  const box = document.getElementById('form-status');
+  box.textContent = '';
+  box.className = 'status-message';
+}
+
+function serviceAlreadyInCart(id) {
+  return cart.some(item => String(item.id) === String(id));
+}
+
+function renderCart() {
+  const list = document.getElementById('cart-list');
+  const empty = document.getElementById('empty-cart');
+  const count = document.getElementById('cart-count');
+  const selected = document.getElementById('selected-services');
+
+  list.innerHTML = '';
+  count.textContent = `عدد الخدمات: ${cart.length}`;
+  empty.style.display = cart.length ? 'none' : 'block';
+
+  cart.forEach((item, index) => {
+    const row = document.createElement('div');
+    row.className = 'cart-item';
+
+    const name = document.createElement('span');
+    name.textContent = `${item.icon} ${item.category} — ${item.name}`;
+
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'remove-btn';
+    remove.textContent = 'حذف';
+    remove.setAttribute('aria-label', `حذف ${item.name} من السلة`);
+    remove.addEventListener('click', () => {
       cart.splice(index, 1);
       renderCart();
-
-      if (removed) {
-        const matching = dbServices.find(
-          service => `أفراح وأعراس — ${service.name}` === removed.name
-        );
-        if (matching) {
-          const button = document.getElementById(`add-db-${matching.id}`);
-          if (button) {
-            button.textContent = 'أضف للسلة';
-            button.disabled = false;
-          }
-        }
-
-        const modalButton = document.getElementById('modal-add-button');
-        if (currentModalService && modalButton) {
-          modalButton.textContent = serviceAlreadyInCart(currentModalService) ? 'مضافة للسلة' : 'أضف إلى السلة';
-          modalButton.disabled = serviceAlreadyInCart(currentModalService);
-        }
-      }
-    }
-
-    function renderCart() {
-      const list = document.getElementById('cart-list');
-      const empty = document.getElementById('empty-cart');
-      const count = document.getElementById('cart-count');
-      const selected = document.getElementById('selected-services');
-
-      list.innerHTML = '';
-      count.textContent = `عدد الخدمات: ${cart.length}`;
-      empty.style.display = cart.length ? 'none' : 'block';
-
-      cart.forEach((item, index) => {
-        const row = document.createElement('div');
-        row.className = 'cart-item';
-
-        const name = document.createElement('span');
-        name.textContent = `${serviceIcons[item.name] || '✓'} ${item.name}`;
-
-        const remove = document.createElement('button');
-        remove.type = 'button';
-        remove.className = 'remove-btn';
-        remove.textContent = 'حذف';
-        remove.setAttribute('aria-label', `حذف ${item.name} من السلة`);
-        remove.addEventListener('click', () => removeFromCart(index));
-
-        row.append(name, remove);
-        list.appendChild(row);
-      });
-
-      selected.value = cart.map((item, index) =>
-        `${index + 1}. ${item.name}${item.description ? ` — ${item.description}` : ''}`
-      ).join('\n');
-    }
-
-    function showService(title) {
-      currentModalService = title;
-      document.getElementById('modal-title').textContent =
-        `${serviceIcons[title] || '🎉'} ${title}`;
-      document.getElementById('modal-description').textContent =
-        serviceDetails[title] || 'أضف الخدمة للسلة، والإدارة بتتواصل معك لتأكيد التفاصيل.';
-
-      const button = document.getElementById('modal-add-button');
-      button.textContent = serviceAlreadyInCart(title) ? 'مضافة للسلة' : 'أضف إلى السلة';
-      button.disabled = serviceAlreadyInCart(title);
-
-      document.getElementById('service-modal').classList.add('show');
-    }
-
-    function addModalServiceToCart() {
-      if (!currentModalService) return;
-
-      addToCart(
-        currentModalService,
-        serviceDetails[currentModalService] || ''
-      );
-
-      document.getElementById('modal-add-button').textContent = 'مضافة للسلة';
-      document.getElementById('modal-add-button').disabled = true;
-      closeServiceModal();
-    }
-
-    function closeServiceModal() {
-      document.getElementById('service-modal').classList.remove('show');
-    }
-
-    function closeModalFromBackdrop(event) {
-      if (event.target.id === 'service-modal') closeServiceModal();
-    }
-
-    function goToBooking() {
-      if (!cart.length) {
-        showStatus('أضف خدمة واحدة على الأقل إلى السلة قبل إرسال الطلب.', 'error');
-        document.getElementById('cart-section').scrollIntoView({
-          behavior:'smooth',
-          block:'center'
-        });
-        return;
-      }
-
-      document.getElementById('booking-section').scrollIntoView({
-        behavior:'smooth',
-        block:'start'
-      });
-      document.getElementById('customer-name').focus({preventScroll:true});
-    }
-
-    async function loadServices() {
-      const container = document.getElementById('db-services-list');
-
-      try {
-        const response = await fetch(SERVICES_ENDPOINT, {
-          method: 'GET',
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`
-          }
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`HTTP ${response.status}: ${errorText}`);
-        }
-
-        const rows = await response.json();
-        dbServices = Array.isArray(rows) ? rows : [];
-        container.innerHTML = '';
-
-        if (!dbServices.length) {
-          const empty = document.createElement('p');
-          empty.className = 'empty-cart';
-          empty.textContent =
-            'ما في خدمات متاحة بهالقسم حالياً. فيك تضيف القسم للسلة لحتى تتواصل معك الإدارة.';
-          container.appendChild(empty);
-          return;
-        }
-
-        dbServices.forEach(service => {
-          const row = document.createElement('div');
-          row.className = 'db-service';
-
-          const details = document.createElement('div');
-          details.className = 'details';
-
-          const name = document.createElement('strong');
-          name.textContent = service.name || 'خدمة';
-          details.appendChild(name);
-
-          if (service.description) {
-            const description = document.createElement('p');
-            description.textContent = service.description;
-            details.appendChild(description);
-          }
-
-          if (service.price !== null && service.price !== undefined && String(service.price).trim() !== '') {
-            const price = document.createElement('p');
-            price.className = 'price';
-            price.textContent = `السعر: ${service.price}`;
-            details.appendChild(price);
-          } else {
-            const price = document.createElement('p');
-            price.className = 'price';
-            price.textContent = 'السعر يُحدَّد بعد تأكيد التفاصيل';
-            details.appendChild(price);
-          }
-
-          const button = document.createElement('button');
-          button.type = 'button';
-          button.className = 'small-btn';
-          button.id = `add-db-${service.id}`;
-
-          const itemName = `أفراح وأعراس — ${service.name}`;
-          button.textContent = serviceAlreadyInCart(itemName) ? 'مضافة للسلة' : 'أضف للسلة';
-          button.disabled = serviceAlreadyInCart(itemName);
-          button.addEventListener('click', () => addDbServiceToCart(service));
-
-          row.append(details, button);
-          container.appendChild(row);
-        });
-      } catch (error) {
-        container.innerHTML = '';
-
-        const message = document.createElement('p');
-        message.className = 'empty-cart';
-        message.textContent =
-          'ما قدرنا نحمّل الخدمات حالياً. جرّب تحدّث الصفحة، أو تواصل مع الإدارة.';
-        container.appendChild(message);
-
-        console.error('تعذر تحميل الخدمات:', error);
-      }
-    }
-
-    async function bookOnWhatsApp(event) {
-      event.preventDefault();
-
-      if (isSubmitting) return false;
+      renderServices();
       hideStatus();
+    });
 
-      if (!cart.length) {
-        showStatus('أضف خدمة واحدة على الأقل إلى السلة قبل إرسال الطلب.', 'error');
-        document.getElementById('cart-section').scrollIntoView({
-          behavior:'smooth',
-          block:'center'
-        });
-        return false;
-      }
+    row.append(name, remove);
+    list.appendChild(row);
+  });
 
-      const name = document.getElementById('customer-name').value.trim();
-      const customerPhone = document.getElementById('customer-phone').value.trim();
-      const date = document.getElementById('service-date').value;
-      const location = document.getElementById('service-location').value.trim();
-      const details = document.getElementById('service-details').value.trim();
+  selected.value = cart.map((item, index) => {
+    let line = `${index + 1}. ${item.category} — ${item.name}`;
+    if (item.description) line += ` — ${item.description}`;
+    if (item.price !== null && item.price !== undefined &&
+        String(item.price).trim() !== '') {
+      line += ` — السعر المسجل: ${item.price}`;
+    } else {
+      line += ' — السعر يُحدَّد بعد تأكيد التفاصيل';
+    }
+    return line;
+  }).join('\n');
+}
 
-      const servicesText = cart.map((item, index) =>
-        `${index + 1}. ${item.name}${item.description ? ` — ${item.description}` : ''}`
-      ).join('\n');
+function addDbServiceToCart(service) {
+  if (serviceAlreadyInCart(service.id)) {
+    showStatus('هالخدمة موجودة بالسلة من قبل.', 'info');
+    return;
+  }
 
-      if (!name || !customerPhone || !date || !location) {
-        showStatus('تأكد من تعبئة الاسم ورقم الهاتف والتاريخ والمنطقة.', 'error');
-        return false;
-      }
+  const categoryId = Number(service.category_id);
+  const category = categories[categoryId];
 
-      isSubmitting = true;
-      const submitButton = document.getElementById('submit-booking');
-      submitButton.disabled = true;
-      submitButton.textContent = 'عم نحفظ طلبك…';
-      showStatus('عم نحفظ طلبك بقاعدة البيانات. لحظة من فضلك…', 'info');
+  if (!category) {
+    showStatus('هالخدمة غير مربوطة بقسم صحيح في قاعدة البيانات.', 'error');
+    return;
+  }
 
-      const bookingRecord = {
-        customer_name: name,
-        customer_phone: customerPhone,
-        service_date: date,
-        service_location: location,
-        service_details: `الخدمات المطلوبة:\n${servicesText}${details ? `\nالتفاصيل الإضافية: ${details}` : ''}`,
-        status: 'pending'
-      };
+  cart.push({
+    id: service.id,
+    name: service.name || 'خدمة',
+    category: category.name,
+    icon: category.icon,
+    description: service.description || '',
+    price: service.price
+  });
 
-      try {
-        const response = await fetch(BOOKINGS_ENDPOINT, {
-          method: 'POST',
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
-          },
-          body: JSON.stringify(bookingRecord)
-        });
+  renderCart();
+  renderServices();
+  hideStatus();
+}
 
-        if (!response.ok) {
-          let errorMessage = '';
+function renderServices() {
+  const container = document.getElementById('db-services-list');
+  const title = document.getElementById('db-services-title');
+  const category = categories[selectedCategoryId];
 
-          try {
-            const errorBody = await response.json();
-            errorMessage =
-              errorBody.message ||
-              errorBody.details ||
-              errorBody.hint ||
-              errorBody.code ||
-              '';
-          } catch (_) {}
+  title.textContent = `${category.icon} الخدمات المتاحة ضمن ${category.name}`;
+  container.innerHTML = '';
 
-          console.error('Supabase booking error:', response.status, errorMessage);
+  const matchingServices = dbServices.filter(service =>
+    Number(service.category_id) === selectedCategoryId
+  );
 
-          throw new Error(
-            errorMessage
-              ? `تعذر حفظ الطلب: ${errorMessage}`
-              : `تعذر حفظ الطلب (رمز ${response.status}).`
-          );
-        }
+  if (!matchingServices.length) {
+    const empty = document.createElement('p');
+    empty.className = 'empty-cart';
+    empty.textContent =
+      `ما في خدمات متاحة ضمن قسم «${category.name}» حالياً. رح نضيف الخدمات لما نربطها بهالقسم في قاعدة البيانات.`;
+    container.appendChild(empty);
+    return;
+  }
 
-        showStatus(
-          'تم حفظ طلبك بنجاح. رح نفتح واتساب لتبعت الطلب للإدارة.',
-          'success'
-        );
+  matchingServices.forEach(service => {
+    const row = document.createElement('div');
+    row.className = 'db-service';
 
-        const whatsappMessage =
-          `مرحبا، بدي قدّم طلب حجز جديد من تطبيق كملت جمعتنا.\n\n` +
-          `الاسم: ${name}\n` +
-          `رقم الهاتف: ${customerPhone}\n` +
-          `تاريخ المناسبة: ${date}\n` +
-          `المنطقة: ${location}\n\n` +
-          `الخدمات المطلوبة:\n${servicesText}` +
-          `${details ? `\n\nتفاصيل إضافية: ${details}` : ''}\n\n` +
-          `بعرف إنو الطلب بحاجة لتأكيد التوفر والتفاصيل من الإدارة.`;
+    const details = document.createElement('div');
+    details.className = 'details';
 
-        const whatsappURL =
-          `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappMessage)}`;
+    const name = document.createElement('strong');
+    name.textContent = service.name || 'خدمة';
+    details.appendChild(name);
 
-        window.location.href = whatsappURL;
-
-      } catch (error) {
-        console.error('خطأ بإرسال طلب الحجز:', error);
-
-        showStatus(
-          `${error.message || 'صار خطأ غير متوقع'} ما فتحنا واتساب، لحتى ما يضيع طلبك. جرّب مرة تانية أو تواصل مع الإدارة.`,
-          'error'
-        );
-      } finally {
-        isSubmitting = false;
-        submitButton.disabled = false;
-        submitButton.textContent = 'إرسال الطلب عبر واتساب';
-      }
-
-      return false;
+    if (service.description) {
+      const description = document.createElement('p');
+      description.textContent = service.description;
+      details.appendChild(description);
     }
 
-    renderCart();
-    loadServices();
-  </script>
+    const price = document.createElement('p');
+    price.className = 'price';
+
+    if (service.price !== null && service.price !== undefined &&
+        String(service.price).trim() !== '') {
+      price.textContent = `السعر: ${service.price}`;
+    } else {
+      price.textContent = 'السعر يُحدَّد بعد تأكيد التفاصيل';
+    }
+    details.appendChild(price);
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'small-btn';
+    button.textContent = serviceAlreadyInCart(service.id)
+      ? 'مضافة للسلة'
+      : 'أضف للسلة';
+    button.disabled = serviceAlreadyInCart(service.id);
+    button.addEventListener('click', () => addDbServiceToCart(service));
+
+    row.append(details, button);
+    container.appendChild(row);
+  });
+}
+
+function selectCategory(categoryId) {
+  selectedCategoryId = categoryId;
+
+  document.querySelectorAll('.service-card').forEach(card => {
+    const active = Number(card.dataset.category) === categoryId;
+    card.classList.toggle('active', active);
+    card.setAttribute('aria-pressed', String(active));
+  });
+
+  renderServices();
+
+  document.getElementById('db-services-section').scrollIntoView({
+    behavior:'smooth',
+    block:'start'
+  });
+}
+
+document.querySelectorAll('.service-card').forEach(card => {
+  card.addEventListener('click', () => {
+    selectCategory(Number(card.dataset.category));
+  });
+});
+
+async function loadServices() {
+  const container = document.getElementById('db-services-list');
+
+  try {
+    const response = await fetch(SERVICES_ENDPOINT, {
+      method:'GET',
+      headers:{
+        'apikey':SUPABASE_KEY,
+        'Authorization':`Bearer ${SUPABASE_KEY}`
+      }
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+
+    const rows = await response.json();
+    dbServices = Array.isArray(rows) ? rows : [];
+    renderServices();
+  } catch (error) {
+    container.innerHTML = '';
+    const message = document.createElement('p');
+    message.className = 'empty-cart';
+    message.textContent =
+      'ما قدرنا نحمّل الخدمات حالياً. جرّب تحدّث الصفحة، أو تواصل مع الإدارة.';
+    container.appendChild(message);
+    console.error('تعذر تحميل الخدمات:', error);
+  }
+}
+
+function goToBooking() {
+  if (!cart.length) {
+    showStatus('أضف خدمة واحدة على الأقل إلى السلة قبل إرسال الطلب.', 'error');
+    document.getElementById('cart-section').scrollIntoView({
+      behavior:'smooth', block:'center'
+    });
+    return;
+  }
+
+  document.getElementById('booking-section').scrollIntoView({
+    behavior:'smooth', block:'start'
+  });
+  document.getElementById('customer-name').focus({preventScroll:true});
+}
+
+document.getElementById('continue-booking').addEventListener('click', goToBooking);
+
+async function bookOnWhatsApp(event) {
+  event.preventDefault();
+
+  if (isSubmitting) return false;
+  hideStatus();
+
+  if (!cart.length) {
+    showStatus('أضف خدمة واحدة على الأقل إلى السلة قبل إرسال الطلب.', 'error');
+    document.getElementById('cart-section').scrollIntoView({
+      behavior:'smooth', block:'center'
+    });
+    return false;
+  }
+
+  const name = document.getElementById('customer-name').value.trim();
+  const customerPhone = document.getElementById('customer-phone').value.trim();
+  const date = document.getElementById('service-date').value;
+  const location = document.getElementById('service-location').value.trim();
+  const extraDetails = document.getElementById('service-details').value.trim();
+
+  const servicesText = cart.map((item, index) => {
+    let line = `${index + 1}. ${item.category} — ${item.name}`;
+    if (item.description) line += ` — ${item.description}`;
+    if (item.price !== null && item.price !== undefined &&
+        String(item.price).trim() !== '') {
+      line += ` — السعر المسجل: ${item.price}`;
+    } else {
+      line += ' — السعر يُحدَّد بعد تأكيد التفاصيل';
+    }
+    return line;
+  }).join('\n');
+
+  if (!name || !customerPhone || !date || !location) {
+    showStatus('تأكد من تعبئة الاسم ورقم الهاتف والتاريخ والمنطقة.', 'error');
+    return false;
+  }
+
+  isSubmitting = true;
+  const submitButton = document.getElementById('submit-booking');
+  submitButton.disabled = true;
+  submitButton.textContent = 'عم نحفظ طلبك…';
+  showStatus('عم نحفظ طلبك بقاعدة البيانات. لحظة من فضلك…', 'info');
+
+  const bookingRecord = {
+    customer_name:name,
+    customer_phone:customerPhone,
+    service_date:date,
+    service_location:location,
+    service_details:
+      `الخدمات المطلوبة:\n${servicesText}` +
+      `${extraDetails ? `\nالتفاصيل الإضافية: ${extraDetails}` : ''}`,
+    status:'pending'
+  };
+
+  try {
+    const response = await fetch(BOOKINGS_ENDPOINT, {
+      method:'POST',
+      headers:{
+        'apikey':SUPABASE_KEY,
+        'Authorization':`Bearer ${SUPABASE_KEY}`,
+        'Content-Type':'application/json',
+        'Prefer':'return=minimal'
+      },
+      body:JSON.stringify(bookingRecord)
+    });
+
+    if (!response.ok) {
+      let errorMessage = '';
+
+      try {
+        const errorBody = await response.json();
+        errorMessage =
+          errorBody.message ||
+          errorBody.details ||
+          errorBody.hint ||
+          errorBody.code ||
+          '';
+      } catch (_) {}
+
+      throw new Error(
+        errorMessage
+          ? `تعذر حفظ الطلب: ${errorMessage}`
+          : `تعذر حفظ الطلب (رمز ${response.status}).`
+      );
+    }
+
+    showStatus(
+      'تم حفظ طلبك بنجاح. رح نفتح واتساب لتبعت الطلب للإدارة.',
+      'success'
+    );
+
+    const whatsappMessage =
+      `مرحبا، بدي قدّم طلب حجز جديد من تطبيق كملت جمعتنا.\n\n` +
+      `الاسم: ${name}\n` +
+      `رقم الهاتف: ${customerPhone}\n` +
+      `تاريخ المناسبة: ${date}\n` +
+      `المنطقة: ${location}\n\n` +
+      `الخدمات المطلوبة:\n${servicesText}` +
+      `${extraDetails ? `\n\nتفاصيل إضافية: ${extraDetails}` : ''}\n\n` +
+      `بعرف إنو الطلب بحاجة لتأكيد التوفر والتفاصيل من الإدارة.`;
+
+    const whatsappURL =
+      `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappMessage)}`;
+
+    window.location.href = whatsappURL;
+  } catch (error) {
+    console.error('خطأ بإرسال طلب الحجز:', error);
+    showStatus(
+      `${error.message || 'صار خطأ غير متوقع'} ما فتحنا واتساب، لحتى ما يضيع طلبك. جرّب مرة تانية أو تواصل مع الإدارة.`,
+      'error'
+    );
+  } finally {
+    isSubmitting = false;
+    submitButton.disabled = false;
+    submitButton.textContent = 'إرسال الطلب عبر واتساب';
+  }
+
+  return false;
+}
+
+document.getElementById('booking-form').addEventListener('submit', bookOnWhatsApp);
+
+renderCart();
+loadServices();
+</script>
 </body>
 </html>
