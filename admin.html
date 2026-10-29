@@ -5,6 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>إدارة كملت جمعتنا</title>
+
 <style>
 :root {
   --navy:#14213d;
@@ -108,6 +109,7 @@ footer { text-align:center; color:#666; padding:15px; }
 label { font-weight:bold; }
 </style>
 </head>
+
 <body>
 <header>
   <h1>🎉 كملت جمعتنا</h1>
@@ -120,9 +122,13 @@ label { font-weight:bold; }
     <form id="login-form">
       <label for="email">البريد الإلكتروني</label>
       <input id="email" type="email" autocomplete="username" required>
+
       <label for="password">كلمة المرور</label>
       <input id="password" type="password" autocomplete="current-password" required>
-      <button class="primary" id="login-button" type="submit">تسجيل الدخول</button>
+
+      <button class="primary" id="login-button" type="submit">
+        تسجيل الدخول
+      </button>
     </form>
     <div id="login-message" aria-live="polite"></div>
   </section>
@@ -142,24 +148,37 @@ label { font-weight:bold; }
       <form id="add-service-form">
         <label for="new-name">اسم الخدمة</label>
         <input id="new-name" maxlength="150" required>
+
         <label for="new-description">وصف الخدمة</label>
         <textarea id="new-description"></textarea>
+
         <label for="new-price">السعر (اختياري)</label>
         <input id="new-price" type="number" min="0" step="0.01">
+
         <label class="service-status">
           <input id="new-available" type="checkbox" checked>
           <span>الخدمة متاحة للزبائن</span>
         </label>
-        <button class="gold" id="add-button" type="submit">إضافة الخدمة</button>
+
+        <button class="gold" id="add-button" type="submit">
+          إضافة الخدمة
+        </button>
       </form>
     </section>
 
     <section class="panel">
       <div class="actions" style="justify-content:space-between">
         <h2>إدارة الخدمات</h2>
-        <button class="primary" id="refresh-services" type="button">تحديث الخدمات</button>
+        <button class="primary" id="refresh-services" type="button">
+          تحديث الخدمات
+        </button>
       </div>
-      <p class="small">غيّر الإتاحة واحفظها. الخدمة غير المتاحة لا تظهر للزبائن إذا كان الموقع يعرض الخدمات المتاحة فقط.</p>
+
+      <p class="small">
+        غيّر الإتاحة واحفظها. الخدمة غير المتاحة لا تظهر للزبائن
+        إذا كان الموقع يعرض الخدمات المتاحة فقط.
+      </p>
+
       <div id="services-message" aria-live="polite"></div>
       <div id="services-list">جاري تحميل الخدمات...</div>
     </section>
@@ -167,8 +186,11 @@ label { font-weight:bold; }
     <section class="panel">
       <div class="actions" style="justify-content:space-between">
         <h2>طلبات الحجوزات</h2>
-        <button class="primary" id="refresh-bookings" type="button">تحديث الحجوزات</button>
+        <button class="primary" id="refresh-bookings" type="button">
+          تحديث الحجوزات
+        </button>
       </div>
+
       <div id="bookings-message" aria-live="polite"></div>
       <div id="bookings-list">جاري تحميل الحجوزات...</div>
     </section>
@@ -183,6 +205,7 @@ label { font-weight:bold; }
     'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
     'https://unpkg.com/@supabase/supabase-js@2'
   ];
+
   let index = 0;
 
   function loadNext() {
@@ -194,16 +217,22 @@ label { font-weight:bold; }
     if (index >= sources.length) {
       const el = document.getElementById('login-message');
       el.className = 'message error';
-      el.textContent = 'تعذر تحميل مكتبة الاتصال. تأكد من الإنترنت ثم حدّث الصفحة.';
+      el.textContent =
+        'تعذر تحميل مكتبة الاتصال. تأكد من الإنترنت ثم حدّث الصفحة.';
       return;
     }
 
     const script = document.createElement('script');
     script.src = sources[index++];
+
     script.onload = function() {
-      if (window.supabase && window.supabase.createClient) startApp();
-      else loadNext();
+      if (window.supabase && window.supabase.createClient) {
+        startApp();
+      } else {
+        loadNext();
+      }
     };
+
     script.onerror = loadNext;
     document.head.appendChild(script);
   }
@@ -215,12 +244,17 @@ function startApp() {
   if (window.appStarted) return;
   window.appStarted = true;
 
-  const SUPABASE_URL = 'https://qkzdbbqkkxnrgcpcvjvp.supabase.co';
-  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_LiOa9cR2KhHDaEvA2_205Q_XL2OSrfp';
+  const SUPABASE_URL =
+    'https://qkzdbbqkkxnrgcpcvjvp.supabase.co';
+
+  const SUPABASE_PUBLISHABLE_KEY =
+    'sb_publishable_LiOa9cR2KhHDaEvA2_205Q_XL2OSrfp';
+
   const db = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_PUBLISHABLE_KEY
   );
+
   const $ = id => document.getElementById(id);
 
   function message(id, text, type = 'info') {
@@ -250,8 +284,12 @@ function startApp() {
 
   function dateText(value) {
     if (!value) return '—';
+
     const d = new Date(value);
-    return Number.isNaN(d.getTime()) ? val(value) : d.toLocaleString('ar');
+
+    return Number.isNaN(d.getTime())
+      ? val(value)
+      : d.toLocaleString('ar');
   }
 
   function statusText(status) {
@@ -266,17 +304,27 @@ function startApp() {
     const { data, error } = await db.auth.getUser();
 
     if (error) {
-      message('account-info', 'تعذر قراءة الحساب: ' + error.message, 'error');
+      message(
+        'account-info',
+        'تعذر قراءة الحساب: ' + error.message,
+        'error'
+      );
       return;
     }
 
     const user = data.user;
+
     if (!user) {
-      message('account-info', 'لا يوجد مستخدم مسجل الدخول.', 'error');
+      message(
+        'account-info',
+        'لا يوجد مستخدم مسجل الدخول.',
+        'error'
+      );
       return;
     }
 
     const role = user.app_metadata?.role || 'غير محددة';
+
     message(
       'account-info',
       'الحساب: ' + (user.email || 'غير معروف') +
@@ -289,11 +337,13 @@ function startApp() {
   async function checkSession() {
     try {
       const { data, error } = await db.auth.getSession();
+
       if (error) throw error;
 
       if (data.session) {
         $('login-panel').classList.add('hidden');
         $('admin-panel').classList.remove('hidden');
+
         await showAccountInfo();
         await loadAll();
       } else {
@@ -301,12 +351,17 @@ function startApp() {
         $('admin-panel').classList.add('hidden');
       }
     } catch (e) {
-      message('login-message', 'تعذر فحص جلسة الدخول: ' + e.message, 'error');
+      message(
+        'login-message',
+        'تعذر فحص جلسة الدخول: ' + e.message,
+        'error'
+      );
     }
   }
 
   $('login-form').addEventListener('submit', async e => {
     e.preventDefault();
+
     const button = $('login-button');
     button.disabled = true;
     button.textContent = 'جاري تسجيل الدخول...';
@@ -319,12 +374,19 @@ function startApp() {
       });
 
       if (error) throw error;
-      if (!data.session) throw new Error('لم يتم إنشاء جلسة دخول.');
+
+      if (!data.session) {
+        throw new Error('لم يتم إنشاء جلسة دخول.');
+      }
 
       $('password').value = '';
       await checkSession();
     } catch (err) {
-      message('login-message', 'تعذر تسجيل الدخول: ' + err.message, 'error');
+      message(
+        'login-message',
+        'تعذر تسجيل الدخول: ' + err.message,
+        'error'
+      );
     } finally {
       button.disabled = false;
       button.textContent = 'تسجيل الدخول';
@@ -335,17 +397,29 @@ function startApp() {
     const { error } = await db.auth.signOut();
 
     if (error) {
-      message('general-message', 'تعذر تسجيل الخروج: ' + error.message, 'error');
+      message(
+        'general-message',
+        'تعذر تسجيل الخروج: ' + error.message,
+        'error'
+      );
       return;
     }
 
     $('admin-panel').classList.add('hidden');
     $('login-panel').classList.remove('hidden');
-    message('login-message', 'تم تسجيل الخروج.', 'success');
+
+    message(
+      'login-message',
+      'تم تسجيل الخروج.',
+      'success'
+    );
   });
 
   async function loadAll() {
-    await Promise.all([loadServices(), loadBookings()]);
+    await Promise.all([
+      loadServices(),
+      loadBookings()
+    ]);
   }
 
   $('refresh-services').addEventListener('click', loadServices);
@@ -357,7 +431,8 @@ function startApp() {
     clearMessage('services-message');
 
     try {
-      const { data, error } = await db.from('services')
+      const { data, error } = await db
+        .from('services')
         .select('id,name,description,price,is_available')
         .order('id');
 
@@ -373,141 +448,256 @@ function startApp() {
       data.forEach(s => {
         const card = document.createElement('article');
         card.className = 'service-card';
+
         const available = s.is_available === true;
 
         card.innerHTML = `
           <h3>${esc(s.name)}</h3>
-          <div class="small">رقم الخدمة: ${esc(s.id)}</div>
-          <div class="service-status">
-            <input class="avail" id="avail-${esc(s.id)}" type="checkbox" ${available ? 'checked' : ''}>
-            <label for="avail-${esc(s.id)}">متاحة للزبائن</label>
-            <span class="avail-label ${available ? 'status-available' : 'status-unavailable'}">${available ? 'متاحة' : 'غير متاحة'}</span>
+
+          <div class="small">
+            رقم الخدمة: ${esc(s.id)}
           </div>
-          <button type="button" class="gold save-avail">حفظ الإتاحة</button>
+
+          <div class="service-status">
+            <input
+              class="avail"
+              id="avail-${esc(s.id)}"
+              type="checkbox"
+              ${available ? 'checked' : ''}
+            >
+
+            <label for="avail-${esc(s.id)}">
+              متاحة للزبائن
+            </label>
+
+            <span class="avail-label ${
+              available ? 'status-available' : 'status-unavailable'
+            }">
+              ${available ? 'متاحة' : 'غير متاحة'}
+            </span>
+          </div>
+
+          <button type="button" class="gold save-avail">
+            حفظ الإتاحة
+          </button>
+
           <h4>تعديل بيانات الخدمة</h4>
+
           <label>اسم الخدمة</label>
-          <input class="edit-name" maxlength="150" value="${esc(s.name)}">
+          <input
+            class="edit-name"
+            maxlength="150"
+            value="${esc(s.name)}"
+          >
+
           <label>الوصف</label>
           <textarea class="edit-description">${esc(s.description || '')}</textarea>
+
           <label>السعر</label>
-          <input class="edit-price" type="number" min="0" step="0.01" value="${s.price == null ? '' : esc(s.price)}">
-          <button type="button" class="primary save-edit">حفظ التعديلات</button>
+          <input
+            class="edit-price"
+            type="number"
+            min="0"
+            step="0.01"
+            value="${s.price == null ? '' : esc(s.price)}"
+          >
+
+          <button type="button" class="primary save-edit">
+            حفظ التعديلات
+          </button>
+
           <div class="card-message" aria-live="polite"></div>
         `;
 
         const check = card.querySelector('.avail');
         const availLabel = card.querySelector('.avail-label');
         const note = card.querySelector('.card-message');
+        const saveAvailButton = card.querySelector('.save-avail');
 
         check.addEventListener('change', () => {
-          availLabel.textContent = check.checked ? 'متاحة' : 'غير متاحة';
+          availLabel.textContent = check.checked
+            ? 'متاحة'
+            : 'غير متاحة';
+
           availLabel.className = 'avail-label ' +
-            (check.checked ? 'status-available' : 'status-unavailable');
+            (check.checked
+              ? 'status-available'
+              : 'status-unavailable');
+
           note.className = 'message info';
-          note.textContent = 'اضغط «حفظ الإتاحة» لتثبيت التغيير.';
+          note.textContent =
+            'اضغط «حفظ الإتاحة» لتثبيت التغيير.';
         });
 
-        card.querySelector('.save-avail').addEventListener('click', async e => {
-          const btn = e.currentTarget;
+        // حفظ الإتاحة باستخدام دالة Supabase الآمنة.
+        saveAvailButton.addEventListener('click', async () => {
           const requestedValue = check.checked;
-          btn.disabled = true;
+
+          saveAvailButton.disabled = true;
+          check.disabled = true;
+
           note.className = 'message info';
-          note.textContent = 'جاري فحص جلسة الإدارة وحفظ الإتاحة...';
+          note.textContent = 'جاري التحقق من الجلسة وحفظ الإتاحة...';
 
           try {
-            // تجديد الجلسة حتى نستخدم أحدث بيانات تسجيل الدخول.
-            const { data: refreshData, error: refreshError } =
-              await db.auth.refreshSession();
+            const { data: sessionData, error: sessionError } =
+              await db.auth.getSession();
 
-            if (refreshError) throw refreshError;
-            if (!refreshData.session) {
-              throw new Error('انتهت جلسة الدخول. سجّل الدخول من جديد.');
+            if (sessionError) throw sessionError;
+
+            if (!sessionData.session) {
+              throw new Error(
+                'انتهت جلسة الدخول. سجّل الدخول من جديد.'
+              );
             }
 
-            const user = refreshData.session.user;
-            const role = user?.app_metadata?.role || 'غير محددة';
+            const { data, error } = await db.rpc(
+              'admin_set_service_availability',
+              {
+                p_service_id: String(s.id),
+                p_is_available: requestedValue
+              }
+            );
 
-            // لا نمنح صلاحية من الواجهة؛ هذا الفحص للتشخيص فقط.
-            const { error } = await db.from('services')
-              .update({ is_available: requestedValue })
-              .eq('id', s.id);
+            if (error) throw error;
 
-            if (error) {
+            if (!data || data.error) {
               throw new Error(
-                error.message +
-                '\nدور الحساب الحالي: ' + role +
-                '\nمعرّف الحساب: ' + (user?.id || 'غير معروف')
+                data?.error || 'لم يتم تأكيد تحديث الإتاحة.'
+              );
+            }
+
+            if (String(data.id) !== String(s.id)) {
+              throw new Error(
+                'لم يتم تأكيد تحديث الخدمة المطلوبة.'
+              );
+            }
+
+            if (data.is_available !== requestedValue) {
+              throw new Error(
+                'القيمة المحفوظة لا تطابق القيمة المطلوبة.'
               );
             }
 
             s.is_available = requestedValue;
-            availLabel.textContent = requestedValue ? 'متاحة' : 'غير متاحة';
+
+            availLabel.textContent = requestedValue
+              ? 'متاحة'
+              : 'غير متاحة';
+
             availLabel.className = 'avail-label ' +
-              (requestedValue ? 'status-available' : 'status-unavailable');
+              (requestedValue
+                ? 'status-available'
+                : 'status-unavailable');
+
             note.className = 'message success';
             note.textContent = requestedValue
-              ? 'تم إرسال تحديث الإتاحة بنجاح.'
-              : 'تم إرسال تحديث جعل الخدمة غير متاحة بنجاح.';
+              ? 'تم حفظ الإتاحة بنجاح. الخدمة متاحة للزبائن.'
+              : 'تم حفظ الإتاحة بنجاح. الخدمة غير متاحة للزبائن.';
 
           } catch (err) {
             note.className = 'message error';
-            note.textContent = 'تعذر حفظ الإتاحة:\n' + (err.message || 'خطأ غير معروف');
+            note.textContent =
+              'تعذر حفظ الإتاحة:\n' +
+              (err.message || 'خطأ غير معروف');
+
+            // إعادة عرض الحالة السابقة المعروفة عند فشل الحفظ.
+            check.checked = s.is_available === true;
+
+            availLabel.textContent = check.checked
+              ? 'متاحة'
+              : 'غير متاحة';
+
+            availLabel.className = 'avail-label ' +
+              (check.checked
+                ? 'status-available'
+                : 'status-unavailable');
           } finally {
-            btn.disabled = false;
+            saveAvailButton.disabled = false;
+            check.disabled = false;
           }
         });
 
-        card.querySelector('.save-edit').addEventListener('click', async e => {
-          const btn = e.currentTarget;
-          const name = card.querySelector('.edit-name').value.trim();
-          const description = card.querySelector('.edit-description').value.trim();
-          const p = card.querySelector('.edit-price').value.trim();
-          const price = p === '' ? null : Number(p);
+        // تعديل اسم الخدمة ووصفها وسعرها.
+        card.querySelector('.save-edit').addEventListener(
+          'click',
+          async e => {
+            const btn = e.currentTarget;
 
-          if (!name) {
-            note.className = 'message error';
-            note.textContent = 'اكتب اسم الخدمة أولاً.';
-            return;
-          }
+            const name = card
+              .querySelector('.edit-name')
+              .value.trim();
 
-          if (price !== null && (!Number.isFinite(price) || price < 0)) {
-            note.className = 'message error';
-            note.textContent = 'السعر غير صحيح.';
-            return;
-          }
+            const description = card
+              .querySelector('.edit-description')
+              .value.trim();
 
-          btn.disabled = true;
+            const p = card
+              .querySelector('.edit-price')
+              .value.trim();
 
-          try {
-            const { data, error } = await db.from('services')
-              .update({ name, description, price })
-              .eq('id', s.id)
-              .select('id');
+            const price = p === '' ? null : Number(p);
 
-            if (error) throw error;
-            if (!data || !data.length) {
-              throw new Error('لم يتم تأكيد الحفظ. تحقق من صلاحيات الإدارة.');
+            if (!name) {
+              note.className = 'message error';
+              note.textContent = 'اكتب اسم الخدمة أولاً.';
+              return;
             }
 
-            note.className = 'message success';
-            note.textContent = 'تم حفظ التعديلات بنجاح.';
-            await loadServices();
-          } catch (err) {
-            note.className = 'message error';
-            note.textContent = 'تعذر حفظ التعديلات: ' + err.message;
-          } finally {
-            btn.disabled = false;
+            if (
+              price !== null &&
+              (!Number.isFinite(price) || price < 0)
+            ) {
+              note.className = 'message error';
+              note.textContent = 'السعر غير صحيح.';
+              return;
+            }
+
+            btn.disabled = true;
+
+            try {
+              const { data, error } = await db
+                .from('services')
+                .update({ name, description, price })
+                .eq('id', s.id)
+                .select('id');
+
+              if (error) throw error;
+
+              if (!data || !data.length) {
+                throw new Error(
+                  'لم يتم تأكيد الحفظ. تحقق من صلاحيات الإدارة.'
+                );
+              }
+
+              note.className = 'message success';
+              note.textContent = 'تم حفظ التعديلات بنجاح.';
+
+              await loadServices();
+            } catch (err) {
+              note.className = 'message error';
+              note.textContent =
+                'تعذر حفظ التعديلات: ' + err.message;
+            } finally {
+              btn.disabled = false;
+            }
           }
-        });
+        );
 
         list.appendChild(card);
       });
     } catch (err) {
       list.textContent = '';
-      message('services-message', 'تعذر تحميل الخدمات: ' + err.message, 'error');
+
+      message(
+        'services-message',
+        'تعذر تحميل الخدمات: ' + err.message,
+        'error'
+      );
     }
   }
 
+  // إضافة خدمة جديدة.
   $('add-service-form').addEventListener('submit', async e => {
     e.preventDefault();
 
@@ -523,7 +713,10 @@ function startApp() {
       return;
     }
 
-    if (price !== null && (!Number.isFinite(price) || price < 0)) {
+    if (
+      price !== null &&
+      (!Number.isFinite(price) || price < 0)
+    ) {
       message('general-message', 'السعر غير صحيح.', 'error');
       return;
     }
@@ -531,32 +724,56 @@ function startApp() {
     btn.disabled = true;
 
     try {
-      const { data, error } = await db.from('services')
-        .insert([{ name, description, price, is_available }])
+      const { data, error } = await db
+        .from('services')
+        .insert([{
+          name,
+          description,
+          price,
+          is_available
+        }])
         .select('id,name');
 
       if (error) throw error;
-      if (!data || !data.length) throw new Error('لم يصل تأكيد الإضافة.');
+
+      if (!data || !data.length) {
+        throw new Error('لم يصل تأكيد الإضافة.');
+      }
 
       $('add-service-form').reset();
       $('new-available').checked = true;
-      message('general-message', 'تمت إضافة الخدمة بنجاح: ' + data[0].name, 'success');
+
+      message(
+        'general-message',
+        'تمت إضافة الخدمة بنجاح: ' + data[0].name,
+        'success'
+      );
+
       await loadServices();
     } catch (err) {
-      message('general-message', 'تعذر إضافة الخدمة: ' + err.message, 'error');
+      message(
+        'general-message',
+        'تعذر إضافة الخدمة: ' + err.message,
+        'error'
+      );
     } finally {
       btn.disabled = false;
     }
   });
 
+  // عرض طلبات الحجوزات.
   async function loadBookings() {
     const list = $('bookings-list');
     list.textContent = 'جاري تحميل الحجوزات...';
     clearMessage('bookings-message');
 
     try {
-      const { data, error } = await db.from('Bookings')
-        .select('id,customer_name,customer_phone,service_date,service_location,service_details,status,created_at')
+      const { data, error } = await db
+        .from('Bookings')
+        .select(
+          'id,customer_name,customer_phone,service_date,' +
+          'service_location,service_details,status,created_at'
+        )
         .order('created_at', { ascending:false });
 
       if (error) throw error;
@@ -571,25 +788,67 @@ function startApp() {
       data.forEach(b => {
         const card = document.createElement('article');
         card.className = 'booking-card';
-        const st = ['pending','confirmed','cancelled'].includes(b.status)
-          ? b.status : 'pending';
+
+        const st = [
+          'pending',
+          'confirmed',
+          'cancelled'
+        ].includes(b.status) ? b.status : 'pending';
 
         card.innerHTML = `
           <h3>طلب حجز رقم ${esc(b.id)}</h3>
-          <p><strong>اسم الزبون:</strong> ${esc(val(b.customer_name))}</p>
-          <p><strong>رقم الهاتف:</strong> ${esc(val(b.customer_phone))}</p>
-          <p><strong>التاريخ:</strong> ${esc(val(b.service_date))}</p>
-          <p><strong>الموقع:</strong> ${esc(val(b.service_location))}</p>
+
+          <p>
+            <strong>اسم الزبون:</strong>
+            ${esc(val(b.customer_name))}
+          </p>
+
+          <p>
+            <strong>رقم الهاتف:</strong>
+            ${esc(val(b.customer_phone))}
+          </p>
+
+          <p>
+            <strong>التاريخ:</strong>
+            ${esc(val(b.service_date))}
+          </p>
+
+          <p>
+            <strong>الموقع:</strong>
+            ${esc(val(b.service_location))}
+          </p>
+
           <p><strong>التفاصيل:</strong></p>
-          <div class="booking-details">${esc(val(b.service_details))}</div>
-          <p><strong>تاريخ وصول الطلب:</strong> ${esc(dateText(b.created_at))}</p>
+
+          <div class="booking-details">
+            ${esc(val(b.service_details))}
+          </div>
+
+          <p>
+            <strong>تاريخ وصول الطلب:</strong>
+            ${esc(dateText(b.created_at))}
+          </p>
+
           <label>حالة الحجز</label>
+
           <select class="booking-status">
-            <option value="pending" ${st === 'pending' ? 'selected' : ''}>قيد الانتظار</option>
-            <option value="confirmed" ${st === 'confirmed' ? 'selected' : ''}>تم التأكيد</option>
-            <option value="cancelled" ${st === 'cancelled' ? 'selected' : ''}>ملغي</option>
+            <option value="pending" ${
+              st === 'pending' ? 'selected' : ''
+            }>قيد الانتظار</option>
+
+            <option value="confirmed" ${
+              st === 'confirmed' ? 'selected' : ''
+            }>تم التأكيد</option>
+
+            <option value="cancelled" ${
+              st === 'cancelled' ? 'selected' : ''
+            }>ملغي</option>
           </select>
-          <button class="gold save-booking" type="button">حفظ الحالة</button>
+
+          <button class="gold save-booking" type="button">
+            حفظ الحالة
+          </button>
+
           <div class="booking-message" aria-live="polite"></div>
         `;
 
@@ -603,21 +862,28 @@ function startApp() {
           note.textContent = 'جاري حفظ الحالة...';
 
           try {
-            const { data, error } = await db.from('Bookings')
-              .update({ status:select.value })
+            const { data, error } = await db
+              .from('Bookings')
+              .update({ status: select.value })
               .eq('id', b.id)
               .select('id,status');
 
             if (error) throw error;
+
             if (!data || !data.length) {
-              throw new Error('لم يتم تأكيد الحفظ. تحقق من صلاحيات الإدارة.');
+              throw new Error(
+                'لم يتم تأكيد الحفظ. تحقق من صلاحيات الإدارة.'
+              );
             }
 
             note.className = 'message success';
-            note.textContent = 'تم حفظ الحالة: ' + statusText(data[0].status);
+            note.textContent =
+              'تم حفظ الحالة: ' + statusText(data[0].status);
+
           } catch (err) {
             note.className = 'message error';
-            note.textContent = 'تعذر حفظ الحالة: ' + err.message;
+            note.textContent =
+              'تعذر حفظ الحالة: ' + err.message;
           } finally {
             btn.disabled = false;
           }
@@ -627,7 +893,12 @@ function startApp() {
       });
     } catch (err) {
       list.textContent = '';
-      message('bookings-message', 'تعذر تحميل الحجوزات: ' + err.message, 'error');
+
+      message(
+        'bookings-message',
+        'تعذر تحميل الحجوزات: ' + err.message,
+        'error'
+      );
     }
   }
 
