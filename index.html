@@ -32,6 +32,7 @@
     .db-service .details{flex:1;min-width:0}
     .db-service strong{display:block}
     .db-service p{margin:3px 0 0;color:var(--muted);font-size:13px;overflow-wrap:anywhere}
+    .db-service .price{color:#806313;font-weight:bold;margin-top:5px}
     button{font-family:inherit;cursor:pointer}
     .small-btn{border:0;border-radius:9px;background:var(--navy);color:#fff;padding:8px 11px;font-size:13px;white-space:nowrap}
     .small-btn:disabled{opacity:.55;cursor:not-allowed}
@@ -142,7 +143,7 @@
     const WHATSAPP_NUMBER = '963942340147';
 
     const SERVICES_ENDPOINT =
-      `${SUPABASE_URL}/rest/v1/services?select=id,name,description,is_available&is_available=eq.true&order=id.asc`;
+      `${SUPABASE_URL}/rest/v1/services?select=id,name,description,price,is_available&is_available=eq.true&order=id.asc`;
     const BOOKINGS_ENDPOINT = `${SUPABASE_URL}/rest/v1/Bookings`;
 
     const serviceDetails = {
@@ -198,7 +199,13 @@
       const name = `أفراح وأعراس — ${service.name}`;
       if (serviceAlreadyInCart(name)) return;
 
-      addToCart(name, service.description || '');
+      const descriptionParts = [];
+      if (service.description) descriptionParts.push(service.description);
+      if (service.price !== null && service.price !== undefined && String(service.price).trim() !== '') {
+        descriptionParts.push(`السعر المسجل: ${service.price}`);
+      }
+
+      addToCart(name, descriptionParts.join(' — '));
 
       const button = document.getElementById(`add-db-${service.id}`);
       if (button) {
@@ -222,6 +229,12 @@
             button.textContent = 'أضف للسلة';
             button.disabled = false;
           }
+        }
+
+        const modalButton = document.getElementById('modal-add-button');
+        if (currentModalService && modalButton) {
+          modalButton.textContent = serviceAlreadyInCart(currentModalService) ? 'مضافة للسلة' : 'أضف إلى السلة';
+          modalButton.disabled = serviceAlreadyInCart(currentModalService);
         }
       }
     }
@@ -358,6 +371,18 @@
             details.appendChild(description);
           }
 
+          if (service.price !== null && service.price !== undefined && String(service.price).trim() !== '') {
+            const price = document.createElement('p');
+            price.className = 'price';
+            price.textContent = `السعر: ${service.price}`;
+            details.appendChild(price);
+          } else {
+            const price = document.createElement('p');
+            price.className = 'price';
+            price.textContent = 'السعر يُحدَّد بعد تأكيد التفاصيل';
+            details.appendChild(price);
+          }
+
           const button = document.createElement('button');
           button.type = 'button';
           button.className = 'small-btn';
@@ -420,17 +445,14 @@
       submitButton.textContent = 'عم نحفظ طلبك…';
       showStatus('عم نحفظ طلبك بقاعدة البيانات. لحظة من فضلك…', 'info');
 
-      // أسماء الأعمدة مطابقة للأسماء التي ذكرتها في جدول Bookings.
-      
-const bookingRecord = {
-  customer_name: name,
-  customer_phone: customerPhone,
-  service_date: date,
-  service_location: location,
-  service_details: `الخدمات المطلوبة:\n${servicesText}${details ? `\nالتفاصيل الإضافية: ${details}` : ''}`,
-  status: 'pending'
-};
-
+      const bookingRecord = {
+        customer_name: name,
+        customer_phone: customerPhone,
+        service_date: date,
+        service_location: location,
+        service_details: `الخدمات المطلوبة:\n${servicesText}${details ? `\nالتفاصيل الإضافية: ${details}` : ''}`,
+        status: 'pending'
+      };
 
       try {
         const response = await fetch(BOOKINGS_ENDPOINT, {
