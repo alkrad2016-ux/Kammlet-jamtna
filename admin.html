@@ -6,258 +6,189 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#14213d">
 <title>إدارة كملت جمعتنا</title>
-
 <style>
-:root{
- --navy:#14213d;--gold:#d4af37;--cream:#f7f5f0;
- --white:#fff;--muted:#6b7280;--line:#e7e2d8;
- --green:#16834a;--red:#b42318;
-}
+:root{--navy:#14213d;--gold:#d4af37;--cream:#f7f5f0;--white:#fff;--muted:#6b7280;--line:#e7e2d8;--green:#16834a;--red:#b42318}
 *{box-sizing:border-box}
-body{
- margin:0;background:var(--cream);color:var(--navy);
- font-family:Tahoma,Arial,sans-serif;line-height:1.7
-}
-header{
- background:var(--navy);color:white;text-align:center;
- padding:20px 12px;border-bottom:4px solid var(--gold)
-}
+body{margin:0;background:var(--cream);color:var(--navy);font-family:Tahoma,Arial,sans-serif;line-height:1.7}
+header{background:var(--navy);color:white;text-align:center;padding:20px 12px;border-bottom:4px solid var(--gold)}
 header h1{margin:0;font-size:26px}
 header p{margin:3px;color:#f0df9c;font-size:13px}
 main{max-width:1000px;margin:auto;padding:15px}
-.card{
- background:white;border:1px solid var(--line);
- border-radius:14px;padding:15px;margin-bottom:14px;
- box-shadow:0 3px 12px #14213d08
-}
+.card{background:white;border:1px solid var(--line);border-radius:14px;padding:15px;margin-bottom:14px;box-shadow:0 3px 12px #14213d08}
 h2{font-size:19px;margin:0 0 12px}
 h3{font-size:16px;margin:10px 0}
-input,textarea,select{
- width:100%;padding:11px;border:1px solid #d9d5cc;
- border-radius:9px;font:inherit;background:white;color:var(--navy);
- margin:4px 0 10px
-}
+input,textarea,select{width:100%;padding:11px;border:1px solid #d9d5cc;border-radius:9px;font:inherit;background:white;color:var(--navy);margin:4px 0 10px}
 textarea{min-height:75px}
 label{font-size:13px;font-weight:bold;display:block}
-button{
- cursor:pointer;font:inherit;border:0;border-radius:9px;padding:9px 13px
-}
+button{cursor:pointer;font:inherit;border:0;border-radius:9px;padding:9px 13px}
 .btn{background:var(--gold);color:var(--navy);font-weight:bold}
 .btn-dark{background:var(--navy);color:white}
 .btn-red{background:#fae8e7;color:var(--red)}
 .btn-green{background:#e8f6ed;color:var(--green)}
 .btn-light{background:#f1eee7;color:var(--navy)}
 button:disabled{opacity:.5;cursor:not-allowed}
-.tabs{
- display:grid;grid-template-columns:repeat(3,1fr);gap:7px;
- margin-bottom:14px
-}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px}
 .tabs button{background:white;border:1px solid var(--line);font-size:13px}
 .tabs button.active{background:var(--navy);color:white}
-.panel{display:none}
-.panel.active{display:block}
+.panel{display:none}.panel.active{display:block}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.item{
- border:1px solid var(--line);border-radius:11px;
- padding:12px;margin-bottom:9px;background:white;min-width:0
-}
+.item{border:1px solid var(--line);border-radius:11px;padding:12px;margin-bottom:9px;background:white;min-width:0}
 .item p{font-size:13px;color:var(--muted);margin:3px 0;overflow-wrap:anywhere}
 .item strong{overflow-wrap:anywhere}
 .actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
 .actions button{font-size:12px}
-.badge{
- display:inline-block;border-radius:20px;padding:2px 9px;
- font-size:11px;background:#f1eee7;margin:3px
-}
+.badge{display:inline-block;border-radius:20px;padding:2px 9px;font-size:11px;background:#f1eee7;margin:3px}
 .badge.green{background:#e8f6ed;color:var(--green)}
 .badge.red{background:#fae8e7;color:var(--red)}
 .badge.gold{background:#f7f0d9;color:#806313}
-.notice{
- padding:11px;border-radius:9px;margin:10px 0;
- background:#eef3fb;color:#243b63;font-size:13px;
- overflow-wrap:anywhere
-}
+.notice{padding:11px;border-radius:9px;margin:10px 0;background:#eef3fb;color:#243b63;font-size:13px;overflow-wrap:anywhere}
 .notice.error{background:#fff0ef;color:var(--red)}
 .notice.success{background:#e8f6ed;color:var(--green)}
 .hidden{display:none!important}
 .row{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
 .small{font-size:12px;color:var(--muted)}
-.media{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.media img,.media video{
- width:100%;aspect-ratio:1;object-fit:cover;
- border-radius:9px;background:#eee
-}
+.media{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.media img,.media video{width:100%;aspect-ratio:1;object-fit:cover;border-radius:9px;background:#eee}
+.media-card{min-width:0;border:1px solid var(--line);border-radius:10px;padding:8px}
+.media-card img,.media-card video{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;background:#eee}
 hr{border:0;border-top:1px solid var(--line);margin:14px 0}
 footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
-@media(max-width:480px){
- main{padding:10px}
- .grid{grid-template-columns:1fr}
- .tabs{grid-template-columns:repeat(2,1fr)}
-}
+@media(max-width:480px){main{padding:10px}.grid{grid-template-columns:1fr}.tabs{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
-
 <body>
 <header>
- <h1>🎉 كملت جمعتنا</h1>
- <p>لوحة الإدارة والتحكم</p>
+<h1>🎉 كملت جمعتنا</h1>
+<p>لوحة الإدارة والتحكم</p>
 </header>
-
 <main>
 <section id="login-panel" class="card">
- <h2>تسجيل دخول الإدارة</h2>
- <label>البريد الإلكتروني</label>
- <input id="email" type="email" autocomplete="username" placeholder="البريد الإلكتروني">
- <label>كلمة المرور</label>
- <input id="password" type="password" autocomplete="current-password" placeholder="كلمة المرور">
- <button class="btn" id="login-btn" style="width:100%">تسجيل الدخول</button>
- <div id="login-message" class="notice hidden"></div>
+<h2>تسجيل دخول الإدارة</h2>
+<label>البريد الإلكتروني</label>
+<input id="email" type="email" autocomplete="username" placeholder="البريد الإلكتروني">
+<label>كلمة المرور</label>
+<input id="password" type="password" autocomplete="current-password" placeholder="كلمة المرور">
+<button class="btn" id="login-btn" style="width:100%">تسجيل الدخول</button>
+<div id="login-message" class="notice hidden"></div>
 </section>
 
 <section id="admin-panel" class="hidden">
- <div class="card">
-  <div class="row">
-   <div>
-    <strong>أهلاً بك بالإدارة 👋</strong>
-    <div id="account-info" class="small"></div>
-   </div>
-   <button class="btn-red" id="logout-btn">تسجيل الخروج</button>
-  </div>
- </div>
+<div class="card">
+<div class="row">
+<div><strong>أهلاً بك بالإدارة 👋</strong><div id="account-info" class="small"></div></div>
+<button class="btn-red" id="logout-btn">تسجيل الخروج</button>
+</div>
+</div>
 
- <div class="tabs">
-  <button class="active" data-tab="dashboard">الرئيسية</button>
-  <button data-tab="categories">الأقسام</button>
-  <button data-tab="services">الخدمات</button>
-  <button data-tab="providers">مقدمو الخدمات</button>
-  <button data-tab="bookings">الحجوزات</button>
-  <button data-tab="accounts">حسابات المقدمين</button>
-  <button data-tab="media">الوسائط</button>
-  <button data-tab="future">التطوير المستقبلي</button>
- </div>
+<div class="tabs">
+<button class="active" data-tab="dashboard">الرئيسية</button>
+<button data-tab="categories">الأقسام</button>
+<button data-tab="services">الخدمات</button>
+<button data-tab="providers">مقدمو الخدمات</button>
+<button data-tab="bookings">الحجوزات</button>
+<button data-tab="accounts">حسابات المقدمين</button>
+<button data-tab="provider-media">وسائط المقدمين</button>
+<button data-tab="service-media">وسائط الخدمات</button>
+<button data-tab="future">التطوير المستقبلي</button>
+</div>
 
- <section class="panel active" id="dashboard">
-  <div class="card">
-   <h2>لوحة المعلومات</h2>
-   <div class="grid">
-    <div class="item"><strong>الأقسام</strong><h2 id="count-categories">—</h2></div>
-    <div class="item"><strong>الخدمات</strong><h2 id="count-services">—</h2></div>
-    <div class="item"><strong>مقدمو الخدمات</strong><h2 id="count-providers">—</h2></div>
-    <div class="item"><strong>الحجوزات</strong><h2 id="count-bookings">—</h2></div>
-   </div>
-   <button class="btn" onclick="refreshAll()">تحديث البيانات</button>
-   <div id="dashboard-message" class="notice hidden"></div>
-  </div>
- </section>
+<section class="panel active" id="dashboard">
+<div class="card">
+<h2>لوحة المعلومات</h2>
+<div class="grid">
+<div class="item"><strong>الأقسام</strong><h2 id="count-categories">—</h2></div>
+<div class="item"><strong>الخدمات</strong><h2 id="count-services">—</h2></div>
+<div class="item"><strong>مقدمو الخدمات</strong><h2 id="count-providers">—</h2></div>
+<div class="item"><strong>الحجوزات</strong><h2 id="count-bookings">—</h2></div>
+</div>
+<button class="btn" id="refresh-btn">تحديث البيانات</button>
+<div id="dashboard-message" class="notice hidden"></div>
+</div>
+</section>
 
- <section class="panel" id="categories">
-  <div class="card">
-   <h2>إدارة الأقسام</h2>
-   <label>اسم القسم</label>
-   <input id="cat-name" placeholder="اسم القسم">
-   <button class="btn" id="add-category-btn">إضافة قسم</button>
-   <div id="categories-list"></div>
-  </div>
- </section>
+<section class="panel" id="categories">
+<div class="card">
+<h2>إدارة الأقسام</h2>
+<label>اسم القسم</label>
+<input id="cat-name" placeholder="اسم القسم">
+<button class="btn" id="add-category-btn">إضافة قسم</button>
+<div id="categories-list"></div>
+</div>
+</section>
 
- <section class="panel" id="services">
-  <div class="card">
-   <h2>إضافة خدمة جديدة</h2>
-   <label>اسم الخدمة</label>
-   <input id="service-name" placeholder="اسم الخدمة">
-   <label>القسم</label>
-   <select id="service-category"></select>
-   <label>الوصف</label>
-   <textarea id="service-description" placeholder="وصف الخدمة"></textarea>
-   <label>السعر</label>
-   <input id="service-price" placeholder="السعر (اختياري)">
-   <button class="btn" id="add-service-btn">إضافة الخدمة</button>
-  </div>
-  <div class="card">
-   <h2>الخدمات الموجودة</h2>
-   <div id="services-list"></div>
-  </div>
- </section>
+<section class="panel" id="services">
+<div class="card">
+<h2>إضافة خدمة جديدة</h2>
+<label>اسم الخدمة</label><input id="service-name" placeholder="اسم الخدمة">
+<label>القسم</label><select id="service-category"></select>
+<label>الوصف</label><textarea id="service-description" placeholder="وصف الخدمة"></textarea>
+<label>السعر</label><input id="service-price" type="number" min="0" step="0.01" placeholder="السعر اختياري">
+<button class="btn" id="add-service-btn">إضافة الخدمة</button>
+<div class="notice">الخدمة الجديدة تُضاف مخفية افتراضياً. يمكنك إظهارها بعد تجهيز بياناتها ووسائطها.</div>
+</div>
+<div class="card"><h2>الخدمات الموجودة</h2><div id="services-list"></div></div>
+</section>
 
- <section class="panel" id="providers">
-  <div class="card">
-   <h2>إضافة مقدم خدمة جديد</h2>
-   <div class="notice">
-    رقم الهاتف هنا خاص بالإدارة، ولا يظهر للزبائن.
-   </div>
+<section class="panel" id="providers">
+<div class="card">
+<h2>إضافة مقدم خدمة جديد</h2>
+<div class="notice">رقم الهاتف خاص بالإدارة ولا يظهر للزبائن. المقدم الجديد يُضاف مخفياً حتى تضغط إظهار للزبائن.</div>
+<label>اسم مقدم الخدمة</label><input id="provider-name" placeholder="الاسم الكامل أو اسم النشاط">
+<label>نوع الخدمة</label><select id="provider-service"></select>
+<label>رقم الهاتف — للإدارة فقط</label><input id="provider-phone" type="tel" placeholder="رقم الهاتف">
+<label>العنوان والمنطقة</label><input id="provider-address" placeholder="المنطقة والعنوان">
+<label>وصف مقدم الخدمة</label><textarea id="provider-description" placeholder="تفاصيل عن مقدم الخدمة وخبرته"></textarea>
+<label>السعر</label><input id="provider-price" type="number" min="0" step="0.01" placeholder="السعر">
+<button class="btn" id="add-provider-btn">إضافة مقدم الخدمة</button>
+<div id="provider-message" class="notice hidden"></div>
+</div>
+<div class="card"><h2>قائمة مقدمي الخدمات</h2><p class="small">الإظهار يتطلب أن يكون المقدم معتمداً والخدمة التابعة له متاحة ومعتمدة.</p><div id="providers-list"></div></div>
+</section>
 
-   <label>اسم مقدم الخدمة</label>
-   <input id="provider-name" placeholder="الاسم الكامل أو اسم النشاط">
+<section class="panel" id="bookings">
+<div class="card"><h2>طلبات الحجز</h2><button class="btn" id="reload-bookings-btn">تحديث الحجوزات</button><div id="bookings-list"></div></div>
+</section>
 
-   <label>نوع الخدمة</label>
-   <select id="provider-service"></select>
+<section class="panel" id="accounts">
+<div class="card"><h2>حسابات مقدمي الخدمات</h2><p class="small">متابعة الحسابات المسجلة إذا كان جدولها مفعلاً.</p><div id="accounts-list"></div></div>
+</section>
 
-   <label>رقم الهاتف — للإدارة فقط</label>
-   <input id="provider-phone" type="tel" placeholder="رقم الهاتف">
+<section class="panel" id="provider-media">
+<div class="card">
+<h2>صور وفيديوهات مقدمي الخدمات</h2>
+<label>اختر مقدم الخدمة</label><select id="media-provider"></select>
+<label>اختر الصور والفيديوهات من الهاتف</label>
+<input id="provider-files" type="file" accept="image/*,video/*" multiple>
+<button class="btn" id="upload-provider-media">رفع الملفات</button>
+<div id="provider-media-message" class="notice hidden"></div>
+<hr><div id="provider-media-list" class="media"></div>
+</div>
+</section>
 
-   <label>العنوان والمنطقة</label>
-   <input id="provider-address" placeholder="المنطقة والعنوان">
+<section class="panel" id="service-media">
+<div class="card">
+<h2>صور وفيديوهات الخدمات</h2>
+<label>اختر الخدمة</label><select id="media-service"></select>
+<label>اختر الصور والفيديوهات من الهاتف</label>
+<input id="service-files" type="file" accept="image/*,video/*" multiple>
+<button class="btn" id="upload-service-media">رفع الملفات</button>
+<div id="service-media-message" class="notice hidden"></div>
+<hr><div id="service-media-list" class="media"></div>
+</div>
+</section>
 
-   <label>وصف مقدم الخدمة</label>
-   <textarea id="provider-description" placeholder="تفاصيل عن مقدم الخدمة وخبرته"></textarea>
-
-   <label>السعر</label>
-   <input id="provider-price" type="number" min="0" step="0.01" placeholder="السعر">
-
-   <button class="btn" id="add-provider-btn">إضافة مقدم الخدمة</button>
-   <div id="provider-message" class="notice hidden"></div>
-  </div>
-
-  <div class="card">
-   <h2>قائمة مقدمي الخدمات</h2>
-   <p class="small">المقدمون المخفيون يبقون محفوظين للحفاظ على الحجوزات القديمة.</p>
-   <div id="providers-list"></div>
-  </div>
- </section>
-
- <section class="panel" id="bookings">
-  <div class="card">
-   <h2>طلبات الحجز</h2>
-   <button class="btn" onclick="loadBookings()">تحديث الحجوزات</button>
-   <div id="bookings-list"></div>
-  </div>
- </section>
-
- <section class="panel" id="accounts">
-  <div class="card">
-   <h2>حسابات مقدمي الخدمات</h2>
-   <p class="small">متابعة الحسابات المسجلة وحالة قبولها ونشاطها.</p>
-   <div id="accounts-list"></div>
-  </div>
- </section>
-
- <section class="panel" id="media">
-  <div class="card">
-   <h2>إدارة الصور والفيديوهات</h2>
-   <label>اختر مقدم الخدمة</label>
-   <select id="media-provider"></select>
-   <label>اختيار الصور والفيديوهات من الهاتف</label>
-   <input id="media-files" type="file" accept="image/*,video/*" multiple>
-   <button class="btn" id="upload-media-btn">رفع الملفات</button>
-   <div id="media-message" class="notice hidden"></div>
-   <hr>
-   <div id="media-list"></div>
-  </div>
- </section>
-
- <section class="panel" id="future">
-  <div class="card">
-   <h2>التطوير المستقبلي</h2>
-   <div class="item"><strong>🌍 التوسع في سوريا</strong><p>إتاحة التسجيل لمقدمي الخدمات في المحافظات المختلفة.</p></div>
-   <div class="item"><strong>💳 الاشتراكات</strong><p>إدارة الخطط والاشتراكات والمبالغ المستحقة.</p></div>
-   <div class="item"><strong>💰 العمولات</strong><p>متابعة عمولة الشركة ومستحقات مقدمي الخدمات.</p></div>
-   <div class="item"><strong>🛡️ مراجعة المحتوى</strong><p>لا يتم نشر محتوى مقدم الخدمة قبل الموافقة واستيفاء الرسوم المستحقة.</p></div>
-   <div class="notice">هذه واجهة تعريفية للتطوير المستقبلي وليست نظام اشتراكات أو دفع مفعّلاً حالياً.</div>
-  </div>
- </section>
+<section class="panel" id="future">
+<div class="card">
+<h2>التطوير المستقبلي</h2>
+<div class="item"><strong>🌍 التوسع في سوريا</strong><p>إتاحة التسجيل لمقدمي الخدمات في المحافظات المختلفة.</p></div>
+<div class="item"><strong>💳 الاشتراكات</strong><p>إدارة الخطط والاشتراكات والمبالغ المستحقة.</p></div>
+<div class="item"><strong>💰 العمولات</strong><p>متابعة عمولة الشركة ومستحقات مقدمي الخدمات.</p></div>
+<div class="item"><strong>🛡️ مراجعة المحتوى</strong><p>لا يتم نشر محتوى مقدم الخدمة قبل الموافقة واستيفاء الرسوم المستحقة.</p></div>
+<div class="notice">هذه واجهة تعريفية وليست نظام اشتراكات أو دفع مفعّلاً حالياً.</div>
+</div>
+</section>
 </section>
 </main>
-
 <footer>كملت جمعتنا — إدارة المنصة</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -265,624 +196,360 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
 const SUPABASE_URL='https://qkzdbbqkkxnrgcpcvjvp.supabase.co';
 const SUPABASE_KEY='sb_publishable_LiOa9cR2KhHDaEvA2_205Q_XL2OSrfp';
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-
-let currentUser=null;
-let categoriesData=[];
-let servicesData=[];
-let providersData=[];
-let bookingsData=[];
-
+let currentUser=null,categoriesData=[],servicesData=[],providersData=[],bookingsData=[];
 const $=id=>document.getElementById(id);
 
-function message(id,text,type='notice'){
- const el=$(id);
- el.textContent=text;
- el.className='notice '+(type==='error'?'error':type==='success'?'success':'');
-}
-
 function escapeHTML(value){
- return String(value??'').replace(/[&<>"']/g,c=>({
-  '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
- })[c]);
+ return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-
-function categoryName(id){
- return categoriesData.find(x=>String(x.id)===String(id))?.name||'غير محدد';
+function message(id,text,type='notice'){
+ const el=$(id);el.textContent=text;el.className='notice '+(type==='error'?'error':type==='success'?'success':'');
 }
-
 function statusText(status){
- return ({
-  pending:'قيد الانتظار',
-  confirmed:'تم التأكيد',
-  cancelled:'ملغي',
-  approved:'مقبول',
-  rejected:'مرفوض'
- })[status]||status||'غير محدد';
+ return ({pending:'قيد الانتظار',confirmed:'تم التأكيد',cancelled:'ملغي',approved:'مقبول',rejected:'مرفوض'})[status]||status||'غير محدد';
 }
-
 function showTab(id){
  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
  document.querySelectorAll('[data-tab]').forEach(x=>x.classList.remove('active'));
  $(id).classList.add('active');
  document.querySelector(`[data-tab="${id}"]`).classList.add('active');
 }
-
-document.querySelectorAll('[data-tab]').forEach(button=>{
- button.addEventListener('click',()=>showTab(button.dataset.tab));
-});
+document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
 
 async function checkAdmin(){
- const {data,error}=await db.auth.getSession();
- if(error)throw error;
- if(!data.session){
-  $('login-panel').classList.remove('hidden');
-  $('admin-panel').classList.add('hidden');
-  return;
- }
-
- const {data:userData,error:userError}=await db.auth.getUser();
- if(userError)throw userError;
- currentUser=userData.user;
-
- if(currentUser.app_metadata?.role!=='admin'){
-  await db.auth.signOut();
-  throw new Error('هذا الحساب لا يملك صلاحية الإدارة.');
- }
-
- $('login-panel').classList.add('hidden');
- $('admin-panel').classList.remove('hidden');
+ const {data,error}=await db.auth.getSession();if(error)throw error;
+ if(!data.session){$('login-panel').classList.remove('hidden');$('admin-panel').classList.add('hidden');return}
+ const {data:u,error:ue}=await db.auth.getUser();if(ue)throw ue;currentUser=u.user;
+ if(currentUser.app_metadata?.role!=='admin'){await db.auth.signOut();throw new Error('هذا الحساب لا يملك صلاحية الإدارة.')}
+ $('login-panel').classList.add('hidden');$('admin-panel').classList.remove('hidden');
  $('account-info').textContent=`الحساب: ${currentUser.email} — الصلاحية: admin`;
  await refreshAll();
 }
-
-$('login-btn').addEventListener('click',async()=>{
- const email=$('email').value.trim();
- const password=$('password').value;
- if(!email||!password){
-  message('login-message','أدخل البريد الإلكتروني وكلمة المرور.','error');
-  return;
- }
+$('login-btn').onclick=async()=>{
+ const email=$('email').value.trim(),password=$('password').value;
+ if(!email||!password){message('login-message','أدخل البريد الإلكتروني وكلمة المرور.','error');return}
  $('login-btn').disabled=true;
- try{
-  const {error}=await db.auth.signInWithPassword({email,password});
-  if(error)throw error;
-  await checkAdmin();
- }catch(e){
-  message('login-message',e.message,'error');
- }finally{
-  $('login-btn').disabled=false;
- }
-});
-
-$('logout-btn').addEventListener('click',async()=>{
- await db.auth.signOut();
- location.reload();
-});
+ try{const {error}=await db.auth.signInWithPassword({email,password});if(error)throw error;await checkAdmin()}
+ catch(e){message('login-message',e.message,'error')}
+ finally{$('login-btn').disabled=false}
+};
+$('logout-btn').onclick=async()=>{await db.auth.signOut();location.reload()};
 
 async function getRows(table,order='id'){
  const {data,error}=await db.from(table).select('*').order(order,{ascending:false});
- if(error)throw error;
- return data||[];
+ if(error)throw error;return data||[];
 }
+function categoryName(id){return categoriesData.find(c=>String(c.id)===String(id))?.name||'غير محدد'}
+function serviceName(id){return servicesData.find(s=>String(s.id)===String(id))?.name||'غير محدد'}
 
 async function refreshAll(){
  try{
-  await loadCategories();
-  await loadServices();
-  await loadProviders();
-  await loadBookings();
-  await loadAccounts();
-
+  await loadCategories();await loadServices();await loadProviders();await loadBookings();await loadAccounts();
   $('count-categories').textContent=categoriesData.length;
   $('count-services').textContent=servicesData.length;
   $('count-providers').textContent=providersData.length;
   $('count-bookings').textContent=bookingsData.length;
   message('dashboard-message','تم تحديث بيانات لوحة الإدارة.','success');
- }catch(e){
-  message('dashboard-message',e.message,'error');
- }
+ }catch(e){message('dashboard-message','تعذر تحديث البيانات: '+e.message,'error')}
 }
+$('refresh-btn').onclick=refreshAll;
 
 async function loadCategories(){
  categoriesData=await getRows('categories');
- $('categories-list').innerHTML='';
- $('service-category').innerHTML='';
-
+ $('categories-list').innerHTML='';$('service-category').innerHTML='';
  categoriesData.forEach(c=>{
-  const option=document.createElement('option');
-  option.value=c.id;
-  option.textContent=c.name;
-  $('service-category').appendChild(option);
-
-  const div=document.createElement('div');
-  div.className='item';
-  div.innerHTML=`<strong>${escapeHTML(c.name)}</strong>
-   <div class="small">رقم القسم: ${escapeHTML(c.id)}</div>`;
-  $('categories-list').appendChild(div);
+  const o=document.createElement('option');o.value=c.id;o.textContent=c.name;$('service-category').appendChild(o);
+  const d=document.createElement('div');d.className='item';d.innerHTML=`<strong>${escapeHTML(c.name)}</strong><p>رقم القسم: ${escapeHTML(c.id)}</p>`;$('categories-list').appendChild(d);
  });
 }
-
-$('add-category-btn').addEventListener('click',async()=>{
- const name=$('cat-name').value.trim();
- if(!name)return alert('اكتب اسم القسم.');
- try{
-  const {error}=await db.from('categories').insert({name});
-  if(error)throw error;
-  $('cat-name').value='';
-  await loadCategories();
-  alert('تمت إضافة القسم.');
- }catch(e){alert('تعذر إضافة القسم: '+e.message)}
-});
+$('add-category-btn').onclick=async()=>{
+ const name=$('cat-name').value.trim();if(!name)return alert('اكتب اسم القسم.');
+ try{const {error}=await db.from('categories').insert({name});if(error)throw error;$('cat-name').value='';await loadCategories();alert('تمت إضافة القسم.')}
+ catch(e){alert('تعذر إضافة القسم: '+e.message)}
+};
 
 async function loadServices(){
  servicesData=await getRows('services');
- $('services-list').innerHTML='';
- $('provider-service').innerHTML='';
-
+ $('services-list').innerHTML='';$('provider-service').innerHTML='';$('media-service').innerHTML='';
  servicesData.forEach(s=>{
-  const option=document.createElement('option');
-  option.value=s.id;
-  option.textContent=s.name+(s.is_available?'':' — مخفية');
-  $('provider-service').appendChild(option);
-
-  const div=document.createElement('div');
-  div.className='item';
-  div.innerHTML=`
-   <strong>${escapeHTML(s.name)}</strong>
-   <span class="badge">${escapeHTML(categoryName(s.category_id))}</span>
-   <span class="badge ${s.is_available?'green':'red'}">${s.is_available?'متاحة':'مخفية'}</span>
-   <p>${escapeHTML(s.description||'لا يوجد وصف')}</p>
-   <p>السعر: ${escapeHTML(s.price??'غير محدد')}</p>
-   <div class="actions">
-    <button class="btn-light edit-service">تعديل البيانات</button>
-    <button class="${s.is_available?'btn-red':'btn-green'} toggle-service">
-     ${s.is_available?'إخفاء الخدمة':'إظهار الخدمة'}
-    </button>
-   </div>`;
-  div.querySelector('.edit-service').onclick=()=>editService(s);
-  div.querySelector('.toggle-service').onclick=()=>toggleService(s);
-  $('services-list').appendChild(div);
+  const o=document.createElement('option');o.value=s.id;o.textContent=s.name+(s.is_available?'':' — مخفية');$('provider-service').appendChild(o);
+  const mo=document.createElement('option');mo.value=s.id;mo.textContent=s.name;$('media-service').appendChild(mo);
+  const d=document.createElement('div');d.className='item';
+  d.innerHTML=`<strong>${escapeHTML(s.name)}</strong>
+  <span class="badge">${escapeHTML(categoryName(s.category_id))}</span>
+  <span class="badge ${s.is_available?'green':'red'}">${s.is_available?'متاحة':'مخفية'}</span>
+  <span class="badge">${escapeHTML(statusText(s.approval_status))}</span>
+  <p>${escapeHTML(s.description||'لا يوجد وصف')}</p><p>السعر: ${escapeHTML(s.price??'غير محدد')}</p>
+  <div class="actions"><button class="btn-light edit">تعديل البيانات</button><button class="${s.is_available?'btn-red':'btn-green'} toggle">${s.is_available?'إخفاء الخدمة':'إظهار الخدمة'}</button><button class="btn-dark gallery">إدارة الوسائط</button></div>`;
+  d.querySelector('.edit').onclick=()=>editService(s);
+  d.querySelector('.toggle').onclick=()=>toggleService(s);
+  d.querySelector('.gallery').onclick=()=>{$('media-service').value=s.id;showTab('service-media');loadServiceMedia()};
+  $('services-list').appendChild(d);
  });
 }
-
-$('add-service-btn').addEventListener('click',async()=>{
- const name=$('service-name').value.trim();
- const category_id=$('service-category').value;
- const description=$('service-description').value.trim();
- const price=$('service-price').value.trim();
+$('add-service-btn').onclick=async()=>{
+ const name=$('service-name').value.trim(),category_id=$('service-category').value;
+ const description=$('service-description').value.trim(),price=$('service-price').value.trim();
  if(!name||!category_id)return alert('أدخل اسم الخدمة والقسم.');
-
  try{
-  const {error}=await db.from('services').insert({
-   name,category_id:Number(category_id),description,
-   price:price||null,is_available:true
-  });
+  const {error}=await db.from('services').insert({name,category_id:Number(category_id),description,price:price===''?null:Number(price),is_available:false,approval_status:'approved'});
   if(error)throw error;
-  $('service-name').value='';
-  $('service-description').value='';
-  $('service-price').value='';
-  await loadServices();
-  alert('تمت إضافة الخدمة.');
+  $('service-name').value='';$('service-description').value='';$('service-price').value='';
+  await loadServices();alert('تمت إضافة الخدمة مخفية. يمكنك تجهيز الوسائط ثم إظهارها.');
  }catch(e){alert('تعذر إضافة الخدمة: '+e.message)}
-});
-
+};
 async function editService(s){
- const name=prompt('اسم الخدمة:',s.name);
- if(name===null)return;
- const description=prompt('وصف الخدمة:',s.description||'');
- if(description===null)return;
- const price=prompt('السعر:',s.price??'');
- if(price===null)return;
- const category=prompt('رقم القسم:',s.category_id);
- if(category===null)return;
-
+ const name=prompt('اسم الخدمة:',s.name);if(name===null)return;
+ const description=prompt('وصف الخدمة:',s.description||'');if(description===null)return;
+ const price=prompt('السعر:',s.price??'');if(price===null)return;
+ const category=prompt('رقم القسم:',s.category_id);if(category===null)return;
  try{
-  const {error}=await db.from('services').update({
-   name:name.trim(),description:description.trim(),
-   price:price.trim()||null,category_id:Number(category)
-  }).eq('id',s.id);
-  if(error)throw error;
-  await loadServices();
-  alert('تم تعديل الخدمة.');
+  const {error}=await db.from('services').update({name:name.trim(),description:description.trim(),price:price.trim()===''?null:Number(price),category_id:Number(category)}).eq('id',s.id);
+  if(error)throw error;await loadServices();await loadProviders();alert('تم تعديل الخدمة.');
  }catch(e){alert('تعذر التعديل: '+e.message)}
 }
-
 async function toggleService(s){
  try{
-  const {error}=await db.rpc('admin_set_service_availability',{
-   p_service_id:s.id,p_is_available:!s.is_available
-  });
+  const {error}=await db.rpc('admin_set_service_availability',{p_service_id:s.id,p_is_available:!s.is_available});
   if(error)throw error;
-  await loadServices();
+  await loadServices();await loadProviders();alert('تم تحديث إتاحة الخدمة.');
  }catch(e){alert('تعذر تحديث إتاحة الخدمة: '+e.message)}
 }
 
-/* إدارة ملفات مقدمي الخدمات */
 async function loadProviders(){
  providersData=await getRows('service_providers');
- $('providers-list').innerHTML='';
- $('media-provider').innerHTML='';
-
+ $('providers-list').innerHTML='';$('media-provider').innerHTML='';
  providersData.forEach(p=>{
-  const option=document.createElement('option');
-  option.value=p.id;
-  option.textContent=p.name+(p.is_active?'':' — مخفي');
-  $('media-provider').appendChild(option);
-
+  const o=document.createElement('option');o.value=p.id;o.textContent=p.name+(p.is_active?'':' — مخفي');$('media-provider').appendChild(o);
   const service=servicesData.find(s=>String(s.id)===String(p.service_id));
-  const div=document.createElement('div');
-  div.className='item';
-  div.innerHTML=`
-   <strong>${escapeHTML(p.name)}</strong>
-   <span class="badge ${p.is_active?'green':'red'}">${p.is_active?'ظاهر':'مخفي'}</span>
-   <span class="badge">${escapeHTML(statusText(p.approval_status))}</span>
-   <p>نوع الخدمة: ${escapeHTML(service?.name||p.service_id)}</p>
-   <p>رقم الهاتف: ${escapeHTML(p.phone||'غير مسجل')} <span class="badge gold">خاص بالإدارة</span></p>
-   <p>العنوان: ${escapeHTML(p.address||'غير محدد')}</p>
-   <p>الوصف: ${escapeHTML(p.description||'لا يوجد وصف')}</p>
-   <p>السعر: ${escapeHTML(p.price??'غير محدد')}</p>
-   <div class="actions">
-    <button class="btn-light edit-provider">تعديل الملف</button>
-    <button class="${p.is_active?'btn-red':'btn-green'} toggle-provider">${p.is_active?'إخفاء':'إظهار'}</button>
-    <button class="btn-green approve-provider">موافقة</button>
-   </div>`;
-
-  div.querySelector('.edit-provider').onclick=()=>editProvider(p);
-  div.querySelector('.toggle-provider').onclick=()=>toggleProvider(p);
-  div.querySelector('.approve-provider').onclick=()=>approveProvider(p);
-  $('providers-list').appendChild(div);
+  const eligible=!!service&&service.is_available===true&&service.approval_status==='approved'&&p.approval_status==='approved';
+  const d=document.createElement('div');d.className='item';
+  d.innerHTML=`<strong>${escapeHTML(p.name)}</strong>
+  <span class="badge ${p.is_active?'green':'red'}">${p.is_active?'مفعّل':'مخفي'}</span>
+  <span class="badge">${escapeHTML(statusText(p.approval_status))}</span>
+  <p>الخدمة: ${escapeHTML(service?.name||p.service_id)}</p>
+  <p>حالة الخدمة التابعة: <span class="badge ${service?.is_available?'green':'red'}">${service?.is_available?'متاحة':'مخفية أو غير موجودة'}</span></p>
+  <p>الهاتف: ${escapeHTML(p.phone||'غير مسجل')} <span class="badge gold">خاص بالإدارة</span></p>
+  <p>العنوان: ${escapeHTML(p.address||'غير محدد')}</p><p>الوصف: ${escapeHTML(p.description||'لا يوجد وصف')}</p><p>السعر: ${escapeHTML(p.price??'غير محدد')}</p>
+  <div class="actions"><button class="btn-light edit">تعديل الملف</button><button class="${p.is_active?'btn-red':'btn-green'} toggle">${p.is_active?'إخفاء للزبائن':'إظهار للزبائن'}</button><button class="btn-light approve">اعتماد المحتوى</button><button class="btn-dark gallery">وسائط المقدم</button></div>
+  <p class="small">${eligible?'المقدم مستوفٍ لشروط الإظهار.':'لن يظهر للزبائن قبل اعتماد المقدم وإتاحة الخدمة التابعة.'}</p>`;
+  d.querySelector('.edit').onclick=()=>editProvider(p);
+  d.querySelector('.toggle').onclick=()=>toggleProvider(p);
+  d.querySelector('.approve').onclick=()=>approveProvider(p);
+  d.querySelector('.gallery').onclick=()=>{$('media-provider').value=p.id;showTab('provider-media');loadProviderMedia()};
+  $('providers-list').appendChild(d);
  });
-
- if($('media-provider').options.length)await loadMedia();
- else $('media-list').innerHTML='لا يوجد مقدمو خدمات.';
+ if(providersData.length&&!$('media-provider').value)$('media-provider').value=providersData[0].id;
 }
-
-$('add-provider-btn').addEventListener('click',async()=>{
- const name=$('provider-name').value.trim();
- const service_id=$('provider-service').value;
- const phone=$('provider-phone').value.trim();
- const address=$('provider-address').value.trim();
- const description=$('provider-description').value.trim();
- const price=$('provider-price').value.trim();
-
- if(!name||!service_id){
-  message('provider-message','أدخل اسم مقدم الخدمة ونوع الخدمة.','error');
-  return;
- }
-
+$('add-provider-btn').onclick=async()=>{
+ const name=$('provider-name').value.trim(),service_id=$('provider-service').value;
+ const phone=$('provider-phone').value.trim(),address=$('provider-address').value.trim();
+ const description=$('provider-description').value.trim(),price=$('provider-price').value.trim();
+ if(!name||!service_id)return message('provider-message','أدخل اسم مقدم الخدمة ونوع الخدمة.','error');
  try{
-  const {error}=await db.from('service_providers').insert({
-   name,
-   service_id:Number(service_id),
-   phone:phone||null,
-   address:address||null,
-   description:description||null,
-   price:price===''?null:Number(price),
-   is_active:true,
-   approval_status:'approved'
-  });
+  const {error}=await db.from('service_providers').insert({name,service_id:Number(service_id),phone:phone||null,address:address||null,description:description||null,price:price===''?null:Number(price),is_active:false,approval_status:'approved'});
   if(error)throw error;
-
-  $('provider-name').value='';
-  $('provider-phone').value='';
-  $('provider-address').value='';
-  $('provider-description').value='';
-  $('provider-price').value='';
-
-  await loadProviders();
-  message('provider-message','تمت إضافة ملف مقدم الخدمة بنجاح.','success');
- }catch(e){
-  message('provider-message','تعذرت إضافة مقدم الخدمة: '+e.message,'error');
- }
-});
-
+  ['provider-name','provider-phone','provider-address','provider-description','provider-price'].forEach(id=>$(id).value='');
+  await loadProviders();message('provider-message','تمت إضافة مقدم الخدمة مخفياً. جهّز ملفه ثم اضغط إظهار للزبائن.','success');
+ }catch(e){message('provider-message','تعذرت الإضافة: '+e.message,'error')}
+};
 async function editProvider(p){
- const name=prompt('اسم مقدم الخدمة:',p.name);
- if(name===null)return;
- const phone=prompt('رقم الهاتف — خاص بالإدارة:',p.phone||'');
- if(phone===null)return;
- const address=prompt('العنوان:',p.address||'');
- if(address===null)return;
- const description=prompt('وصف مقدم الخدمة:',p.description||'');
- if(description===null)return;
- const price=prompt('السعر:',p.price??'');
- if(price===null)return;
-
+ const name=prompt('اسم مقدم الخدمة:',p.name);if(name===null)return;
+ const phone=prompt('رقم الهاتف — خاص بالإدارة:',p.phone||'');if(phone===null)return;
+ const address=prompt('العنوان:',p.address||'');if(address===null)return;
+ const description=prompt('الوصف:',p.description||'');if(description===null)return;
+ const price=prompt('السعر:',p.price??'');if(price===null)return;
  try{
-  const {error}=await db.from('service_providers').update({
-   name:name.trim(),
-   phone:phone.trim()||null,
-   address:address.trim()||null,
-   description:description.trim()||null,
-   price:price.trim()===''?null:Number(price)
-  }).eq('id',p.id);
-  if(error)throw error;
-  await loadProviders();
-  alert('تم تعديل ملف مقدم الخدمة.');
+  const {error}=await db.from('service_providers').update({name:name.trim(),phone:phone.trim()||null,address:address.trim()||null,description:description.trim()||null,price:price.trim()===''?null:Number(price)}).eq('id',p.id);
+  if(error)throw error;await loadProviders();alert('تم تعديل ملف مقدم الخدمة.');
  }catch(e){alert('تعذر تعديل الملف: '+e.message)}
 }
-
 async function toggleProvider(p){
+ if(!p.is_active){
+  const s=servicesData.find(x=>String(x.id)===String(p.service_id));
+  if(!s||!s.is_available||s.approval_status!=='approved'){
+   alert('لا يمكن إظهار مقدم الخدمة. يجب أولاً إظهار الخدمة التابعة والتأكد من اعتمادها.');return;
+  }
+  if(p.approval_status!=='approved'){alert('يجب اعتماد مقدم الخدمة أولاً.');return}
+ }
  try{
-  const {error}=await db.from('service_providers')
-   .update({is_active:!p.is_active}).eq('id',p.id);
-  if(error)throw error;
-  await loadProviders();
+  const {error}=await db.from('service_providers').update({is_active:!p.is_active}).eq('id',p.id);
+  if(error)throw error;await loadProviders();alert(p.is_active?'تم إخفاء مقدم الخدمة.':'تم إظهار مقدم الخدمة للزبائن.');
  }catch(e){alert('تعذر تغيير حالة مقدم الخدمة: '+e.message)}
 }
-
 async function approveProvider(p){
  try{
-  const {error}=await db.from('service_providers')
-   .update({approval_status:'approved',is_active:true}).eq('id',p.id);
-  if(error)throw error;
-  await loadProviders();
-  alert('تمت الموافقة على مقدم الخدمة وإظهاره.');
+  const {error}=await db.from('service_providers').update({approval_status:'approved',is_active:false}).eq('id',p.id);
+  if(error)throw error;await loadProviders();alert('تم اعتماد الملف. بقي مخفياً؛ اضغط إظهار للزبائن عند الجاهزية.');
  }catch(e){alert('تعذرت الموافقة: '+e.message)}
 }
 
-/* الحجوزات والخدمات المستقلة */
+/* إدارة الحجوزات مع الحفاظ على السجلات المستقلة */
 async function loadBookings(){
- bookingsData=await getRows('Bookings','created_at');
- $('bookings-list').innerHTML='';
-
- let items=[];
- try{
-  items=await getRows('booking_items','id');
- }catch(e){
-  console.warn('تعذر قراءة تفاصيل الخدمات:',e.message);
- }
-
+ bookingsData=await getRows('Bookings','created_at');$('bookings-list').innerHTML='';
+ let items=[];try{items=await getRows('booking_items','id')}catch(e){console.warn(e)}
  bookingsData.forEach(b=>{
   const related=items.filter(i=>String(i.booking_id)===String(b.id));
-  const div=document.createElement('div');
-  div.className='item';
-
-  div.innerHTML=`
-   <strong>طلب رقم ${escapeHTML(b.id)}</strong>
-   <span class="badge gold">${escapeHTML(statusText(b.status))}</span>
-   <p>الاسم: ${escapeHTML(b.customer_name)}</p>
-   <p>الهاتف: ${escapeHTML(b.customer_phone)}</p>
-   <p>التاريخ: ${escapeHTML(b.service_date)}</p>
-   <p>المكان: ${escapeHTML(b.service_location)}</p>
-   <p>التفاصيل: ${escapeHTML(b.service_details)}</p>
-   <p>تاريخ الطلب: ${escapeHTML(b.created_at)}</p>
-   <hr>
-   <strong>الخدمات ضمن الطلب (${related.length})</strong>
-   <div class="booking-items"></div>
-   <label>حالة الطلب الرئيسي</label>
-   <select class="booking-status">
-    <option value="pending">قيد الانتظار</option>
-    <option value="confirmed">تم التأكيد</option>
-    <option value="cancelled">ملغي</option>
-   </select>
-   <button class="btn save-booking">حفظ حالة الطلب</button>`;
-
-  const select=div.querySelector('.booking-status');
-  select.value=b.status||'pending';
-
-  div.querySelector('.save-booking').onclick=async()=>{
-   try{
-    const {error}=await db.from('Bookings').update({status:select.value}).eq('id',b.id);
-    if(error)throw error;
-    alert('تم تحديث حالة الطلب.');
-    await loadBookings();
-   }catch(e){alert('تعذر تحديث الطلب: '+e.message)}
+  const d=document.createElement('div');d.className='item';
+  d.innerHTML=`<strong>طلب رقم ${escapeHTML(b.id)}</strong><span class="badge gold">${escapeHTML(statusText(b.status))}</span>
+  <p>الاسم: ${escapeHTML(b.customer_name)}</p><p>الهاتف: ${escapeHTML(b.customer_phone)}</p>
+  <p>التاريخ: ${escapeHTML(b.service_date)}</p><p>المكان: ${escapeHTML(b.service_location)}</p>
+  <p>التفاصيل: ${escapeHTML(b.service_details)}</p><p>تاريخ الطلب: ${escapeHTML(b.created_at)}</p><hr>
+  <strong>الخدمات ضمن الطلب (${related.length})</strong><div class="booking-items"></div>
+  <label>حالة الطلب الرئيسي</label><select class="booking-status"><option value="pending">قيد الانتظار</option><option value="confirmed">تم التأكيد</option><option value="cancelled">ملغي</option></select>
+  <button class="btn save-booking">حفظ حالة الطلب</button>`;
+  const sel=d.querySelector('.booking-status');sel.value=b.status||'pending';
+  d.querySelector('.save-booking').onclick=async()=>{
+   try{const {error}=await db.from('Bookings').update({status:sel.value}).eq('id',b.id);if(error)throw error;alert('تم تحديث حالة الطلب.');await loadBookings()}
+   catch(e){alert('تعذر تحديث الطلب: '+e.message)}
   };
-
-  const list=div.querySelector('.booking-items');
+  const list=d.querySelector('.booking-items');
   related.forEach(item=>{
-   const row=document.createElement('div');
-   row.className='item';
-   row.innerHTML=`
-    <strong>${escapeHTML(item.service_name||'خدمة')}</strong>
-    <p>رقم الخدمة: ${escapeHTML(item.service_id)}</p>
-    <p>مقدم الخدمة: ${escapeHTML(item.provider_id??'غير محدد')}</p>
-    <p>الكمية: ${escapeHTML(item.quantity??1)}</p>
-    <p>سعر الوحدة: ${escapeHTML(item.unit_price??'غير محدد')}</p>
-    <span class="badge">${escapeHTML(statusText(item.status))}</span>
-    <label>حالة هذه الخدمة</label>
-    <select class="item-status">
-     <option value="pending">قيد الانتظار</option>
-     <option value="confirmed">تم التأكيد</option>
-     <option value="cancelled">ملغي</option>
-    </select>
-    <button class="btn save-item">حفظ حالة الخدمة</button>`;
-
-   row.querySelector('.item-status').value=item.status||'pending';
-   row.querySelector('.save-item').onclick=async()=>{
-    try{
-     const {error}=await db.from('booking_items')
-      .update({status:row.querySelector('.item-status').value})
-      .eq('id',item.id);
-     if(error)throw error;
-     alert('تم تحديث حالة الخدمة بشكل مستقل.');
-     await loadBookings();
-    }catch(e){alert('تعذر تحديث الخدمة: '+e.message)}
+   const r=document.createElement('div');r.className='item';
+   r.innerHTML=`<strong>${escapeHTML(item.service_name||'خدمة')}</strong><p>رقم الخدمة: ${escapeHTML(item.service_id)}</p><p>مقدم الخدمة: ${escapeHTML(item.provider_id??'غير محدد')}</p><p>الكمية: ${escapeHTML(item.quantity??1)}</p><p>سعر الوحدة: ${escapeHTML(item.unit_price??'غير محدد')}</p><label>حالة هذه الخدمة</label><select class="item-status"><option value="pending">قيد الانتظار</option><option value="confirmed">تم التأكيد</option><option value="cancelled">ملغي</option></select><button class="btn save-item">حفظ حالة الخدمة</button>`;
+   const is=r.querySelector('.item-status');is.value=item.status||'pending';
+   r.querySelector('.save-item').onclick=async()=>{
+    try{const {error}=await db.from('booking_items').update({status:is.value}).eq('id',item.id);if(error)throw error;alert('تم تحديث حالة الخدمة بشكل مستقل.');await loadBookings()}
+    catch(e){alert('تعذر تحديث الخدمة: '+e.message)}
    };
-   list.appendChild(row);
+   list.appendChild(r);
   });
-
-  if(!related.length){
-   const empty=document.createElement('p');
-   empty.className='small';
-   empty.textContent='لا توجد سجلات مستقلة للخدمات في booking_items لهذا الطلب.';
-   list.appendChild(empty);
-  }
-  $('bookings-list').appendChild(div);
+  if(!related.length)list.textContent='لا توجد سجلات مستقلة للخدمات لهذا الطلب.';
+  $('bookings-list').appendChild(d);
  });
 }
+$('reload-bookings-btn').onclick=loadBookings;
 
-/* حسابات مقدمي الخدمات — قد لا يكون الجدول مفعلاً بعد */
+/* حسابات المقدمين: اختياري إذا كان الجدول موجوداً */
 async function loadAccounts(){
  $('accounts-list').innerHTML='';
  try{
   const rows=await getRows('provider_profiles','created_at');
-  if(!rows.length){
-   $('accounts-list').textContent='لا توجد حسابات مقدمي خدمات مسجلة حالياً.';
-   return;
-  }
-
+  if(!rows.length){$('accounts-list').textContent='لا توجد حسابات مسجلة حالياً.';return}
   rows.forEach(p=>{
-   const div=document.createElement('div');
-   div.className='item';
-   div.innerHTML=`
-    <strong>${escapeHTML(p.display_name||'مقدم خدمة')}</strong>
-    <p>رقم الحساب: ${escapeHTML(p.user_id)}</p>
-    <p>الهاتف: ${escapeHTML(p.phone||'غير محدد')}</p>
-    <p>المنطقة: ${escapeHTML(p.region||'غير محددة')}</p>
-    <p>الوصف: ${escapeHTML(p.description||'')}</p>
-    <span class="badge">${escapeHTML(statusText(p.approval_status))}</span>
-    <span class="badge ${p.is_active?'green':'red'}">${p.is_active?'نشط':'غير نشط'}</span>
-    <div class="actions">
-     <button class="btn-green approve">موافقة</button>
-     <button class="btn-red reject">رفض</button>
-    </div>`;
-   div.querySelector('.approve').onclick=()=>updateAccount(p,{approval_status:'approved',is_active:true});
-   div.querySelector('.reject').onclick=()=>updateAccount(p,{approval_status:'rejected',is_active:false});
-   $('accounts-list').appendChild(div);
+   const d=document.createElement('div');d.className='item';
+   d.innerHTML=`<strong>${escapeHTML(p.display_name||'مقدم خدمة')}</strong><p>الحساب: ${escapeHTML(p.user_id)}</p><p>الهاتف: ${escapeHTML(p.phone||'غير محدد')}</p><p>المنطقة: ${escapeHTML(p.region||'غير محددة')}</p><span class="badge">${escapeHTML(statusText(p.approval_status))}</span><span class="badge ${p.is_active?'green':'red'}">${p.is_active?'نشط':'غير نشط'}</span><div class="actions"><button class="btn-green approve">موافقة</button><button class="btn-red reject">رفض</button></div>`;
+   d.querySelector('.approve').onclick=()=>updateAccount(p,{approval_status:'approved',is_active:true});
+   d.querySelector('.reject').onclick=()=>updateAccount(p,{approval_status:'rejected',is_active:false});
+   $('accounts-list').appendChild(d);
   });
- }catch(e){
-  $('accounts-list').textContent='قسم حسابات المقدمين غير جاهز حالياً: '+e.message;
- }
+ }catch(e){$('accounts-list').textContent='قسم الحسابات غير جاهز حالياً: '+e.message}
 }
-
 async function updateAccount(p,changes){
- try{
-  const {error}=await db.from('provider_profiles').update(changes).eq('user_id',p.user_id);
-  if(error)throw error;
-  await loadAccounts();
-  alert('تم تحديث الحساب.');
- }catch(e){alert('تعذر تحديث الحساب: '+e.message)}
+ try{const {error}=await db.from('provider_profiles').update(changes).eq('user_id',p.user_id);if(error)throw error;await loadAccounts();alert('تم تحديث الحساب.')}
+ catch(e){alert('تعذر تحديث الحساب: '+e.message)}
 }
 
-/* الصور والفيديوهات */
-async function loadMedia(){
- const id=$('media-provider').value;
- $('media-list').innerHTML='';
+/* أدوات مشتركة للوسائط */
+async function signedMediaUrl(path){
+ const {data,error}=await db.storage.from('service-media').createSignedUrl(path,3600);
+ if(error)throw error;return data.signedUrl;
+}
+function mediaElement(item,url){
+ const el=document.createElement(item.media_type==='video'?'video':'img');
+ el.src=url;
+ if(item.media_type==='video'){el.controls=true;el.playsInline=true}
+ else{el.alt='وسائط الخدمة';el.loading='lazy'}
+ return el;
+}
+function mediaCard(item,url,table,reload){
+ const d=document.createElement('div');d.className='media-card';
+ d.appendChild(mediaElement(item,url));
+ const info=document.createElement('p');info.className='small';
+ info.textContent=(item.media_type==='video'?'فيديو':'صورة')+' — '+statusText(item.approval_status)+(item.is_cover?' — غلاف':'');
+ d.appendChild(info);
+ const actions=document.createElement('div');actions.className='actions';
+ const publish=document.createElement('button');publish.className='btn-green';publish.textContent='نشر';
+ publish.onclick=()=>changeMediaStatus(item,table,'approved',reload);
+ const hide=document.createElement('button');hide.className='btn-red';hide.textContent='إخفاء';
+ hide.onclick=()=>changeMediaStatus(item,table,'rejected',reload);
+ const cover=document.createElement('button');cover.className='btn-light';cover.textContent='تعيين كغلاف';
+ cover.onclick=()=>setCover(item,table,reload);
+ actions.append(publish,hide,cover);d.appendChild(actions);return d;
+}
+async function changeMediaStatus(item,table,status,reload){
+ try{const {error}=await db.from(table).update({approval_status:status}).eq('id',item.id);if(error)throw error;await reload()}
+ catch(e){alert('تعذر تحديث الوسيط: '+e.message)}
+}
+async function setCover(item,table,reload){
+ try{
+  const foreign=table==='provider_media'?'provider_id':'service_id';
+  const {error:clearError}=await db.from(table).update({is_cover:false}).eq(foreign,item[foreign]);
+  if(clearError)throw clearError;
+  const {error}=await db.from(table).update({is_cover:true}).eq('id',item.id);
+  if(error)throw error;await reload();
+ }catch(e){alert('تعذر تعيين الغلاف: '+e.message)}
+}
+
+/* وسائط مقدمي الخدمات */
+async function loadProviderMedia(){
+ const id=$('media-provider').value,list=$('provider-media-list');list.innerHTML='';
  if(!id)return;
-
  try{
-  const {data,error}=await db.from('provider_media')
-   .select('*').eq('provider_id',id).order('sort_order');
+  const {data,error}=await db.from('provider_media').select('*').eq('provider_id',id).order('sort_order').order('id');
   if(error)throw error;
-
   for(const item of data||[]){
-   const path=item.storage_path.split('/').map(encodeURIComponent).join('/');
-   const {data:signed,error:signedError}=await db.storage
-    .from('service-media').createSignedUrl(path,3600);
-
-   const div=document.createElement('div');
-   div.className='item';
-
-   if(!signedError&&signed?.signedUrl){
-    if(item.media_type==='video'){
-     const video=document.createElement('video');
-     video.src=signed.signedUrl;
-     video.controls=true;
-     video.style.width='100%';
-     div.appendChild(video);
-    }else{
-     const img=document.createElement('img');
-     img.src=signed.signedUrl;
-     img.style.width='100%';
-     img.style.borderRadius='9px';
-     div.appendChild(img);
-    }
-   }
-
-   const info=document.createElement('p');
-   info.textContent=`${item.media_type} — ${statusText(item.approval_status)}`;
-   div.appendChild(info);
-
-   const actions=document.createElement('div');
-   actions.className='actions';
-
-   const approve=document.createElement('button');
-   approve.className='btn-green';
-   approve.textContent='نشر';
-   approve.onclick=()=>updateMedia(item,{approval_status:'approved'});
-
-   const reject=document.createElement('button');
-   reject.className='btn-red';
-   reject.textContent='إخفاء';
-   reject.onclick=()=>updateMedia(item,{approval_status:'rejected'});
-
-   actions.append(approve,reject);
-   div.appendChild(actions);
-   $('media-list').appendChild(div);
+   try{const url=await signedMediaUrl(item.storage_path);list.appendChild(mediaCard(item,url,'provider_media',loadProviderMedia))}
+   catch(e){const err=document.createElement('p');err.textContent='تعذر عرض ملف: '+e.message;list.appendChild(err)}
   }
-
-  if(!data?.length)$('media-list').textContent='لا توجد وسائط لهذا المقدم.';
- }catch(e){
-  $('media-list').textContent='تعذر تحميل الوسائط: '+e.message;
- }
+  if(!data?.length)list.textContent='لا توجد وسائط لهذا المقدم.';
+ }catch(e){list.textContent='تعذر تحميل الوسائط: '+e.message}
 }
-
-async function updateMedia(item,changes){
+$('media-provider').onchange=loadProviderMedia;
+$('upload-provider-media').onclick=()=>uploadMedia('provider');
+/* وسائط الخدمات */
+async function loadServiceMedia(){
+ const id=$('media-service').value,list=$('service-media-list');list.innerHTML='';
+ if(!id)return;
  try{
-  const {error}=await db.from('provider_media').update(changes).eq('id',item.id);
+  const {data,error}=await db.from('service_media').select('*').eq('service_id',id).order('sort_order').order('id');
   if(error)throw error;
-  await loadMedia();
- }catch(e){alert('تعذر تحديث الوسائط: '+e.message)}
+  for(const item of data||[]){
+   try{const url=await signedMediaUrl(item.storage_path);list.appendChild(mediaCard(item,url,'service_media',loadServiceMedia))}
+   catch(e){const err=document.createElement('p');err.textContent='تعذر عرض ملف: '+e.message;list.appendChild(err)}
+  }
+  if(!data?.length)list.textContent='لا توجد وسائط لهذه الخدمة.';
+ }catch(e){list.textContent='تعذر تحميل الوسائط: '+e.message}
 }
+$('media-service').onchange=loadServiceMedia;
+$('upload-service-media').onclick=()=>uploadMedia('service');
 
-$('media-provider').addEventListener('change',loadMedia);
-
-$('upload-media-btn').addEventListener('click',async()=>{
- const providerId=$('media-provider').value;
- const files=Array.from($('media-files').files||[]);
- if(!providerId||!files.length){
-  message('media-message','اختر مقدم الخدمة والملفات أولاً.','error');
-  return;
- }
-
- const button=$('upload-media-btn');
+async function uploadMedia(kind){
+ const isProvider=kind==='provider';
+ const ownerId=$(isProvider?'media-provider':'media-service').value;
+ const input=$(isProvider?'provider-files':'service-files');
+ const files=Array.from(input.files||[]);
+ const button=$(isProvider?'upload-provider-media':'upload-service-media');
+ const msgId=isProvider?'provider-media-message':'service-media-message';
+ const table=isProvider?'provider_media':'service_media';
+ const foreign=isProvider?'provider_id':'service_id';
+ if(!ownerId||!files.length){message(msgId,'اختر السجل والملفات أولاً.','error');return}
  button.disabled=true;
-
+ let uploaded=0;
  try{
   for(const file of files){
-   const extension=file.name.split('.').pop();
-   const path=`${providerId}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
-   const type=file.type.startsWith('video/')?'video':'image';
-
-   const {error:uploadError}=await db.storage.from('service-media')
-    .upload(path,file,{upsert:false});
-   if(uploadError)throw uploadError;
-
-   const {error:rowError}=await db.from('provider_media').insert({
-    provider_id:Number(providerId),
-    storage_path:path,
-    media_type:type,
-    is_cover:false,
-    sort_order:0,
-    approval_status:'approved'
-   });
+   if(!file.type.startsWith('image/')&&!file.type.startsWith('video/'))continue;
+   const safeName=(file.name.split('.').pop()||'file').replace(/[^a-zA-Z0-9]/g,'');
+   const path=`${kind==='provider'?'providers':'services'}/${ownerId}/${Date.now()}-${crypto.randomUUID()}.${safeName}`;
+   const {error:upError}=await db.storage.from('service-media').upload(path,file,{upsert:false});
+   if(upError)throw upError;
+   const row={[foreign]:Number(ownerId),storage_path:path,media_type:file.type.startsWith('video/')?'video':'image',is_cover:false,sort_order:uploaded,approval_status:'approved',uploaded_by:currentUser.id};
+   const {error:rowError}=await db.from(table).insert(row);
    if(rowError)throw rowError;
+   uploaded++;
   }
-
-  $('media-files').value='';
-  message('media-message','تم رفع الملفات وإضافتها.','success');
-  await loadMedia();
+  input.value='';
+  message(msgId,`تم رفع ${uploaded} ملف وإضافته بنجاح. يمكنك نشره أو إخفاؤه من القائمة.`,'success');
+  if(isProvider)await loadProviderMedia();else await loadServiceMedia();
  }catch(e){
-  message('media-message','تعذر إكمال رفع الملفات: '+e.message,'error');
- }finally{
-  button.disabled=false;
- }
-});
-
-async function init(){
- try{
-  await checkAdmin();
- }catch(e){
-  $('login-panel').classList.remove('hidden');
-  $('admin-panel').classList.add('hidden');
-  message('login-message',e.message,'error');
- }
+  message(msgId,`تعذر إكمال رفع الملفات بعد رفع ${uploaded} ملف: ${e.message}`,'error');
+ }finally{button.disabled=false}
 }
 
-window.refreshAll=refreshAll;
-window.loadBookings=loadBookings;
+async function init(){
+ try{await checkAdmin()}
+ catch(e){$('login-panel').classList.remove('hidden');$('admin-panel').classList.add('hidden');message('login-message',e.message,'error')}
+}
 init();
 </script>
 </body>
