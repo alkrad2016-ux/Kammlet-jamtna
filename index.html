@@ -270,6 +270,9 @@ const SUPABASE_URL = 'https://qkzdbbqkkxnrgcpcvjvp.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_LiOa9cR2KhHDaEvA2_205Q_XL2OSrfp';
 const WHATSAPP_NUMBER = '963942340147';
 
+/* مفتاح حفظ السلة على جهاز الزبون */
+const CART_STORAGE_KEY = 'kammlet_jamtna_cart_v1';
+
 const REST = `${SUPABASE_URL}/rest/v1`;
 
 const categories = [
@@ -283,7 +286,44 @@ const categories = [
 
 let services = [];
 let providers = [];
-let cart = [];
+
+/* استرجاع السلة المحفوظة عند فتح الصفحة */
+function loadSavedCart() {
+  try {
+    const saved = localStorage.getItem(CART_STORAGE_KEY);
+
+    if (!saved) return [];
+
+    const parsed = JSON.parse(saved);
+
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed.filter(item =>
+      item &&
+      typeof item === 'object' &&
+      item.providerId !== undefined &&
+      item.serviceId !== undefined
+    );
+
+  } catch(error) {
+    console.warn('تعذر استرجاع السلة المحفوظة:', error);
+    return [];
+  }
+}
+
+/* حفظ السلة على الهاتف */
+function saveCart() {
+  try {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+    return true;
+  } catch(error) {
+    console.error('تعذر حفظ السلة على الجهاز:', error);
+    return false;
+  }
+}
+
+let cart = loadSavedCart();
+
 let currentCategoryId = null;
 let currentService = null;
 let currentProvider = null;
@@ -596,6 +636,9 @@ function addProviderToCart(provider) {
     price:provider.price
   });
 
+  /* حفظ مباشر بعد الإضافة */
+  saveCart();
+
   renderCart();
   alert('تمت إضافة مقدم الخدمة إلى سلة حجوزاتك.');
 }
@@ -639,6 +682,10 @@ function renderCart() {
 
     remove.addEventListener('click', () => {
       cart.splice(index,1);
+
+      /* حفظ مباشر بعد الحذف */
+      saveCart();
+
       renderCart();
     });
 
@@ -742,14 +789,6 @@ async function submitBooking(event) {
   showStatus('عم نحفظ طلبك وخدماتك بشكل مستقل…','info');
 
   try {
-
-    /*
-      استدعاء دالة Supabase التي تنفذ عمليتي الإدخال
-      ضمن معاملة واحدة:
-      1- إنشاء طلب في Bookings.
-      2- إنشاء سجل مستقل لكل خدمة في booking_items.
-    */
-
     const response = await fetch(
       `${REST}/rpc/create_booking_with_items`,
       {
@@ -781,6 +820,14 @@ async function submitBooking(event) {
 
     console.log('تم حفظ طلب الحجز رقم:',bookingId);
     console.log('عدد الخدمات المحفوظة:',bookingItems.length);
+
+    /*
+      لا نفرغ السلة إلا بعد نجاح الحفظ واستلام رقم الطلب.
+      بعدها نحفظ السلة الفارغة على الجهاز أيضاً.
+    */
+    cart = [];
+    saveCart();
+    renderCart();
 
     showStatus(
       `تم حفظ طلبك رقم ${bookingId} مع ${bookingItems.length} خدمات مستقلة. عم نفتح واتساب…`,
@@ -827,6 +874,8 @@ function escapeHtml(value) {
 $('booking-form').addEventListener('submit',submitBooking);
 
 renderCategories();
+
+/* عرض السلة المسترجعة عند فتح الموقع */
 renderCart();
 </script>
 </body>
