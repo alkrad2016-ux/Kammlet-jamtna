@@ -1,249 +1,897 @@
-// الحجوزات مع إدارة مستقلة لكل خدمة
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#14213d">
+<title>إدارة كملت جمعتنا</title>
+
+<style>
+:root{
+ --navy:#14213d;--gold:#d4af37;--cream:#f7f5f0;
+ --white:#fff;--muted:#6b7280;--line:#e7e2d8;
+ --green:#16834a;--red:#b42318;
+}
+*{box-sizing:border-box}
+body{
+ margin:0;background:var(--cream);color:var(--navy);
+ font-family:Tahoma,Arial,sans-serif;line-height:1.7
+}
+header{
+ background:var(--navy);color:white;text-align:center;
+ padding:20px 12px;border-bottom:4px solid var(--gold)
+}
+header h1{margin:0;font-size:26px}
+header p{margin:3px;color:#f0df9c;font-size:13px}
+main{max-width:1000px;margin:auto;padding:15px}
+.card{
+ background:white;border:1px solid var(--line);
+ border-radius:14px;padding:15px;margin-bottom:14px;
+ box-shadow:0 3px 12px #14213d08
+}
+h2{font-size:19px;margin:0 0 12px}
+h3{font-size:16px;margin:10px 0}
+input,textarea,select{
+ width:100%;padding:11px;border:1px solid #d9d5cc;
+ border-radius:9px;font:inherit;background:white;color:var(--navy);
+ margin:4px 0 10px
+}
+textarea{min-height:75px}
+label{font-size:13px;font-weight:bold;display:block}
+button{
+ cursor:pointer;font:inherit;border:0;border-radius:9px;padding:9px 13px
+}
+.btn{
+ background:var(--gold);color:var(--navy);font-weight:bold
+}
+.btn-dark{background:var(--navy);color:white}
+.btn-red{background:#fae8e7;color:var(--red)}
+.btn-green{background:#e8f6ed;color:var(--green)}
+.btn-light{background:#f1eee7;color:var(--navy)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.tabs{
+ display:grid;grid-template-columns:repeat(3,1fr);gap:7px;
+ margin-bottom:14px
+}
+.tabs button{background:white;border:1px solid var(--line);font-size:13px}
+.tabs button.active{background:var(--navy);color:white}
+.panel{display:none}
+.panel.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.item{
+ border:1px solid var(--line);border-radius:11px;
+ padding:12px;margin-bottom:9px;background:white;min-width:0
+}
+.item p{font-size:13px;color:var(--muted);margin:3px 0}
+.item strong{overflow-wrap:anywhere}
+.actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.actions button{font-size:12px}
+.badge{
+ display:inline-block;border-radius:20px;padding:2px 9px;
+ font-size:11px;background:#f1eee7;margin:3px
+}
+.badge.green{background:#e8f6ed;color:var(--green)}
+.badge.red{background:#fae8e7;color:var(--red)}
+.badge.gold{background:#f7f0d9;color:#806313}
+.notice{
+ padding:11px;border-radius:9px;margin:10px 0;
+ background:#eef3fb;color:#243b63;font-size:13px;
+ overflow-wrap:anywhere
+}
+.notice.error{background:#fff0ef;color:var(--red)}
+.notice.success{background:#e8f6ed;color:var(--green)}
+.hidden{display:none!important}
+.row{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.small{font-size:12px;color:var(--muted)}
+.media{
+ display:grid;grid-template-columns:repeat(2,1fr);gap:8px
+}
+.media img,.media video{
+ width:100%;aspect-ratio:1;object-fit:cover;
+ border-radius:9px;background:#eee
+}
+hr{border:0;border-top:1px solid var(--line);margin:14px 0}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
+@media(max-width:480px){
+ main{padding:10px}
+ .grid{grid-template-columns:1fr}
+ .tabs{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+ <h1>🎉 كملت جمعتنا</h1>
+ <p>لوحة الإدارة والتحكم</p>
+</header>
+
+<main>
+
+<!-- تسجيل الدخول -->
+<section id="login-panel" class="card">
+ <h2>تسجيل دخول الإدارة</h2>
+ <label>البريد الإلكتروني</label>
+ <input id="email" type="email" autocomplete="username" placeholder="البريد الإلكتروني">
+ <label>كلمة المرور</label>
+ <input id="password" type="password" autocomplete="current-password" placeholder="كلمة المرور">
+ <button class="btn" id="login-btn" style="width:100%">تسجيل الدخول</button>
+ <div id="login-message" class="notice hidden"></div>
+</section>
+
+<!-- لوحة الإدارة -->
+<section id="admin-panel" class="hidden">
+
+ <div class="card">
+  <div class="row">
+   <div>
+    <strong>أهلاً بك بالإدارة 👋</strong>
+    <div id="account-info" class="small"></div>
+   </div>
+   <button class="btn-red" id="logout-btn">تسجيل الخروج</button>
+  </div>
+ </div>
+
+ <div class="tabs">
+  <button class="active" data-tab="dashboard">الرئيسية</button>
+  <button data-tab="categories">الأقسام</button>
+  <button data-tab="services">الخدمات</button>
+  <button data-tab="providers">مقدمو الخدمات</button>
+  <button data-tab="bookings">الحجوزات</button>
+  <button data-tab="accounts">حسابات المقدمين</button>
+  <button data-tab="media">الوسائط</button>
+  <button data-tab="future">التطوير المستقبلي</button>
+ </div>
+
+ <!-- الرئيسية -->
+ <section class="panel active" id="dashboard">
+  <div class="card">
+   <h2>لوحة المعلومات</h2>
+   <div class="grid">
+    <div class="item"><strong>الأقسام</strong><h2 id="count-categories">—</h2></div>
+    <div class="item"><strong>الخدمات</strong><h2 id="count-services">—</h2></div>
+    <div class="item"><strong>مقدمو الخدمات</strong><h2 id="count-providers">—</h2></div>
+    <div class="item"><strong>الحجوزات</strong><h2 id="count-bookings">—</h2></div>
+   </div>
+   <button class="btn" onclick="refreshAll()">تحديث البيانات</button>
+   <div id="dashboard-message" class="notice hidden"></div>
+  </div>
+ </section>
+
+ <!-- الأقسام -->
+ <section class="panel" id="categories">
+  <div class="card">
+   <h2>إدارة الأقسام</h2>
+   <label>اسم القسم</label>
+   <input id="cat-name" placeholder="اسم القسم">
+   <button class="btn" id="add-category-btn">إضافة قسم</button>
+   <div id="categories-list"></div>
+  </div>
+ </section>
+
+ <!-- الخدمات -->
+ <section class="panel" id="services">
+  <div class="card">
+   <h2>إضافة خدمة جديدة</h2>
+   <label>اسم الخدمة</label>
+   <input id="service-name" placeholder="اسم الخدمة">
+   <label>القسم</label>
+   <select id="service-category"></select>
+   <label>الوصف</label>
+   <textarea id="service-description" placeholder="وصف الخدمة"></textarea>
+   <label>السعر</label>
+   <input id="service-price" placeholder="السعر (اختياري)">
+   <button class="btn" id="add-service-btn">إضافة الخدمة</button>
+  </div>
+  <div class="card">
+   <h2>الخدمات الموجودة</h2>
+   <div id="services-list"></div>
+  </div>
+ </section>
+
+ <!-- مقدمو الخدمات -->
+ <section class="panel" id="providers">
+  <div class="card">
+   <h2>إضافة مقدم خدمة</h2>
+   <label>اسم مقدم الخدمة</label>
+   <input id="provider-name" placeholder="الاسم">
+   <label>نوع الخدمة</label>
+   <select id="provider-service"></select>
+   <label>العنوان</label>
+   <input id="provider-address" placeholder="المنطقة والعنوان">
+   <label>السعر</label>
+   <input id="provider-price" placeholder="السعر">
+   <button class="btn" id="add-provider-btn">إضافة مقدم الخدمة</button>
+  </div>
+  <div class="card">
+   <h2>قائمة مقدمي الخدمات</h2>
+   <div id="providers-list"></div>
+  </div>
+ </section>
+
+ <!-- الحجوزات -->
+ <section class="panel" id="bookings">
+  <div class="card">
+   <h2>طلبات الحجز</h2>
+   <button class="btn" onclick="loadBookings()">تحديث الحجوزات</button>
+   <div id="bookings-list"></div>
+  </div>
+ </section>
+
+ <!-- حسابات المقدمين -->
+ <section class="panel" id="accounts">
+  <div class="card">
+   <h2>حسابات مقدمي الخدمات</h2>
+   <p class="small">متابعة الحسابات المسجلة وحالة قبولها ونشاطها.</p>
+   <div id="accounts-list"></div>
+  </div>
+ </section>
+
+ <!-- الوسائط -->
+ <section class="panel" id="media">
+  <div class="card">
+   <h2>إدارة الصور والفيديوهات</h2>
+   <label>اختر مقدم الخدمة</label>
+   <select id="media-provider"></select>
+   <label>اختيار الصور والفيديوهات من الهاتف</label>
+   <input id="media-files" type="file" accept="image/*,video/*" multiple>
+   <button class="btn" id="upload-media-btn">رفع الملفات</button>
+   <div id="media-message" class="notice hidden"></div>
+   <hr>
+   <div id="media-list"></div>
+  </div>
+ </section>
+
+ <!-- المستقبل -->
+ <section class="panel" id="future">
+  <div class="card">
+   <h2>التطوير المستقبلي</h2>
+   <div class="item">
+    <strong>🌍 التوسع في سوريا</strong>
+    <p>إتاحة التسجيل لمقدمي الخدمات في المحافظات المختلفة.</p>
+   </div>
+   <div class="item">
+    <strong>💳 الاشتراكات</strong>
+    <p>إدارة الخطط والاشتراكات والمبالغ المستحقة.</p>
+   </div>
+   <div class="item">
+    <strong>💰 العمولات</strong>
+    <p>متابعة عمولة الشركة ومستحقات مقدمي الخدمات.</p>
+   </div>
+   <div class="item">
+    <strong>🛡️ مراجعة المحتوى</strong>
+    <p>لا يتم نشر محتوى مقدم الخدمة قبل الموافقة واستيفاء الرسوم المستحقة.</p>
+   </div>
+   <div class="notice">
+    هذه واجهة تعريفية للتطوير المستقبلي وليست نظام اشتراكات أو دفع مفعّلاً حالياً.
+   </div>
+  </div>
+ </section>
+
+</section>
+</main>
+
+<footer>كملت جمعتنا — إدارة المنصة</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL='https://qkzdbbqkkxnrgcpcvjvp.supabase.co';
+const SUPABASE_KEY='sb_publishable_LiOa9cR2KhHDaEvA2_205Q_XL2OSrfp';
+
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+let currentUser=null;
+let categoriesData=[];
+let servicesData=[];
+let providersData=[];
+let bookingsData=[];
+
+const $=id=>document.getElementById(id);
+
+function message(id,text,type='notice'){
+ const el=$(id);
+ el.textContent=text;
+ el.className='notice '+(type==='error'?'error':type==='success'?'success':'');
+}
+
+function escapeHTML(value){
+ return String(value??'').replace(/[&<>"']/g,c=>({
+  '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+ })[c]);
+}
+
+function categoryName(id){
+ return categoriesData.find(x=>String(x.id)===String(id))?.name||'غير محدد';
+}
+
+function statusText(status){
+ return ({
+  pending:'قيد الانتظار',
+  confirmed:'تم التأكيد',
+  cancelled:'ملغي',
+  approved:'مقبول',
+  rejected:'مرفوض'
+ })[status]||status||'غير محدد';
+}
+
+function showTab(id){
+ document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+ document.querySelectorAll('[data-tab]').forEach(x=>x.classList.remove('active'));
+ $(id).classList.add('active');
+ document.querySelector(`[data-tab="${id}"]`).classList.add('active');
+}
+
+document.querySelectorAll('[data-tab]').forEach(button=>{
+ button.addEventListener('click',()=>showTab(button.dataset.tab));
+});
+
+async function checkAdmin(){
+ const {data,error}=await db.auth.getSession();
+ if(error) throw error;
+ const session=data.session;
+
+ if(!session){
+  $('login-panel').classList.remove('hidden');
+  $('admin-panel').classList.add('hidden');
+  return;
+ }
+
+ const {data:userData,error:userError}=await db.auth.getUser();
+ if(userError) throw userError;
+
+ currentUser=userData.user;
+ const role=currentUser.app_metadata?.role;
+
+ if(role!=='admin'){
+  await db.auth.signOut();
+  throw new Error('هذا الحساب لا يملك صلاحية الإدارة.');
+ }
+
+ $('login-panel').classList.add('hidden');
+ $('admin-panel').classList.remove('hidden');
+ $('account-info').textContent=
+  `الحساب: ${currentUser.email} — الصلاحية: ${role}`;
+
+ await refreshAll();
+}
+
+$('login-btn').addEventListener('click',async()=>{
+ const email=$('email').value.trim();
+ const password=$('password').value;
+
+ if(!email||!password){
+  message('login-message','أدخل البريد الإلكتروني وكلمة المرور.','error');
+  return;
+ }
+
+ $('login-btn').disabled=true;
+ try{
+  const {error}=await db.auth.signInWithPassword({email,password});
+  if(error) throw error;
+  await checkAdmin();
+ }catch(e){
+  message('login-message',e.message,'error');
+ }finally{
+  $('login-btn').disabled=false;
+ }
+});
+
+$('logout-btn').addEventListener('click',async()=>{
+ await db.auth.signOut();
+ location.reload();
+});
+
+async function getRows(table,order='id'){
+ const {data,error}=await db.from(table).select('*').order(order,{ascending:false});
+ if(error) throw error;
+ return data||[];
+}
+
+async function refreshAll(){
+ try{
+  await Promise.all([
+   loadCategories(),
+   loadServices(),
+   loadProviders(),
+   loadBookings(),
+   loadAccounts()
+  ]);
+  $('count-categories').textContent=categoriesData.length;
+  $('count-services').textContent=servicesData.length;
+  $('count-providers').textContent=providersData.length;
+  $('count-bookings').textContent=bookingsData.length;
+  message('dashboard-message','تم تحديث بيانات لوحة الإدارة.','success');
+ }catch(e){
+  message('dashboard-message',e.message,'error');
+ }
+}
+
+async function loadCategories(){
+ categoriesData=await getRows('categories');
+ $('categories-list').innerHTML='';
+ $('service-category').innerHTML='';
+ categoriesData.forEach(c=>{
+  const option=document.createElement('option');
+  option.value=c.id;
+  option.textContent=c.name;
+  $('service-category').appendChild(option);
+
+  const div=document.createElement('div');
+  div.className='item';
+  div.innerHTML=`<strong>${escapeHTML(c.name)}</strong>
+   <div class="small">رقم القسم: ${escapeHTML(c.id)}</div>`;
+  $('categories-list').appendChild(div);
+ });
+}
+
+$('add-category-btn').addEventListener('click',async()=>{
+ const name=$('cat-name').value.trim();
+ if(!name)return alert('اكتب اسم القسم.');
+ try{
+  const {error}=await db.from('categories').insert({name});
+  if(error)throw error;
+  $('cat-name').value='';
+  await loadCategories();
+  alert('تمت إضافة القسم.');
+ }catch(e){alert('تعذر إضافة القسم: '+e.message)}
+});
+
+async function loadServices(){
+ servicesData=await getRows('services');
+ $('services-list').innerHTML='';
+ $('provider-service').innerHTML='';
+
+ servicesData.forEach(s=>{
+  const option=document.createElement('option');
+  option.value=s.id;
+  option.textContent=s.name;
+  $('provider-service').appendChild(option);
+
+  const div=document.createElement('div');
+  div.className='item';
+  div.innerHTML=`
+   <strong>${escapeHTML(s.name)}</strong>
+   <span class="badge">${escapeHTML(categoryName(s.category_id))}</span>
+   <span class="badge ${s.is_available?'green':'red'}">${s.is_available?'متاحة':'مخفية'}</span>
+   <p>${escapeHTML(s.description||'لا يوجد وصف')}</p>
+   <p>السعر: ${escapeHTML(s.price??'غير محدد')}</p>
+   <div class="actions">
+    <button class="btn-light edit-service">تعديل البيانات</button>
+    <button class="${s.is_available?'btn-red':'btn-green'} toggle-service">
+     ${s.is_available?'إخفاء الخدمة':'إظهار الخدمة'}
+    </button>
+   </div>`;
+
+  div.querySelector('.edit-service').onclick=()=>editService(s);
+  div.querySelector('.toggle-service').onclick=()=>toggleService(s);
+  $('services-list').appendChild(div);
+ });
+}
+
+$('add-service-btn').addEventListener('click',async()=>{
+ const name=$('service-name').value.trim();
+ const category_id=$('service-category').value;
+ const description=$('service-description').value.trim();
+ const price=$('service-price').value.trim();
+
+ if(!name||!category_id)return alert('أدخل اسم الخدمة والقسم.');
+
+ try{
+  const {error}=await db.from('services').insert({
+   name,category_id:Number(category_id),description,
+   price:price||null,is_available:true
+  });
+  if(error)throw error;
+  $('service-name').value='';
+  $('service-description').value='';
+  $('service-price').value='';
+  await loadServices();
+  alert('تمت إضافة الخدمة.');
+ }catch(e){alert('تعذر إضافة الخدمة: '+e.message)}
+});
+
+async function editService(s){
+ const name=prompt('اسم الخدمة:',s.name);
+ if(name===null)return;
+ const description=prompt('وصف الخدمة:',s.description||'');
+ if(description===null)return;
+ const price=prompt('السعر:',s.price??'');
+ if(price===null)return;
+ const category=prompt('رقم القسم:',s.category_id);
+ if(category===null)return;
+
+ try{
+  const {error}=await db.from('services').update({
+   name:name.trim(),description:description.trim(),
+   price:price.trim()||null,category_id:Number(category)
+  }).eq('id',s.id);
+  if(error)throw error;
+  await loadServices();
+  alert('تم تعديل الخدمة.');
+ }catch(e){alert('تعذر التعديل: '+e.message)}
+}
+
+async function toggleService(s){
+ const next=!s.is_available;
+ try{
+  const {error}=await db.rpc('admin_set_service_availability',{
+   p_service_id:s.id,p_is_available:next
+  });
+  if(error)throw error;
+  await loadServices();
+ }catch(e){
+  alert('تعذر تحديث إتاحة الخدمة: '+e.message);
+ }
+}
+
+async function loadProviders(){
+ providersData=await getRows('service_providers');
+ $('providers-list').innerHTML='';
+ $('media-provider').innerHTML='';
+
+ providersData.forEach(p=>{
+  const option=document.createElement('option');
+  option.value=p.id;
+  option.textContent=p.name;
+  $('media-provider').appendChild(option);
+
+  const div=document.createElement('div');
+  div.className='item';
+  div.innerHTML=`
+   <strong>${escapeHTML(p.name)}</strong>
+   <p>الخدمة: ${escapeHTML(servicesData.find(s=>String(s.id)===String(p.service_id))?.name||p.service_id)}</p>
+   <p>المكان: ${escapeHTML(p.address||'غير محدد')}</p>
+   <p>السعر: ${escapeHTML(p.price??'غير محدد')}</p>
+   <span class="badge">${escapeHTML(statusText(p.approval_status))}</span>
+   <span class="badge ${p.is_active?'green':'red'}">${p.is_active?'نشط':'مخفي'}</span>
+   <div class="actions">
+    <button class="btn-light edit-provider">تعديل</button>
+    <button class="btn-light toggle-provider">${p.is_active?'إخفاء':'إظهار'}</button>
+    <button class="btn-green approve-provider">موافقة</button>
+   </div>`;
+
+  div.querySelector('.edit-provider').onclick=()=>editProvider(p);
+  div.querySelector('.toggle-provider').onclick=()=>toggleProvider(p);
+  div.querySelector('.approve-provider').onclick=()=>approveProvider(p);
+  $('providers-list').appendChild(div);
+ });
+}
+
+$('add-provider-btn').addEventListener('click',async()=>{
+ const name=$('provider-name').value.trim();
+ const service_id=$('provider-service').value;
+ const address=$('provider-address').value.trim();
+ const price=$('provider-price').value.trim();
+
+ if(!name||!service_id)return alert('أدخل الاسم ونوع الخدمة.');
+
+ try{
+  const {error}=await db.from('service_providers').insert({
+   name,service_id:Number(service_id),address,
+   price:price||null,is_active:true,approval_status:'approved'
+  });
+  if(error)throw error;
+  $('provider-name').value='';
+  $('provider-address').value='';
+  $('provider-price').value='';
+  await loadProviders();
+  alert('تمت إضافة مقدم الخدمة.');
+ }catch(e){alert('تعذر إضافة مقدم الخدمة: '+e.message)}
+});
+
+async function editProvider(p){
+ const name=prompt('اسم مقدم الخدمة:',p.name);
+ if(name===null)return;
+ const address=prompt('العنوان:',p.address||'');
+ if(address===null)return;
+ const price=prompt('السعر:',p.price??'');
+ if(price===null)return;
+
+ try{
+  const {error}=await db.from('service_providers').update({
+   name:name.trim(),address:address.trim(),price:price.trim()||null
+  }).eq('id',p.id);
+  if(error)throw error;
+  await loadProviders();
+  alert('تم تعديل البيانات.');
+ }catch(e){alert('تعذر التعديل: '+e.message)}
+}
+
+async function toggleProvider(p){
+ try{
+  const {error}=await db.from('service_providers')
+   .update({is_active:!p.is_active}).eq('id',p.id);
+  if(error)throw error;
+  await loadProviders();
+ }catch(e){alert('تعذر تغيير الإتاحة: '+e.message)}
+}
+
+async function approveProvider(p){
+ try{
+  const {error}=await db.from('service_providers')
+   .update({approval_status:'approved',is_active:true}).eq('id',p.id);
+  if(error)throw error;
+  await loadProviders();
+  alert('تمت الموافقة على مقدم الخدمة.');
+ }catch(e){alert('تعذرت الموافقة: '+e.message)}
+}
+
 async function loadBookings(){
-const list=$('bookings-list');
-list.textContent='جاري تحميل الحجوزات...';
-clear('bookings-message');
+ bookingsData=await getRows('Bookings','created_at');
+ $('bookings-list').innerHTML='';
 
-try{
-await requireAdmin();
+ let items=[];
+ try{
+  items=await getRows('booking_items','id');
+ }catch(e){
+  console.warn('تعذر قراءة تفاصيل الخدمات:',e.message);
+ }
 
-const {data,error}=await db
-.from('Bookings')
-.select('id,customer_name,customer_phone,service_date,service_location,service_details,status,created_at')
-.order('created_at',{ascending:false});
+ bookingsData.forEach(b=>{
+  const related=items.filter(i=>String(i.booking_id)===String(b.id));
+  const div=document.createElement('div');
+  div.className='item';
 
-if(error)throw error;
+  div.innerHTML=`
+   <strong>طلب رقم ${escapeHTML(b.id)}</strong>
+   <span class="badge gold">${escapeHTML(statusText(b.status))}</span>
+   <p>الاسم: ${escapeHTML(b.customer_name)}</p>
+   <p>الهاتف: ${escapeHTML(b.customer_phone)}</p>
+   <p>التاريخ: ${escapeHTML(b.service_date)}</p>
+   <p>المكان: ${escapeHTML(b.service_location)}</p>
+   <p>التفاصيل: ${escapeHTML(b.service_details)}</p>
+   <p>تاريخ الطلب: ${escapeHTML(b.created_at)}</p>
+   <hr>
+   <strong>الخدمات ضمن الطلب (${related.length})</strong>
+   <div class="booking-items"></div>
+   <label>حالة الطلب الرئيسي</label>
+   <select class="booking-status">
+    <option value="pending">قيد الانتظار</option>
+    <option value="confirmed">تم التأكيد</option>
+    <option value="cancelled">ملغي</option>
+   </select>
+   <button class="btn save-booking">حفظ حالة الطلب</button>`;
 
-list.textContent='';
+  const select=div.querySelector('.booking-status');
+  select.value=b.status||'pending';
 
-if(!data?.length){
-list.textContent='لا توجد حجوزات حالياً.';
-return;
+  div.querySelector('.save-booking').onclick=async()=>{
+   try{
+    const {error}=await db.from('Bookings')
+     .update({status:select.value}).eq('id',b.id);
+    if(error)throw error;
+    alert('تم تحديث حالة الطلب.');
+    await loadBookings();
+   }catch(e){alert('تعذر تحديث الطلب: '+e.message)}
+  };
+
+  const list=div.querySelector('.booking-items');
+
+  related.forEach(item=>{
+   const row=document.createElement('div');
+   row.className='item';
+   row.innerHTML=`
+    <strong>${escapeHTML(item.service_name||'خدمة')}</strong>
+    <p>رقم الخدمة: ${escapeHTML(item.service_id)}</p>
+    <p>مقدم الخدمة: ${escapeHTML(item.provider_id??'غير محدد')}</p>
+    <p>الكمية: ${escapeHTML(item.quantity??1)}</p>
+    <p>سعر الوحدة: ${escapeHTML(item.unit_price??'غير محدد')}</p>
+    <span class="badge">${escapeHTML(statusText(item.status))}</span>
+    <label>حالة هذه الخدمة</label>
+    <select class="item-status">
+     <option value="pending">قيد الانتظار</option>
+     <option value="confirmed">تم التأكيد</option>
+     <option value="cancelled">ملغي</option>
+    </select>
+    <button class="btn save-item">حفظ حالة الخدمة</button>`;
+
+   row.querySelector('.item-status').value=item.status||'pending';
+   row.querySelector('.save-item').onclick=async()=>{
+    try{
+     const {error}=await db.from('booking_items')
+      .update({status:row.querySelector('.item-status').value})
+      .eq('id',item.id);
+     if(error)throw error;
+     alert('تم تحديث حالة الخدمة بشكل مستقل.');
+     await loadBookings();
+    }catch(e){alert('تعذر تحديث الخدمة: '+e.message)}
+   };
+   list.appendChild(row);
+  });
+
+  if(!related.length){
+   const empty=document.createElement('p');
+   empty.className='small';
+   empty.textContent='لا توجد سجلات مستقلة للخدمات في booking_items لهذا الطلب.';
+   list.appendChild(empty);
+  }
+
+  $('bookings-list').appendChild(div);
+ });
 }
 
-const ids=data.map(b=>b.id);
+async function loadAccounts(){
+ $('accounts-list').innerHTML='';
+ try{
+  const rows=await getRows('provider_profiles','created_at');
 
-const {data:items,error:itemError}=await db
-.from('booking_items')
-.select('id,booking_id,service_id,service_name,provider_id,quantity,unit_price,status')
-.in('booking_id',ids)
-.order('id');
+  if(!rows.length){
+   $('accounts-list').textContent='لا توجد حسابات مقدمي خدمات مسجلة حالياً.';
+   return;
+  }
 
-if(itemError)throw itemError;
+  rows.forEach(p=>{
+   const div=document.createElement('div');
+   div.className='item';
+   div.innerHTML=`
+    <strong>${escapeHTML(p.display_name||'مقدم خدمة')}</strong>
+    <p>رقم الحساب: ${escapeHTML(p.user_id)}</p>
+    <p>الهاتف: ${escapeHTML(p.phone||'غير محدد')}</p>
+    <p>المنطقة: ${escapeHTML(p.region||'غير محددة')}</p>
+    <p>الوصف: ${escapeHTML(p.description||'')}</p>
+    <span class="badge">${escapeHTML(statusText(p.approval_status))}</span>
+    <span class="badge ${p.is_active?'green':'red'}">${p.is_active?'نشط':'غير نشط'}</span>
+    <div class="actions">
+     <button class="btn-green approve">موافقة</button>
+     <button class="btn-red reject">رفض</button>
+    </div>`;
 
-data.forEach(b=>{
-
-const card=document.createElement('article');
-card.className='booking-card';
-
-const st=['pending','confirmed','cancelled'].includes(b.status)
-?b.status:'pending';
-
-const related=(items||[]).filter(
-x=>String(x.booking_id)===String(b.id)
-);
-
-let servicesHtml='';
-
-if(related.length){
-
-servicesHtml=related.map(x=>{
-
-const itemStatus=['pending','confirmed','cancelled'].includes(x.status)
-?x.status:'pending';
-
-return `
-<div class="message info" style="padding:13px;margin:12px 0">
-
-<strong>🎯 ${esc(x.service_name)}</strong>
-
-<div class="small">
-رقم الخدمة: ${esc(val(x.service_id))}
-<br>
-رقم مقدم الخدمة: ${esc(val(x.provider_id))}
-<br>
-الكمية: ${esc(val(x.quantity))}
-<br>
-السعر: ${esc(val(x.unit_price))}
-</div>
-
-<label>حالة هذه الخدمة</label>
-
-<select class="item-status" data-item-id="${esc(x.id)}">
-<option value="pending" ${itemStatus==='pending'?'selected':''}>قيد الانتظار</option>
-<option value="confirmed" ${itemStatus==='confirmed'?'selected':''}>تم التأكيد</option>
-<option value="cancelled" ${itemStatus==='cancelled'?'selected':''}>ملغي</option>
-</select>
-
-<button
-class="gold save-item-status"
-data-item-id="${esc(x.id)}"
-style="width:100%">
-حفظ حالة هذه الخدمة
-</button>
-
-<div class="item-message" data-item-message="${esc(x.id)}"></div>
-
-</div>
-`;
-
-}).join('');
-
-}else{
-
-servicesHtml='<p class="small">لا توجد عناصر فرعية لهذا الطلب.</p>';
-
+   div.querySelector('.approve').onclick=()=>updateAccount(p,{approval_status:'approved',is_active:true});
+   div.querySelector('.reject').onclick=()=>updateAccount(p,{approval_status:'rejected',is_active:false});
+   $('accounts-list').appendChild(div);
+  });
+ }catch(e){
+  $('accounts-list').textContent='تعذر تحميل حسابات المقدمين: '+e.message;
+ }
 }
 
-card.innerHTML=`
-
-<h3>طلب حجز رقم ${esc(b.id)}</h3>
-
-<p><strong>اسم الزبون:</strong> ${esc(val(b.customer_name))}</p>
-
-<p><strong>رقم الهاتف:</strong> ${esc(val(b.customer_phone))}</p>
-
-<p><strong>التاريخ:</strong> ${esc(val(b.service_date))}</p>
-
-<p><strong>الموقع:</strong> ${esc(val(b.service_location))}</p>
-
-<p><strong>التفاصيل:</strong></p>
-
-<div>${esc(val(b.service_details))}</div>
-
-<hr>
-
-<h4>الخدمات داخل الحجز (${related.length})</h4>
-
-${servicesHtml}
-
-<hr>
-
-<p>
-<strong>تاريخ وصول الطلب:</strong>
-${esc(b.created_at?new Date(b.created_at).toLocaleString('ar'):'—')}
-</p>
-
-<label>حالة الحجز الرئيسي</label>
-
-<select class="booking-status">
-<option value="pending" ${st==='pending'?'selected':''}>قيد الانتظار</option>
-<option value="confirmed" ${st==='confirmed'?'selected':''}>تم التأكيد</option>
-<option value="cancelled" ${st==='cancelled'?'selected':''}>ملغي</option>
-</select>
-
-<button class="gold save-booking">حفظ حالة الحجز الرئيسي</button>
-
-<div class="booking-message"></div>
-
-`;
-
-list.appendChild(card);
-
-
-// حفظ حالة كل خدمة بشكل مستقل
-card.querySelectorAll('.save-item-status').forEach(btn=>{
-
-btn.addEventListener('click',async()=>{
-
-const itemId=btn.dataset.itemId;
-
-const select=card.querySelector(
-`.item-status[data-item-id="${itemId}"]`
-);
-
-const note=card.querySelector(
-`.item-message[data-item-message="${itemId}"]`
-);
-
-btn.disabled=true;
-select.disabled=true;
-
-try{
-
-await requireAdmin();
-
-const {data,error}=await db
-.from('booking_items')
-.update({status:select.value})
-.eq('id',itemId)
-.select('id,status');
-
-if(error)throw error;
-
-if(!data?.length){
-throw new Error('لم يتم تأكيد حفظ حالة الخدمة.');
+async function updateAccount(p,changes){
+ try{
+  const {error}=await db.from('provider_profiles')
+   .update(changes).eq('user_id',p.user_id);
+  if(error)throw error;
+  await loadAccounts();
+  alert('تم تحديث الحساب.');
+ }catch(e){alert('تعذر تحديث الحساب: '+e.message)}
 }
 
-note.className='message success';
+async function loadMedia(){
+ const id=$('media-provider').value;
+ $('media-list').innerHTML='';
+ if(!id)return;
 
-note.textContent='تم حفظ حالة الخدمة: '+statusText(data[0].status);
+ try{
+  const {data,error}=await db.from('provider_media')
+   .select('*').eq('provider_id',id).order('sort_order');
+  if(error)throw error;
 
-}catch(e){
+  for(const item of data||[]){
+   const path=item.storage_path.split('/').map(encodeURIComponent).join('/');
+   const {data:signed,error:signedError}=await db.storage
+    .from('service-media').createSignedUrl(path,3600);
 
-note.className='message error';
-note.textContent='تعذر حفظ حالة الخدمة: '+e.message;
+   const div=document.createElement('div');
+   div.className='item';
 
-}finally{
+   if(!signedError&&signed?.signedUrl){
+    if(item.media_type==='video'){
+     const video=document.createElement('video');
+     video.src=signed.signedUrl;
+     video.controls=true;
+     video.style.width='100%';
+     div.appendChild(video);
+    }else{
+     const img=document.createElement('img');
+     img.src=signed.signedUrl;
+     img.style.width='100%';
+     img.style.borderRadius='9px';
+     div.appendChild(img);
+    }
+   }
 
-btn.disabled=false;
-select.disabled=false;
+   const info=document.createElement('p');
+   info.textContent=`${item.media_type} — ${statusText(item.approval_status)}`;
+   div.appendChild(info);
 
+   const actions=document.createElement('div');
+   actions.className='actions';
+
+   const approve=document.createElement('button');
+   approve.className='btn-green';
+   approve.textContent='نشر';
+   approve.onclick=()=>updateMedia(item,{approval_status:'approved'});
+
+   const reject=document.createElement('button');
+   reject.className='btn-red';
+   reject.textContent='إخفاء';
+   reject.onclick=()=>updateMedia(item,{approval_status:'rejected'});
+
+   actions.append(approve,reject);
+   div.appendChild(actions);
+   $('media-list').appendChild(div);
+  }
+
+  if(!data?.length)$('media-list').textContent='لا توجد وسائط لهذا المقدم.';
+ }catch(e){
+  $('media-list').textContent='تعذر تحميل الوسائط: '+e.message;
+ }
 }
 
+async function updateMedia(item,changes){
+ try{
+  const {error}=await db.from('provider_media')
+   .update(changes).eq('id',item.id);
+  if(error)throw error;
+  await loadMedia();
+ }catch(e){alert('تعذر تحديث الوسائط: '+e.message)}
+}
+
+$('media-provider').addEventListener('change',loadMedia);
+
+$('upload-media-btn').addEventListener('click',async()=>{
+ const providerId=$('media-provider').value;
+ const files=Array.from($('media-files').files||[]);
+
+ if(!providerId||!files.length){
+  message('media-message','اختر مقدم الخدمة والملفات أولاً.','error');
+  return;
+ }
+
+ const button=$('upload-media-btn');
+ button.disabled=true;
+
+ try{
+  for(const file of files){
+   const extension=file.name.split('.').pop();
+   const path=`${providerId}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
+   const type=file.type.startsWith('video/')?'video':'image';
+
+   const {error:uploadError}=await db.storage
+    .from('service-media').upload(path,file,{upsert:false});
+   if(uploadError)throw uploadError;
+
+   const {error:rowError}=await db.from('provider_media').insert({
+    provider_id:Number(providerId),
+    storage_path:path,
+    media_type:type,
+    is_cover:false,
+    sort_order:0,
+    approval_status:'approved'
+   });
+
+   if(rowError)throw rowError;
+  }
+
+  $('media-files').value='';
+  message('media-message','تم رفع الملفات وإضافتها.','success');
+  await loadMedia();
+ }catch(e){
+  message('media-message','تعذر إكمال رفع الملفات: '+e.message,'error');
+ }finally{
+  button.disabled=false;
+ }
 });
 
-});
-
-
-// حفظ حالة الحجز الرئيسي كما كانت سابقاً
-const select=card.querySelector('.booking-status');
-const btn=card.querySelector('.save-booking');
-const note=card.querySelector('.booking-message');
-
-btn.addEventListener('click',async()=>{
-
-btn.disabled=true;
-
-try{
-
-await requireAdmin();
-
-const {data,error}=await db
-.from('Bookings')
-.update({status:select.value})
-.eq('id',b.id)
-.select('id,status');
-
-if(error)throw error;
-
-if(!data?.length){
-throw new Error('لم يتم تأكيد الحفظ.');
+async function init(){
+ try{
+  await checkAdmin();
+ }catch(e){
+  $('login-panel').classList.remove('hidden');
+  $('admin-panel').classList.add('hidden');
+  message('login-message',e.message,'error');
+ }
 }
 
-note.className='message success';
-note.textContent='تم حفظ حالة الحجز الرئيسي: '+statusText(data[0].status);
-
-}catch(e){
-
-note.className='message error';
-note.textContent='تعذر حفظ حالة الحجز: '+e.message;
-
-}finally{
-
-btn.disabled=false;
-
+async function loadDashboard(){
+ await refreshAll();
 }
 
-});
+window.refreshAll=refreshAll;
+window.loadBookings=loadBookings;
 
-});
-
-}catch(e){
-
-list.textContent='';
-msg('bookings-message','تعذر تحميل الحجوزات: '+e.message,'error');
-
-}
-
-}
+init();
+</script>
+</body>
+</html>
