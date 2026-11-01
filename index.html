@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -183,86 +184,85 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:20px 10px}
 
 <main>
 
-  <section class="page active" id="home-page">
-    <div class="intro">
-      <h2>خلّي مناسبتك علينا</h2>
-      <p>اختار القسم، واستكشف الخدمات ومقدميها، واجمع اختياراتك بسلة واحدة.</p>
-    </div>
+<section class="page active" id="home-page">
+  <div class="intro">
+    <h2>خلّي مناسبتك علينا</h2>
+    <p>اختار القسم، واستكشف الخدمات ومقدميها، واجمع اختياراتك بسلة واحدة.</p>
+  </div>
+  <h2 class="page-heading">خدماتنا</h2>
+  <div class="service-grid" id="category-grid"></div>
+</section>
 
-    <h2 class="page-heading">خدماتنا</h2>
-    <div class="service-grid" id="category-grid"></div>
-  </section>
+<section class="page" id="services-page">
+  <div class="page-heading">
+    <button class="back-btn" onclick="goHome()">← رجوع</button>
+    <h2 id="services-heading">أنواع الخدمات</h2>
+  </div>
+  <div class="list" id="services-list"></div>
+</section>
 
-  <section class="page" id="services-page">
-    <div class="page-heading">
-      <button class="back-btn" onclick="goHome()">← رجوع</button>
-      <h2 id="services-heading">أنواع الخدمات</h2>
-    </div>
-    <div class="list" id="services-list"></div>
-  </section>
+<section class="page" id="providers-page">
+  <div class="page-heading">
+    <button class="back-btn" onclick="goServices()">← رجوع</button>
+    <h2 id="providers-heading">مقدمو الخدمة</h2>
+  </div>
+  <div class="list" id="providers-list"></div>
+</section>
 
-  <section class="page" id="providers-page">
-    <div class="page-heading">
-      <button class="back-btn" onclick="goServices()">← رجوع</button>
-      <h2 id="providers-heading">مقدمو الخدمة</h2>
-    </div>
-    <div class="list" id="providers-list"></div>
-  </section>
+<section class="page" id="provider-detail-page">
+  <div class="page-heading">
+    <button class="back-btn" onclick="goProviders()">← رجوع</button>
+    <h2>ملف مقدم الخدمة</h2>
+  </div>
+  <div id="provider-detail"></div>
+</section>
 
-  <section class="page" id="provider-detail-page">
-    <div class="page-heading">
-      <button class="back-btn" onclick="goProviders()">← رجوع</button>
-      <h2>ملف مقدم الخدمة</h2>
-    </div>
-    <div id="provider-detail"></div>
-  </section>
+<section class="page" id="cart-page">
+  <div class="page-heading">
+    <button class="back-btn" onclick="goBackFromCart()">← رجوع</button>
+    <h2>سلة حجوزاتي</h2>
+  </div>
 
-  <section class="page" id="cart-page">
-    <div class="page-heading">
-      <button class="back-btn" onclick="goBackFromCart()">← رجوع</button>
-      <h2>سلة حجوزاتي</h2>
-    </div>
+  <div class="cart-box">
+    <h3>الخدمات المختارة <span class="cart-count" id="cart-count">0</span></h3>
+    <div id="cart-list"></div>
+    <p class="note">يمكنك الرجوع واختيار خدمات إضافية قبل إرسال الطلب.</p>
+  </div>
 
-    <div class="cart-box">
-      <h3>الخدمات المختارة <span class="cart-count" id="cart-count">0</span></h3>
-      <div id="cart-list"></div>
-      <p class="note">يمكنك الرجوع واختيار خدمات إضافية قبل إرسال الطلب.</p>
-    </div>
+  <div class="booking-box">
+    <h3>بيانات طلب الحجز</h3>
+    <p class="note">إرسال الطلب لا يعني تثبيت الحجز النهائي. الإدارة ستتواصل معك لتأكيد التوفر والتفاصيل.</p>
 
-    <div class="booking-box">
-      <h3>بيانات طلب الحجز</h3>
-      <p class="note">إرسال الطلب لا يعني تثبيت الحجز النهائي. الإدارة ستتواصل معك لتأكيد التوفر والتفاصيل.</p>
-
-      <form id="booking-form">
-        <div class="form-grid">
-          <div>
-            <label for="customer-name">الاسم الكامل</label>
-            <input id="customer-name" required maxlength="120" autocomplete="name" placeholder="اكتب اسمك الكامل">
-          </div>
-          <div>
-            <label for="customer-phone">رقم الهاتف</label>
-            <input id="customer-phone" type="tel" required maxlength="40" autocomplete="tel" placeholder="رقم للتواصل معك">
-          </div>
-          <div>
-            <label for="service-date">تاريخ المناسبة</label>
-            <input id="service-date" type="date" required>
-          </div>
-          <div>
-            <label for="service-location">المنطقة / مكان المناسبة</label>
-            <input id="service-location" required maxlength="200" placeholder="مثلاً: درعا البلد">
-          </div>
-          <div>
-            <label for="service-details">تفاصيل إضافية (اختياري)</label>
-            <textarea id="service-details" maxlength="2000" placeholder="عدد الضيوف أو أي تفاصيل إضافية"></textarea>
-          </div>
+    <form id="booking-form">
+      <div class="form-grid">
+        <div>
+          <label for="customer-name">الاسم الكامل</label>
+          <input id="customer-name" required maxlength="120" autocomplete="name" placeholder="اكتب اسمك الكامل">
         </div>
-        <button id="submit-booking" class="primary-btn" type="submit">إرسال الطلب عبر واتساب</button>
-        <div id="form-status" class="status-message" role="status" aria-live="polite"></div>
-      </form>
-    </div>
-  </section>
+        <div>
+          <label for="customer-phone">رقم الهاتف</label>
+          <input id="customer-phone" type="tel" required maxlength="40" autocomplete="tel" placeholder="رقم للتواصل معك">
+        </div>
+        <div>
+          <label for="service-date">تاريخ المناسبة</label>
+          <input id="service-date" type="date" required>
+        </div>
+        <div>
+          <label for="service-location">المنطقة / مكان المناسبة</label>
+          <input id="service-location" required maxlength="200" placeholder="مثلاً: درعا البلد">
+        </div>
+        <div>
+          <label for="service-details">تفاصيل إضافية (اختياري)</label>
+          <textarea id="service-details" maxlength="2000" placeholder="عدد الضيوف أو أي تفاصيل إضافية"></textarea>
+        </div>
+      </div>
+      <button id="submit-booking" class="primary-btn" type="submit">إرسال الطلب عبر واتساب</button>
+      <div id="form-status" class="status-message" role="status" aria-live="polite"></div>
+    </form>
+  </div>
+</section>
 
-  <footer>كملت جمعتنا — كل مناسباتك بمكان واحد</footer>
+<footer>كملت جمعتنا — كل مناسباتك بمكان واحد</footer>
 </main>
 
 <script>
@@ -292,11 +292,6 @@ let isSubmitting = false;
 
 const $ = id => document.getElementById(id);
 
-/*
-  الاتصال العام مع Supabase:
-  نرسل المفتاح المنشور ضمن apikey فقط.
-  لا نرسله ضمن Authorization لأنه ليس JWT.
-*/
 async function api(path, options={}) {
   const response = await fetch(`${REST}/${path}`, {
     ...options,
@@ -557,7 +552,7 @@ function openProvider(provider, media) {
     } else {
       const img = document.createElement('img');
       img.src = item.url;
-      img.alt = `صورة ${provider.name || 'مقدم الخدمة'}`;
+      img.alt = `صورة ${provider.name || 'مقدم خدمة'}`;
       img.loading = 'lazy';
       gallery.appendChild(img);
     }
@@ -664,6 +659,30 @@ function showStatus(message,type='info') {
   box.className = `status-message show ${type}`;
 }
 
+/*
+  تحويل عناصر السلة إلى بيانات قابلة للحفظ.
+  كل عنصر سيصبح سجلاً مستقلاً في booking_items.
+*/
+function prepareBookingItems() {
+  return cart.map(item => {
+    if (!item.serviceId || !item.providerId) {
+      throw new Error(
+        `بيانات الخدمة أو مقدم الخدمة غير مكتملة: ${item.serviceName}`
+      );
+    }
+
+    return {
+      serviceId:String(item.serviceId),
+      serviceName:item.serviceName,
+      providerId:String(item.providerId),
+      price:
+        item.price !== null && item.price !== undefined
+          ? String(item.price)
+          : null
+    };
+  });
+}
+
 async function submitBooking(event) {
   event.preventDefault();
 
@@ -682,6 +701,15 @@ async function submitBooking(event) {
 
   if (!name || !phone || !date || !location) {
     showStatus('تأكد من تعبئة الاسم ورقم الهاتف والتاريخ والمنطقة.','error');
+    return;
+  }
+
+  let bookingItems;
+
+  try {
+    bookingItems = prepareBookingItems();
+  } catch(error) {
+    showStatus(error.message,'error');
     return;
   }
 
@@ -709,30 +737,59 @@ async function submitBooking(event) {
 
   const button = $('submit-booking');
   button.disabled = true;
-  button.textContent = 'عم نحفظ طلبك…';
+  button.textContent = 'عم نحفظ الطلب والخدمات…';
 
-  showStatus('عم نحفظ طلبك بقاعدة البيانات…','info');
+  showStatus('عم نحفظ طلبك وخدماتك بشكل مستقل…','info');
 
   try {
-    const response = await fetch(`${REST}/Bookings`, {
-      method:'POST',
-      headers:{
-        apikey:SUPABASE_KEY,
-        'Content-Type':'application/json',
-        Prefer:'return=minimal'
-      },
-      body:JSON.stringify(record)
-    });
+
+    /*
+      استدعاء دالة Supabase التي تنفذ عمليتي الإدخال
+      ضمن معاملة واحدة:
+      1- إنشاء طلب في Bookings.
+      2- إنشاء سجل مستقل لكل خدمة في booking_items.
+    */
+
+    const response = await fetch(
+      `${REST}/rpc/create_booking_with_items`,
+      {
+        method:'POST',
+        headers:{
+          apikey:SUPABASE_KEY,
+          'Content-Type':'application/json',
+          Accept:'application/json'
+        },
+        body:JSON.stringify({
+          p_booking:record,
+          p_items:bookingItems
+        })
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(errorText || `HTTP ${response.status}`);
+      throw new Error(
+        `فشل حفظ الطلب أو الخدمات: ${errorText}`
+      );
     }
 
-    showStatus('تم حفظ طلبك بنجاح. عم نفتح واتساب…','success');
+    const bookingId = await response.json();
+
+    if (!bookingId) {
+      throw new Error('لم نستلم رقم طلب الحجز من قاعدة البيانات.');
+    }
+
+    console.log('تم حفظ طلب الحجز رقم:',bookingId);
+    console.log('عدد الخدمات المحفوظة:',bookingItems.length);
+
+    showStatus(
+      `تم حفظ طلبك رقم ${bookingId} مع ${bookingItems.length} خدمات مستقلة. عم نفتح واتساب…`,
+      'success'
+    );
 
     const message =
       `مرحبا، بدي قدّم طلب حجز جديد من كملت جمعتنا.\n\n` +
+      `رقم الطلب: ${bookingId}\n` +
       `الاسم: ${name}\nرقم الهاتف: ${phone}\n` +
       `التاريخ: ${date}\nالمنطقة: ${location}\n\n` +
       `${itemsText}\n\n` +
@@ -743,10 +800,10 @@ async function submitBooking(event) {
       `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 
   } catch(error) {
-    console.error(error);
+    console.error('خطأ إرسال الحجز:',error);
 
     showStatus(
-      `تعذر حفظ الطلب: ${error.message || 'خطأ غير معروف'}. ما فتحنا واتساب حتى ما يضيع طلبك.`,
+      `تعذر حفظ الطلب: ${error.message || 'خطأ غير معروف'}. لم نفتح واتساب حتى لا يضيع طلبك.`,
       'error'
     );
 
