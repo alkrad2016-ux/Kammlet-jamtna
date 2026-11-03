@@ -267,24 +267,24 @@ const WHATSAPP_NUMBER = '963942340147';
 const CART_STORAGE_KEY = 'kammlet_jamtna_cart_v1';
 const REST = `${SUPABASE_URL}/rest/v1`;
 
-/* رموز ووصف بصري للأقسام حسب رقمها، أما الاسم فيأتي من قاعدة البيانات */
+/* رموز ووصف الأقسام حسب رقمها */
 const categoryDesign = {
   1:{icon:'💍',subtitle:'كل تفاصيل فرحتك'},
   2:{icon:'🏡',subtitle:'أماكن لمناسبتك'},
   3:{icon:'🎤',subtitle:'أجواء وفرح'},
   4:{icon:'🍽️',subtitle:'ضيافة بتليق بضيوفك'},
-  5:{icon:'🎂',subtitle:'حلويات لمناسبتك'},
-  6:{icon:'🪑',subtitle:'كل مستلزمات مناسبتك'}
+  5:{icon:'📷',subtitle:'صور وذكريات مناسبتك'},
+  6:{icon:'🌸',subtitle:'ديكور وورد يزيّن مناسبتك'}
 };
 
-/* احتياط عند تعذر تحميل الأقسام من قاعدة البيانات */
+/* أسماء احتياطية عند تعذر تحميل الأقسام من قاعدة البيانات */
 const fallbackCategories = [
   {id:1,name:'أفراح وأعراس'},
   {id:2,name:'صالات ومزارع'},
   {id:3,name:'مطربين وفرق'},
   {id:4,name:'الطعام وضيافة'},
-  {id:5,name:'حلويات'},
-  {id:6,name:'كراسي وطاولات'}
+  {id:5,name:'تصوير ومصورون'},
+  {id:6,name:'ديكور وورد'}
 ];
 
 let categories = [];
