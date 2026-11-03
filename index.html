@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -9,14 +8,9 @@
 
 <style>
 :root{
-  --navy:#14213d;
-  --gold:#d4af37;
-  --cream:#f7f5f0;
-  --white:#fff;
-  --muted:#6b7280;
-  --line:#e7e2d8;
-  --green:#16834a;
-  --red:#b42318;
+  --navy:#14213d;--gold:#d4af37;--cream:#f7f5f0;
+  --white:#fff;--muted:#6b7280;--line:#e7e2d8;
+  --green:#16834a;--red:#b42318;
 }
 *{box-sizing:border-box}
 body{
@@ -183,14 +177,15 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:20px 10px}
 </header>
 
 <main>
-
 <section class="page active" id="home-page">
   <div class="intro">
     <h2>خلّي مناسبتك علينا</h2>
     <p>اختار القسم، واستكشف الخدمات ومقدميها، واجمع اختياراتك بسلة واحدة.</p>
   </div>
   <h2 class="page-heading">خدماتنا</h2>
-  <div class="service-grid" id="category-grid"></div>
+  <div class="service-grid" id="category-grid">
+    <div class="empty">عم نحمّل الأقسام…</div>
+  </div>
 </section>
 
 <section class="page" id="services-page">
@@ -269,61 +264,32 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:20px 10px}
 const SUPABASE_URL = 'https://qkzdbbqkkxnrgcpcvjvp.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_LiOa9cR2KhHDaEvA2_205Q_XL2OSrfp';
 const WHATSAPP_NUMBER = '963942340147';
-
-/* مفتاح حفظ السلة على جهاز الزبون */
 const CART_STORAGE_KEY = 'kammlet_jamtna_cart_v1';
-
 const REST = `${SUPABASE_URL}/rest/v1`;
 
-const categories = [
-  {id:1,name:'أفراح وأعراس',icon:'💍',subtitle:'كل تفاصيل فرحتك'},
-  {id:2,name:'صالات ومزارع',icon:'🏡',subtitle:'أماكن لمناسبتك'},
-  {id:4,name:'طعام وضيافة',icon:'🍽️',subtitle:'ضيافة بتليق بضيوفك'},
-  {id:3,name:'مطربين وفرق',icon:'🎤',subtitle:'أجواء وفرح'},
-  {id:5,name:'تصوير ومصورون',icon:'📸',subtitle:'وثّق أجمل اللحظات'},
-  {id:6,name:'ديكور وورد',icon:'🌹',subtitle:'لمسات تزيّن مناسبتك'}
+/* رموز ووصف بصري للأقسام حسب رقمها، أما الاسم فيأتي من قاعدة البيانات */
+const categoryDesign = {
+  1:{icon:'💍',subtitle:'كل تفاصيل فرحتك'},
+  2:{icon:'🏡',subtitle:'أماكن لمناسبتك'},
+  3:{icon:'🎤',subtitle:'أجواء وفرح'},
+  4:{icon:'🍽️',subtitle:'ضيافة بتليق بضيوفك'},
+  5:{icon:'🎂',subtitle:'حلويات لمناسبتك'},
+  6:{icon:'🪑',subtitle:'كل مستلزمات مناسبتك'}
+};
+
+/* احتياط عند تعذر تحميل الأقسام من قاعدة البيانات */
+const fallbackCategories = [
+  {id:1,name:'أفراح وأعراس'},
+  {id:2,name:'صالات ومزارع'},
+  {id:3,name:'مطربين وفرق'},
+  {id:4,name:'الطعام وضيافة'},
+  {id:5,name:'حلويات'},
+  {id:6,name:'كراسي وطاولات'}
 ];
 
+let categories = [];
 let services = [];
 let providers = [];
-
-/* استرجاع السلة المحفوظة عند فتح الصفحة */
-function loadSavedCart() {
-  try {
-    const saved = localStorage.getItem(CART_STORAGE_KEY);
-
-    if (!saved) return [];
-
-    const parsed = JSON.parse(saved);
-
-    if (!Array.isArray(parsed)) return [];
-
-    return parsed.filter(item =>
-      item &&
-      typeof item === 'object' &&
-      item.providerId !== undefined &&
-      item.serviceId !== undefined
-    );
-
-  } catch(error) {
-    console.warn('تعذر استرجاع السلة المحفوظة:', error);
-    return [];
-  }
-}
-
-/* حفظ السلة على الهاتف */
-function saveCart() {
-  try {
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
-    return true;
-  } catch(error) {
-    console.error('تعذر حفظ السلة على الجهاز:', error);
-    return false;
-  }
-}
-
-let cart = loadSavedCart();
-
 let currentCategoryId = null;
 let currentService = null;
 let currentProvider = null;
@@ -332,8 +298,37 @@ let isSubmitting = false;
 
 const $ = id => document.getElementById(id);
 
-async function api(path, options={}) {
-  const response = await fetch(`${REST}/${path}`, {
+function loadSavedCart(){
+  try{
+    const saved = localStorage.getItem(CART_STORAGE_KEY);
+    if(!saved) return [];
+    const parsed = JSON.parse(saved);
+    if(!Array.isArray(parsed)) return [];
+    return parsed.filter(item =>
+      item && typeof item === 'object' &&
+      item.providerId !== undefined &&
+      item.serviceId !== undefined
+    );
+  }catch(error){
+    console.warn('تعذر استرجاع السلة:',error);
+    return [];
+  }
+}
+
+let cart = loadSavedCart();
+
+function saveCart(){
+  try{
+    localStorage.setItem(CART_STORAGE_KEY,JSON.stringify(cart));
+    return true;
+  }catch(error){
+    console.error('تعذر حفظ السلة:',error);
+    return false;
+  }
+}
+
+async function api(path,options={}){
+  const response = await fetch(`${REST}/${path}`,{
     ...options,
     headers:{
       apikey:SUPABASE_KEY,
@@ -341,18 +336,18 @@ async function api(path, options={}) {
     }
   });
 
-  if (!response.ok) {
+  if(!response.ok){
     const message = await response.text();
     throw new Error(message || `HTTP ${response.status}`);
   }
 
-  if (response.status === 204) return null;
+  if(response.status === 204) return null;
   return response.json();
 }
 
-function showPage(id) {
-  document.querySelectorAll('.page').forEach(page => {
-    page.classList.toggle('active', page.id === id);
+function showPage(id){
+  document.querySelectorAll('.page').forEach(page=>{
+    page.classList.toggle('active',page.id === id);
   });
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -362,73 +357,126 @@ function goServices(){showPage('services-page')}
 function goProviders(){showPage('providers-page')}
 function goBackFromCart(){showPage(previousPage)}
 
-function categoryById(id) {
-  return categories.find(item => item.id === Number(id));
+function categoryById(id){
+  return categories.find(item=>Number(item.id) === Number(id));
 }
 
-function renderCategories() {
+function getCategoryDesign(id){
+  return categoryDesign[Number(id)] || {
+    icon:'🎉',
+    subtitle:'اكتشف الخدمات المتاحة'
+  };
+}
+
+/* تحميل الأقسام من جدول categories */
+async function loadCategories(){
+  const grid = $('category-grid');
+  grid.innerHTML = '<div class="empty">عم نحمّل الأقسام…</div>';
+
+  try{
+    const rows = await api(
+      'categories?select=id,name&order=id.asc'
+    );
+
+    if(!Array.isArray(rows) || !rows.length){
+      throw new Error('جدول الأقسام لا يحتوي على أقسام.');
+    }
+
+    categories = rows
+      .filter(row=>row.id !== null && row.name)
+      .map(row=>({
+        id:Number(row.id),
+        name:String(row.name)
+      }));
+
+    if(!categories.length){
+      throw new Error('لم يتم العثور على أقسام صالحة للعرض.');
+    }
+
+    renderCategories();
+
+  }catch(error){
+    console.error('تعذر تحميل الأقسام:',error);
+    categories = fallbackCategories;
+    renderCategories();
+
+    const warning = document.createElement('p');
+    warning.className = 'note';
+    warning.style.textAlign = 'center';
+    warning.textContent =
+      'تعذر الاتصال بجدول الأقسام حالياً؛ نعرض أسماء احتياطية مؤقتاً.';
+    grid.after(warning);
+  }
+}
+
+function renderCategories(){
   const grid = $('category-grid');
   grid.innerHTML = '';
 
-  categories.forEach(category => {
+  categories.forEach(category=>{
+    const design = getCategoryDesign(category.id);
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'service-card';
     button.innerHTML =
-      `<span class="service-icon">${category.icon}</span>
+      `<span class="service-icon">${design.icon}</span>
        <strong></strong><small></small>`;
+
     button.querySelector('strong').textContent = category.name;
-    button.querySelector('small').textContent = category.subtitle;
-    button.addEventListener('click', () => openCategory(category));
+    button.querySelector('small').textContent = design.subtitle;
+    button.addEventListener('click',()=>openCategory(category));
     grid.appendChild(button);
   });
 }
 
-async function openCategory(category) {
+async function openCategory(category){
   currentCategoryId = category.id;
-  $('services-heading').textContent = `${category.icon} ${category.name}`;
+  const design = getCategoryDesign(category.id);
+  $('services-heading').textContent = `${design.icon} ${category.name}`;
 
   const list = $('services-list');
   list.innerHTML = '<div class="empty">عم نحمّل أنواع الخدمات…</div>';
   showPage('services-page');
 
-  try {
+  try{
     services = await api(
-      `services?select=id,name,description,price,category_id,is_available&category_id=eq.${category.id}&is_available=eq.true&order=id.asc`
+      `services?select=id,name,description,price,category_id,is_available&category_id=eq.${encodeURIComponent(category.id)}&is_available=eq.true&order=id.asc`
     );
 
     list.innerHTML = '';
 
-    if (!services.length) {
+    if(!services.length){
       list.innerHTML = '<div class="empty">ما في أنواع خدمات متاحة ضمن هالقسم حالياً.</div>';
       return;
     }
 
-    services.forEach(service => {
+    services.forEach(service=>{
       const row = document.createElement('button');
       row.type = 'button';
       row.className = 'service-option';
       row.innerHTML = `
-        <span class="service-symbol">${category.icon}</span>
+        <span class="service-symbol">${design.icon}</span>
         <span class="service-info">
-          <strong></strong>
-          <p></p>
+          <strong></strong><p></p>
         </span>
         <span class="arrow">‹</span>`;
 
       row.querySelector('strong').textContent = service.name || 'خدمة';
-      row.querySelector('p').textContent = service.description || 'اضغط لمشاهدة مقدمي الخدمة';
-      row.addEventListener('click', () => openService(service));
+      row.querySelector('p').textContent =
+        service.description || 'اضغط لمشاهدة مقدمي الخدمة';
+
+      row.addEventListener('click',()=>openService(service));
       list.appendChild(row);
     });
 
-  } catch(error) {
-    console.error('خطأ تحميل الخدمات:', error);
-    list.innerHTML = `<div class="empty">تعذر تحميل أنواع الخدمات: ${escapeHtml(error.message)}</div>`;
+  }catch(error){
+    console.error('خطأ تحميل الخدمات:',error);
+    list.innerHTML =
+      `<div class="empty">تعذر تحميل أنواع الخدمات: ${escapeHtml(error.message)}</div>`;
   }
 }
 
-async function openService(service) {
+async function openService(service){
   currentService = service;
   $('providers-heading').textContent = service.name || 'مقدمو الخدمة';
 
@@ -436,19 +484,19 @@ async function openService(service) {
   list.innerHTML = '<div class="empty">عم نبحث عن مقدمي الخدمة…</div>';
   showPage('providers-page');
 
-  try {
+  try{
     providers = await api(
-      `service_providers?select=id,service_id,name,address,price,is_active,approval_status&service_id=eq.${service.id}&is_active=eq.true&approval_status=eq.approved&order=id.asc`
+      `service_providers?select=id,service_id,name,address,description,price,is_active,approval_status&service_id=eq.${encodeURIComponent(service.id)}&is_active=eq.true&approval_status=eq.approved&order=id.asc`
     );
 
     list.innerHTML = '';
 
-    if (!providers.length) {
+    if(!providers.length){
       list.innerHTML = '<div class="empty">ما في مقدمي خدمة متاحين لهالخدمة حالياً. رح نضيفهم قريباً.</div>';
       return;
     }
 
-    for (const provider of providers) {
+    for(const provider of providers){
       const card = document.createElement('article');
       card.className = 'provider-card';
       card.innerHTML = `
@@ -456,51 +504,57 @@ async function openService(service) {
         <strong></strong>
         <div class="provider-meta"><span class="address"></span></div>
         <p class="price"></p>
+        <p class="provider-description"></p>
         <div class="view-label">عرض الملف والصور والفيديوهات ←</div>`;
 
       card.querySelector('strong').textContent = provider.name || 'مقدم خدمة';
-      card.querySelector('.address').textContent = `📍 ${provider.address || 'المكان غير محدد'}`;
+      card.querySelector('.address').textContent =
+        `📍 ${provider.address || 'المكان غير محدد'}`;
+
       card.querySelector('.price').textContent =
         provider.price !== null && provider.price !== undefined
           ? `السعر: ${provider.price}`
           : 'السعر يُحدَّد بعد التواصل';
 
-      const media = await loadProviderMedia(provider.id);
-      const cover = media.find(item => item.is_cover && item.media_type === 'image')
-        || media.find(item => item.media_type === 'image');
+      card.querySelector('.provider-description').textContent =
+        provider.description || '';
 
-      if (cover && cover.url) {
+      const media = await loadProviderMedia(provider.id);
+      const cover = media.find(item=>item.is_cover && item.media_type === 'image')
+        || media.find(item=>item.media_type === 'image');
+
+      if(cover && cover.url){
         const img = document.createElement('img');
         img.className = 'provider-cover';
         img.src = cover.url;
         img.alt = provider.name || 'صورة مقدم الخدمة';
         card.querySelector('.provider-image').appendChild(img);
-      } else {
+      }else{
         card.querySelector('.provider-image').innerHTML =
           '<div class="provider-placeholder">📷</div>';
       }
 
-      card.addEventListener('click', () => openProvider(provider, media));
+      card.addEventListener('click',()=>openProvider(provider,media));
       list.appendChild(card);
     }
 
-  } catch(error) {
-    console.error('خطأ تحميل مقدمي الخدمة:', error);
+  }catch(error){
+    console.error('خطأ تحميل مقدمي الخدمة:',error);
     list.innerHTML =
       `<div class="empty">تعذر تحميل مقدمي الخدمة. تفاصيل الخطأ: ${escapeHtml(error.message)}</div>`;
   }
 }
 
-async function loadProviderMedia(providerId) {
-  try {
+async function loadProviderMedia(providerId){
+  try{
     const rows = await api(
-      `provider_media?select=id,provider_id,storage_path,media_type,is_cover,sort_order,approval_status&provider_id=eq.${providerId}&approval_status=eq.approved&order=sort_order.asc,id.asc`
+      `provider_media?select=id,provider_id,storage_path,media_type,is_cover,sort_order,approval_status&provider_id=eq.${encodeURIComponent(providerId)}&approval_status=eq.approved&order=sort_order.asc,id.asc`
     );
 
     const result = [];
 
-    for (const item of rows) {
-      try {
+    for(const item of rows){
+      try{
         const encodedPath = item.storage_path
           .split('/')
           .map(encodeURIComponent)
@@ -518,31 +572,31 @@ async function loadProviderMedia(providerId) {
           }
         );
 
-        if (!signed.ok) continue;
+        if(!signed.ok) continue;
 
         const data = await signed.json();
         let url = data.signedURL || data.signedUrl;
 
-        if (url && url.startsWith('/')) {
+        if(url && url.startsWith('/')){
           url = `${SUPABASE_URL}/storage/v1${url}`;
         }
 
-        if (url) result.push({...item,url});
+        if(url) result.push({...item,url});
 
-      } catch(error) {
-        console.warn('تعذر تحميل ملف وسائط:', error);
+      }catch(error){
+        console.warn('تعذر تحميل ملف وسائط:',error);
       }
     }
 
     return result;
 
-  } catch(error) {
-    console.warn('تعذر قراءة وسائط مقدم الخدمة:', error);
+  }catch(error){
+    console.warn('تعذر قراءة وسائط مقدم الخدمة:',error);
     return [];
   }
 }
 
-function openProvider(provider, media) {
+function openProvider(provider,media){
   currentProvider = provider;
 
   const detail = $('provider-detail');
@@ -560,16 +614,25 @@ function openProvider(provider, media) {
   address.textContent = `📍 المكان: ${provider.address || 'غير محدد'}`;
   box.appendChild(address);
 
+  if(provider.description){
+    const description = document.createElement('p');
+    description.className = 'detail-description';
+    description.textContent = provider.description;
+    box.appendChild(description);
+  }
+
   const price = document.createElement('p');
   price.className = 'price';
-  price.textContent = provider.price !== null && provider.price !== undefined
-    ? `السعر: ${provider.price}`
-    : 'السعر يُحدَّد بعد تأكيد التفاصيل';
+  price.textContent =
+    provider.price !== null && provider.price !== undefined
+      ? `السعر: ${provider.price}`
+      : 'السعر يُحدَّد بعد تأكيد التفاصيل';
   box.appendChild(price);
 
   const serviceName = document.createElement('p');
   serviceName.className = 'detail-description';
-  serviceName.textContent = `الخدمة: ${currentService ? currentService.name : ''}`;
+  serviceName.textContent =
+    `الخدمة: ${currentService ? currentService.name : ''}`;
   box.appendChild(serviceName);
 
   const galleryTitle = document.createElement('h3');
@@ -580,16 +643,16 @@ function openProvider(provider, media) {
   const gallery = document.createElement('div');
   gallery.className = 'media-grid';
 
-  media.forEach(item => {
-    if (!item.url) return;
+  media.forEach(item=>{
+    if(!item.url) return;
 
-    if (item.media_type === 'video') {
+    if(item.media_type === 'video'){
       const video = document.createElement('video');
       video.src = item.url;
       video.controls = true;
       video.playsInline = true;
       gallery.appendChild(video);
-    } else {
+    }else{
       const img = document.createElement('img');
       img.src = item.url;
       img.alt = `صورة ${provider.name || 'مقدم خدمة'}`;
@@ -598,12 +661,12 @@ function openProvider(provider, media) {
     }
   });
 
-  if (!gallery.children.length) {
+  if(!gallery.children.length){
     const empty = document.createElement('div');
     empty.className = 'media-empty';
     empty.textContent = 'لا توجد صور أو فيديوهات منشورة لهذا المقدم حالياً.';
     box.appendChild(empty);
-  } else {
+  }else{
     box.appendChild(gallery);
   }
 
@@ -611,15 +674,15 @@ function openProvider(provider, media) {
   add.type = 'button';
   add.className = 'primary-btn';
   add.textContent = 'إضافة مقدم الخدمة إلى السلة';
-  add.addEventListener('click', () => addProviderToCart(provider));
+  add.addEventListener('click',()=>addProviderToCart(provider));
   box.appendChild(add);
 
   detail.appendChild(box);
   showPage('provider-detail-page');
 }
 
-function addProviderToCart(provider) {
-  if (cart.some(item => String(item.providerId) === String(provider.id))) {
+function addProviderToCart(provider){
+  if(cart.some(item=>String(item.providerId) === String(provider.id))){
     alert('هالمقدم موجود بالسلة من قبل.');
     return;
   }
@@ -636,26 +699,24 @@ function addProviderToCart(provider) {
     price:provider.price
   });
 
-  /* حفظ مباشر بعد الإضافة */
   saveCart();
-
   renderCart();
   alert('تمت إضافة مقدم الخدمة إلى سلة حجوزاتك.');
 }
 
-function renderCart() {
+function renderCart(){
   $('header-cart-count').textContent = cart.length;
   $('cart-count').textContent = cart.length;
 
   const list = $('cart-list');
   list.innerHTML = '';
 
-  if (!cart.length) {
+  if(!cart.length){
     list.innerHTML = '<div class="empty">سلتك فارغة حالياً. ارجع واختر مقدم خدمة.</div>';
     return;
   }
 
-  cart.forEach((item,index) => {
+  cart.forEach((item,index)=>{
     const row = document.createElement('div');
     row.className = 'cart-item';
 
@@ -666,12 +727,14 @@ function renderCart() {
     name.textContent = `${index+1}. ${item.providerName}`;
 
     const small = document.createElement('small');
-    small.textContent = `${item.categoryName} — ${item.serviceName} — ${item.address}`;
+    small.textContent =
+      `${item.categoryName} — ${item.serviceName} — ${item.address}`;
 
     const price = document.createElement('small');
-    price.textContent = item.price !== null && item.price !== undefined
-      ? `السعر المسجل: ${item.price}`
-      : 'السعر يُحدَّد بعد تأكيد التفاصيل';
+    price.textContent =
+      item.price !== null && item.price !== undefined
+        ? `السعر المسجل: ${item.price}`
+        : 'السعر يُحدَّد بعد تأكيد التفاصيل';
 
     info.append(name,small,price);
 
@@ -680,12 +743,9 @@ function renderCart() {
     remove.className = 'remove-btn';
     remove.textContent = 'حذف';
 
-    remove.addEventListener('click', () => {
+    remove.addEventListener('click',()=>{
       cart.splice(index,1);
-
-      /* حفظ مباشر بعد الحذف */
       saveCart();
-
       renderCart();
     });
 
@@ -694,25 +754,21 @@ function renderCart() {
   });
 }
 
-function openCart() {
+function openCart(){
   previousPage = document.querySelector('.page.active')?.id || 'home-page';
   renderCart();
   showPage('cart-page');
 }
 
-function showStatus(message,type='info') {
+function showStatus(message,type='info'){
   const box = $('form-status');
   box.textContent = message;
   box.className = `status-message show ${type}`;
 }
 
-/*
-  تحويل عناصر السلة إلى بيانات قابلة للحفظ.
-  كل عنصر سيصبح سجلاً مستقلاً في booking_items.
-*/
-function prepareBookingItems() {
-  return cart.map(item => {
-    if (!item.serviceId || !item.providerId) {
+function prepareBookingItems(){
+  return cart.map(item=>{
+    if(!item.serviceId || !item.providerId){
       throw new Error(
         `بيانات الخدمة أو مقدم الخدمة غير مكتملة: ${item.serviceName}`
       );
@@ -730,12 +786,12 @@ function prepareBookingItems() {
   });
 }
 
-async function submitBooking(event) {
+async function submitBooking(event){
   event.preventDefault();
 
-  if (isSubmitting) return;
+  if(isSubmitting) return;
 
-  if (!cart.length) {
+  if(!cart.length){
     showStatus('أضف مقدم خدمة واحداً على الأقل إلى السلة.','error');
     return;
   }
@@ -746,26 +802,27 @@ async function submitBooking(event) {
   const location = $('service-location').value.trim();
   const extra = $('service-details').value.trim();
 
-  if (!name || !phone || !date || !location) {
+  if(!name || !phone || !date || !location){
     showStatus('تأكد من تعبئة الاسم ورقم الهاتف والتاريخ والمنطقة.','error');
     return;
   }
 
   let bookingItems;
 
-  try {
+  try{
     bookingItems = prepareBookingItems();
-  } catch(error) {
+  }catch(error){
     showStatus(error.message,'error');
     return;
   }
 
-  const itemsText = cart.map((item,index) => {
-    const price = item.price !== null && item.price !== undefined
-      ? `السعر: ${item.price}`
-      : 'السعر يُحدَّد بعد تأكيد التفاصيل';
+  const itemsText = cart.map((item,index)=>{
+    const price =
+      item.price !== null && item.price !== undefined
+        ? `السعر: ${item.price}`
+        : 'السعر يُحدَّد بعد تأكيد التفاصيل';
 
-    return `${index+1}. ${item.categoryName} — ${item.serviceName}\n` +
+    return `${index+1}. ${item.categoryName} — ${item.serviceName}\n`+
       `مقدم الخدمة: ${item.providerName}\nالمكان: ${item.address}\n${price}`;
   }).join('\n\n');
 
@@ -775,7 +832,7 @@ async function submitBooking(event) {
     service_date:date,
     service_location:location,
     service_details:
-      `مقدمو الخدمات المختارون:\n${itemsText}` +
+      `مقدمو الخدمات المختارون:\n${itemsText}`+
       `${extra ? `\n\nتفاصيل إضافية: ${extra}` : ''}`,
     status:'pending'
   };
@@ -788,7 +845,7 @@ async function submitBooking(event) {
 
   showStatus('عم نحفظ طلبك وخدماتك بشكل مستقل…','info');
 
-  try {
+  try{
     const response = await fetch(
       `${REST}/rpc/create_booking_with_items`,
       {
@@ -805,26 +862,20 @@ async function submitBooking(event) {
       }
     );
 
-    if (!response.ok) {
+    if(!response.ok){
       const errorText = await response.text();
-      throw new Error(
-        `فشل حفظ الطلب أو الخدمات: ${errorText}`
-      );
+      throw new Error(`فشل حفظ الطلب أو الخدمات: ${errorText}`);
     }
 
     const bookingId = await response.json();
 
-    if (!bookingId) {
+    if(!bookingId){
       throw new Error('لم نستلم رقم طلب الحجز من قاعدة البيانات.');
     }
 
     console.log('تم حفظ طلب الحجز رقم:',bookingId);
     console.log('عدد الخدمات المحفوظة:',bookingItems.length);
 
-    /*
-      لا نفرغ السلة إلا بعد نجاح الحفظ واستلام رقم الطلب.
-      بعدها نحفظ السلة الفارغة على الجهاز أيضاً.
-    */
     cart = [];
     saveCart();
     renderCart();
@@ -835,34 +886,32 @@ async function submitBooking(event) {
     );
 
     const message =
-      `مرحبا، بدي قدّم طلب حجز جديد من كملت جمعتنا.\n\n` +
-      `رقم الطلب: ${bookingId}\n` +
-      `الاسم: ${name}\nرقم الهاتف: ${phone}\n` +
-      `التاريخ: ${date}\nالمنطقة: ${location}\n\n` +
-      `${itemsText}\n\n` +
-      `${extra ? `تفاصيل إضافية: ${extra}\n\n` : ''}` +
+      `مرحبا، بدي قدّم طلب حجز جديد من كملت جمعتنا.\n\n`+
+      `رقم الطلب: ${bookingId}\n`+
+      `الاسم: ${name}\nرقم الهاتف: ${phone}\n`+
+      `التاريخ: ${date}\nالمنطقة: ${location}\n\n`+
+      `${itemsText}\n\n`+
+      `${extra ? `تفاصيل إضافية: ${extra}\n\n` : ''}`+
       `بعرف إنو الطلب بحاجة لتأكيد التوفر والتفاصيل من الإدارة.`;
 
     window.location.href =
       `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 
-  } catch(error) {
+  }catch(error){
     console.error('خطأ إرسال الحجز:',error);
-
     showStatus(
       `تعذر حفظ الطلب: ${error.message || 'خطأ غير معروف'}. لم نفتح واتساب حتى لا يضيع طلبك.`,
       'error'
     );
-
-  } finally {
+  }finally{
     isSubmitting = false;
     button.disabled = false;
     button.textContent = 'إرسال الطلب عبر واتساب';
   }
 }
 
-function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, char => ({
+function escapeHtml(value){
+  return String(value).replace(/[&<>"']/g,char=>({
     '&':'&amp;',
     '<':'&lt;',
     '>':'&gt;',
@@ -873,10 +922,9 @@ function escapeHtml(value) {
 
 $('booking-form').addEventListener('submit',submitBooking);
 
-renderCategories();
-
-/* عرض السلة المسترجعة عند فتح الموقع */
+/* بدء الموقع */
 renderCart();
+loadCategories();
 </script>
 </body>
 </html>
