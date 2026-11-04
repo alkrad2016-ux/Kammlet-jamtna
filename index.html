@@ -23,7 +23,10 @@ header{
 }
 header h1{margin:0;font-size:clamp(25px,6vw,34px)}
 header p{margin:5px 0 12px;color:#f0df9c;font-size:13px}
-.header-cart{
+.header-actions{
+  display:flex;justify-content:center;gap:8px;flex-wrap:wrap
+}
+.header-cart,.header-account{
   border:1px solid var(--gold);background:transparent;color:#fff;
   border-radius:20px;padding:7px 15px;font:inherit;font-size:13px
 }
@@ -95,11 +98,11 @@ main{max-width:760px;margin:0 auto;padding:18px 14px 40px}
 .view-label{
   color:#806313;font-size:13px;font-weight:bold;margin-top:9px
 }
-.detail-box,.cart-box,.booking-box{
+.detail-box,.cart-box,.booking-box,.account-box{
   background:#fff;border:1px solid var(--line);border-radius:15px;
   padding:16px;margin-top:12px;box-shadow:0 3px 12px #14213d08
 }
-.detail-box h3{margin:0 0 7px}
+.detail-box h3,.cart-box h3,.booking-box h3,.account-box h3{margin:0 0 7px}
 .detail-description{color:var(--muted);font-size:14px}
 .media-grid{
   display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;
@@ -122,6 +125,11 @@ main{max-width:760px;margin:0 auto;padding:18px 14px 40px}
 .secondary-btn{
   width:100%;border:1px solid var(--line);background:#fff;
   color:var(--navy);border-radius:10px;padding:11px;
+  font:inherit;margin-top:8px;cursor:pointer
+}
+.danger-btn{
+  width:100%;border:1px solid #f0c9c6;background:#fff6f5;
+  color:var(--red);border-radius:10px;padding:10px;
   font:inherit;margin-top:8px;cursor:pointer
 }
 .cart-count{
@@ -159,6 +167,23 @@ textarea{min-height:90px;resize:vertical}
   color:var(--muted);padding:17px;text-align:center;font-size:14px
 }
 .note{font-size:12px;color:var(--muted);margin:8px 0}
+.account-summary{
+  background:#f8f6ef;border-radius:10px;padding:12px;margin:10px 0;
+  font-size:14px
+}
+.account-summary strong{display:block}
+.account-nav{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.account-nav button{
+  border:1px solid var(--line);background:#fff;color:var(--navy);
+  border-radius:10px;padding:12px 6px;font:inherit;font-size:13px
+}
+.data-card{
+  background:#fff;border:1px solid var(--line);border-radius:12px;
+  padding:13px;margin:10px 0;font-size:14px
+}
+.data-card p{margin:4px 0;color:var(--muted)}
+.data-card strong{color:var(--navy)}
+.unread{border-right:4px solid var(--gold)}
 footer{text-align:center;color:var(--muted);font-size:12px;padding:20px 10px}
 @media(max-width:380px){
   main{padding-left:10px;padding-right:10px}
@@ -171,9 +196,14 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:20px 10px}
 <header>
   <h1>كملت جمعتنا 🎉</h1>
   <p>كل مناسباتك بمكان واحد</p>
-  <button class="header-cart" type="button" onclick="openCart()">
-    🛒 سلة حجوزاتي <span id="header-cart-count">0</span>
-  </button>
+  <div class="header-actions">
+    <button class="header-cart" type="button" onclick="openCart()">
+      🛒 سلة حجوزاتي <span id="header-cart-count">0</span>
+    </button>
+    <button class="header-account" type="button" onclick="openAccount()">
+      👤 حسابي
+    </button>
+  </div>
 </header>
 
 <main>
@@ -224,10 +254,43 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:20px 10px}
     <p class="note">يمكنك الرجوع واختيار خدمات إضافية قبل إرسال الطلب.</p>
   </div>
 
-  <div class="booking-box">
+  <div class="account-box" id="checkout-auth-box">
+    <h3>تسجيل الدخول مطلوب</h3>
+    <p class="note">سجّل دخولك أو أنشئ حساباً حتى نربط طلب الحجز بحسابك.</p>
+
+    <div class="account-nav">
+      <button type="button" onclick="showAuthMode('login')">تسجيل الدخول</button>
+      <button type="button" onclick="showAuthMode('signup')">إنشاء حساب جديد</button>
+    </div>
+
+    <form id="checkout-auth-form" class="form-grid" style="margin-top:12px">
+      <div id="signup-name-wrap" style="display:none">
+        <label for="auth-name">الاسم الكامل</label>
+        <input id="auth-name" maxlength="120" autocomplete="name" placeholder="اسمك الكامل">
+      </div>
+      <div>
+        <label for="auth-phone">رقم الهاتف السوري</label>
+        <div style="display:flex;align-items:center;gap:7px">
+          <span style="background:#f8f6ef;padding:12px;border-radius:10px;font-weight:bold">+963</span>
+          <input id="auth-phone" type="tel" inputmode="numeric" maxlength="10"
+                 autocomplete="tel-national" placeholder="9XXXXXXXX" required>
+        </div>
+        <p class="note">اكتب الرقم المحلي مثل 09XXXXXXXX أو 9XXXXXXXX.</p>
+      </div>
+      <div>
+        <label for="auth-password">كلمة المرور</label>
+        <input id="auth-password" type="password" minlength="8"
+               autocomplete="current-password" placeholder="8 خانات على الأقل" required>
+      </div>
+      <button class="primary-btn" id="auth-submit" type="submit">تسجيل الدخول</button>
+      <div id="auth-status" class="status-message" role="status" aria-live="polite"></div>
+      <p class="note">إذا نسيت كلمة المرور، تواصل مع الإدارة لإعادة تعيينها.</p>
+    </form>
+  </div>
+
+  <div class="booking-box" id="booking-box" style="display:none">
     <h3>بيانات طلب الحجز</h3>
     <p class="note">إرسال الطلب لا يعني تثبيت الحجز النهائي. الإدارة ستتواصل معك لتأكيد التوفر والتفاصيل.</p>
-
     <form id="booking-form">
       <div class="form-grid">
         <div>
@@ -236,7 +299,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:20px 10px}
         </div>
         <div>
           <label for="customer-phone">رقم الهاتف</label>
-          <input id="customer-phone" type="tel" required maxlength="40" autocomplete="tel" placeholder="رقم للتواصل معك">
+          <input id="customer-phone" type="tel" required maxlength="20" readonly>
         </div>
         <div>
           <label for="service-date">تاريخ المناسبة</label>
@@ -257,9 +320,46 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:20px 10px}
   </div>
 </section>
 
+<section class="page" id="account-page">
+  <div class="page-heading">
+    <button class="back-btn" onclick="goHome()">← الرئيسية</button>
+    <h2>حسابي</h2>
+  </div>
+
+  <div class="account-box" id="account-guest-box">
+    <h3>أهلاً بك في كملت جمعتنا</h3>
+    <p class="note">سجّل الدخول لمتابعة طلباتك وإشعاراتك.</p>
+    <button class="primary-btn" onclick="openCart()">تسجيل الدخول أو إنشاء حساب</button>
+  </div>
+
+  <div class="account-box" id="account-user-box" style="display:none">
+    <h3>بيانات حسابك</h3>
+    <div class="account-summary">
+      <strong id="account-user-name"></strong>
+      <span id="account-user-phone"></span>
+    </div>
+    <div class="account-nav">
+      <button onclick="loadMyBookings()">📋 طلباتي</button>
+      <button onclick="loadMyNotifications()">🔔 إشعاراتي</button>
+    </div>
+    <button class="danger-btn" onclick="logout()">تسجيل الخروج</button>
+  </div>
+
+  <div class="account-box" id="my-bookings-box" style="display:none">
+    <h3>طلباتي</h3>
+    <div id="my-bookings-list"></div>
+  </div>
+
+  <div class="account-box" id="my-notifications-box" style="display:none">
+    <h3>إشعاراتي</h3>
+    <div id="my-notifications-list"></div>
+  </div>
+</section>
+
 <footer>كملت جمعتنا — كل مناسباتك بمكان واحد</footer>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL = 'https://qkzdbbqkkxnrgcpcvjvp.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_LiOa9cR2KhHDaEvA2_205Q_XL2OSrfp';
@@ -267,7 +367,20 @@ const WHATSAPP_NUMBER = '963942340147';
 const CART_STORAGE_KEY = 'kammlet_jamtna_cart_v1';
 const REST = `${SUPABASE_URL}/rest/v1`;
 
-/* رموز ووصف الأقسام حسب رقمها */
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY,
+  {
+    auth:{
+      persistSession:true,
+      autoRefreshToken:true,
+      detectSessionInUrl:false
+    }
+  }
+);
+
+const SYNTHETIC_EMAIL_DOMAIN = 'accounts.kammlet-jamtna.com';
+
 const categoryDesign = {
   1:{icon:'💍',subtitle:'كل تفاصيل فرحتك'},
   2:{icon:'🏡',subtitle:'أماكن لمناسبتك'},
@@ -277,7 +390,6 @@ const categoryDesign = {
   6:{icon:'🌸',subtitle:'ديكور وورد يزيّن مناسبتك'}
 };
 
-/* أسماء احتياطية عند تعذر تحميل الأقسام من قاعدة البيانات */
 const fallbackCategories = [
   {id:1,name:'أفراح وأعراس'},
   {id:2,name:'صالات ومزارع'},
@@ -295,8 +407,60 @@ let currentService = null;
 let currentProvider = null;
 let previousPage = 'home-page';
 let isSubmitting = false;
+let authMode = 'login';
+let currentSession = null;
+let currentUser = null;
+let currentProfile = null;
 
 const $ = id => document.getElementById(id);
+
+function normalizeSyrianPhone(value){
+  let digits = String(value || '').replace(/\D/g,'');
+  if(digits.startsWith('00963')) digits = digits.slice(5);
+  else if(digits.startsWith('963')) digits = digits.slice(3);
+  if(digits.startsWith('0')) digits = digits.slice(1);
+  if(!/^9\d{8}$/.test(digits)){
+    throw new Error('رقم الهاتف غير صحيح. أدخل رقم الموبايل السوري مثل 09XXXXXXXX.');
+  }
+  return '+963' + digits;
+}
+
+function emailFromPhone(phone){
+  const digits = phone.replace(/\D/g,'');
+  return `${digits}@${SYNTHETIC_EMAIL_DOMAIN}`;
+}
+
+function showMessage(id,message,type='info'){
+  const box = $(id);
+  box.textContent = message;
+  box.className = `status-message show ${type}`;
+}
+
+function clearMessage(id){
+  const box = $(id);
+  box.textContent = '';
+  box.className = 'status-message';
+}
+
+async function api(path,options={}){
+  const headers = {
+    apikey:SUPABASE_KEY,
+    ...(options.headers || {})
+  };
+  if(currentSession?.access_token){
+    headers.Authorization = `Bearer ${currentSession.access_token}`;
+  }
+  const response = await fetch(`${REST}/${path}`,{
+    ...options,
+    headers
+  });
+  if(!response.ok){
+    const message = await response.text();
+    throw new Error(message || `HTTP ${response.status}`);
+  }
+  if(response.status === 204) return null;
+  return response.json();
+}
 
 function loadSavedCart(){
   try{
@@ -327,84 +491,46 @@ function saveCart(){
   }
 }
 
-async function api(path,options={}){
-  const response = await fetch(`${REST}/${path}`,{
-    ...options,
-    headers:{
-      apikey:SUPABASE_KEY,
-      ...(options.headers || {})
-    }
-  });
-
-  if(!response.ok){
-    const message = await response.text();
-    throw new Error(message || `HTTP ${response.status}`);
-  }
-
-  if(response.status === 204) return null;
-  return response.json();
-}
-
 function showPage(id){
   document.querySelectorAll('.page').forEach(page=>{
     page.classList.toggle('active',page.id === id);
   });
   window.scrollTo({top:0,behavior:'smooth'});
 }
-
 function goHome(){showPage('home-page')}
 function goServices(){showPage('services-page')}
 function goProviders(){showPage('providers-page')}
 function goBackFromCart(){showPage(previousPage)}
-
 function categoryById(id){
   return categories.find(item=>Number(item.id) === Number(id));
 }
-
 function getCategoryDesign(id){
   return categoryDesign[Number(id)] || {
-    icon:'🎉',
-    subtitle:'اكتشف الخدمات المتاحة'
+    icon:'🎉',subtitle:'اكتشف الخدمات المتاحة'
   };
 }
 
-/* تحميل الأقسام من جدول categories */
 async function loadCategories(){
   const grid = $('category-grid');
   grid.innerHTML = '<div class="empty">عم نحمّل الأقسام…</div>';
-
   try{
-    const rows = await api(
-      'categories?select=id,name&order=id.asc'
-    );
-
+    const rows = await api('categories?select=id,name&order=id.asc');
     if(!Array.isArray(rows) || !rows.length){
       throw new Error('جدول الأقسام لا يحتوي على أقسام.');
     }
-
     categories = rows
       .filter(row=>row.id !== null && row.name)
-      .map(row=>({
-        id:Number(row.id),
-        name:String(row.name)
-      }));
-
-    if(!categories.length){
-      throw new Error('لم يتم العثور على أقسام صالحة للعرض.');
-    }
-
+      .map(row=>({id:Number(row.id),name:String(row.name)}));
+    if(!categories.length) throw new Error('لا توجد أقسام صالحة.');
     renderCategories();
-
   }catch(error){
     console.error('تعذر تحميل الأقسام:',error);
     categories = fallbackCategories;
     renderCategories();
-
     const warning = document.createElement('p');
     warning.className = 'note';
     warning.style.textAlign = 'center';
-    warning.textContent =
-      'تعذر الاتصال بجدول الأقسام حالياً؛ نعرض أسماء احتياطية مؤقتاً.';
+    warning.textContent = 'تعذر تحميل الأقسام من قاعدة البيانات؛ نعرض الأسماء الاحتياطية.';
     grid.after(warning);
   }
 }
@@ -412,16 +538,13 @@ async function loadCategories(){
 function renderCategories(){
   const grid = $('category-grid');
   grid.innerHTML = '';
-
   categories.forEach(category=>{
     const design = getCategoryDesign(category.id);
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'service-card';
-    button.innerHTML =
-      `<span class="service-icon">${design.icon}</span>
-       <strong></strong><small></small>`;
-
+    button.innerHTML = '<span class="service-icon"></span><strong></strong><small></small>';
+    button.querySelector('.service-icon').textContent = design.icon;
     button.querySelector('strong').textContent = category.name;
     button.querySelector('small').textContent = design.subtitle;
     button.addEventListener('click',()=>openCategory(category));
@@ -433,69 +556,53 @@ async function openCategory(category){
   currentCategoryId = category.id;
   const design = getCategoryDesign(category.id);
   $('services-heading').textContent = `${design.icon} ${category.name}`;
-
   const list = $('services-list');
   list.innerHTML = '<div class="empty">عم نحمّل أنواع الخدمات…</div>';
   showPage('services-page');
-
   try{
     services = await api(
       `services?select=id,name,description,price,category_id,is_available&category_id=eq.${encodeURIComponent(category.id)}&is_available=eq.true&order=id.asc`
     );
-
     list.innerHTML = '';
-
     if(!services.length){
       list.innerHTML = '<div class="empty">ما في أنواع خدمات متاحة ضمن هالقسم حالياً.</div>';
       return;
     }
-
     services.forEach(service=>{
       const row = document.createElement('button');
       row.type = 'button';
       row.className = 'service-option';
       row.innerHTML = `
         <span class="service-symbol">${design.icon}</span>
-        <span class="service-info">
-          <strong></strong><p></p>
-        </span>
+        <span class="service-info"><strong></strong><p></p></span>
         <span class="arrow">‹</span>`;
-
       row.querySelector('strong').textContent = service.name || 'خدمة';
       row.querySelector('p').textContent =
         service.description || 'اضغط لمشاهدة مقدمي الخدمة';
-
       row.addEventListener('click',()=>openService(service));
       list.appendChild(row);
     });
-
   }catch(error){
-    console.error('خطأ تحميل الخدمات:',error);
-    list.innerHTML =
-      `<div class="empty">تعذر تحميل أنواع الخدمات: ${escapeHtml(error.message)}</div>`;
+    console.error(error);
+    list.innerHTML = `<div class="empty">تعذر تحميل الخدمات: ${escapeHtml(error.message)}</div>`;
   }
 }
 
 async function openService(service){
   currentService = service;
   $('providers-heading').textContent = service.name || 'مقدمو الخدمة';
-
   const list = $('providers-list');
   list.innerHTML = '<div class="empty">عم نبحث عن مقدمي الخدمة…</div>';
   showPage('providers-page');
-
   try{
     providers = await api(
       `service_providers?select=id,service_id,name,address,description,price,is_active,approval_status&service_id=eq.${encodeURIComponent(service.id)}&is_active=eq.true&approval_status=eq.approved&order=id.asc`
     );
-
     list.innerHTML = '';
-
     if(!providers.length){
-      list.innerHTML = '<div class="empty">ما في مقدمي خدمة متاحين لهالخدمة حالياً. رح نضيفهم قريباً.</div>';
+      list.innerHTML = '<div class="empty">ما في مقدمي خدمة متاحين لهالخدمة حالياً.</div>';
       return;
     }
-
     for(const provider of providers){
       const card = document.createElement('article');
       card.className = 'provider-card';
@@ -503,27 +610,20 @@ async function openService(service){
         <div class="provider-image"></div>
         <strong></strong>
         <div class="provider-meta"><span class="address"></span></div>
-        <p class="price"></p>
-        <p class="provider-description"></p>
+        <p class="price"></p><p class="provider-description"></p>
         <div class="view-label">عرض الملف والصور والفيديوهات ←</div>`;
-
       card.querySelector('strong').textContent = provider.name || 'مقدم خدمة';
       card.querySelector('.address').textContent =
         `📍 ${provider.address || 'المكان غير محدد'}`;
-
       card.querySelector('.price').textContent =
         provider.price !== null && provider.price !== undefined
-          ? `السعر: ${provider.price}`
-          : 'السعر يُحدَّد بعد التواصل';
-
+          ? `السعر: ${provider.price}` : 'السعر يُحدَّد بعد التواصل';
       card.querySelector('.provider-description').textContent =
         provider.description || '';
-
       const media = await loadProviderMedia(provider.id);
       const cover = media.find(item=>item.is_cover && item.media_type === 'image')
         || media.find(item=>item.media_type === 'image');
-
-      if(cover && cover.url){
+      if(cover?.url){
         const img = document.createElement('img');
         img.className = 'provider-cover';
         img.src = cover.url;
@@ -533,15 +633,13 @@ async function openService(service){
         card.querySelector('.provider-image').innerHTML =
           '<div class="provider-placeholder">📷</div>';
       }
-
       card.addEventListener('click',()=>openProvider(provider,media));
       list.appendChild(card);
     }
-
   }catch(error){
-    console.error('خطأ تحميل مقدمي الخدمة:',error);
+    console.error(error);
     list.innerHTML =
-      `<div class="empty">تعذر تحميل مقدمي الخدمة. تفاصيل الخطأ: ${escapeHtml(error.message)}</div>`;
+      `<div class="empty">تعذر تحميل مقدمي الخدمة: ${escapeHtml(error.message)}</div>`;
   }
 }
 
@@ -550,16 +648,10 @@ async function loadProviderMedia(providerId){
     const rows = await api(
       `provider_media?select=id,provider_id,storage_path,media_type,is_cover,sort_order,approval_status&provider_id=eq.${encodeURIComponent(providerId)}&approval_status=eq.approved&order=sort_order.asc,id.asc`
     );
-
     const result = [];
-
     for(const item of rows){
       try{
-        const encodedPath = item.storage_path
-          .split('/')
-          .map(encodeURIComponent)
-          .join('/');
-
+        const encodedPath = item.storage_path.split('/').map(encodeURIComponent).join('/');
         const signed = await fetch(
           `${SUPABASE_URL}/storage/v1/object/sign/service-media/${encodedPath}`,
           {
@@ -571,25 +663,18 @@ async function loadProviderMedia(providerId){
             body:JSON.stringify({expiresIn:3600})
           }
         );
-
         if(!signed.ok) continue;
-
         const data = await signed.json();
         let url = data.signedURL || data.signedUrl;
-
         if(url && url.startsWith('/')){
           url = `${SUPABASE_URL}/storage/v1${url}`;
         }
-
         if(url) result.push({...item,url});
-
       }catch(error){
         console.warn('تعذر تحميل ملف وسائط:',error);
       }
     }
-
     return result;
-
   }catch(error){
     console.warn('تعذر قراءة وسائط مقدم الخدمة:',error);
     return [];
@@ -598,54 +683,41 @@ async function loadProviderMedia(providerId){
 
 function openProvider(provider,media){
   currentProvider = provider;
-
   const detail = $('provider-detail');
   detail.innerHTML = '';
-
   const box = document.createElement('div');
   box.className = 'detail-box';
-
   const title = document.createElement('h3');
   title.textContent = provider.name || 'مقدم خدمة';
   box.appendChild(title);
-
   const address = document.createElement('p');
   address.className = 'detail-description';
   address.textContent = `📍 المكان: ${provider.address || 'غير محدد'}`;
   box.appendChild(address);
-
   if(provider.description){
     const description = document.createElement('p');
     description.className = 'detail-description';
     description.textContent = provider.description;
     box.appendChild(description);
   }
-
   const price = document.createElement('p');
   price.className = 'price';
   price.textContent =
     provider.price !== null && provider.price !== undefined
-      ? `السعر: ${provider.price}`
-      : 'السعر يُحدَّد بعد تأكيد التفاصيل';
+      ? `السعر: ${provider.price}` : 'السعر يُحدَّد بعد تأكيد التفاصيل';
   box.appendChild(price);
-
   const serviceName = document.createElement('p');
   serviceName.className = 'detail-description';
-  serviceName.textContent =
-    `الخدمة: ${currentService ? currentService.name : ''}`;
+  serviceName.textContent = `الخدمة: ${currentService ? currentService.name : ''}`;
   box.appendChild(serviceName);
-
   const galleryTitle = document.createElement('h3');
   galleryTitle.textContent = '📷 الصور والفيديوهات';
   galleryTitle.style.marginTop = '18px';
   box.appendChild(galleryTitle);
-
   const gallery = document.createElement('div');
   gallery.className = 'media-grid';
-
   media.forEach(item=>{
     if(!item.url) return;
-
     if(item.media_type === 'video'){
       const video = document.createElement('video');
       video.src = item.url;
@@ -660,15 +732,12 @@ function openProvider(provider,media){
       gallery.appendChild(img);
     }
   });
-
   if(!gallery.children.length){
     const empty = document.createElement('div');
     empty.className = 'media-empty';
     empty.textContent = 'لا توجد صور أو فيديوهات منشورة لهذا المقدم حالياً.';
     box.appendChild(empty);
-  }else{
-    box.appendChild(gallery);
-  }
+  }else box.appendChild(gallery);
 
   const add = document.createElement('button');
   add.type = 'button';
@@ -676,7 +745,6 @@ function openProvider(provider,media){
   add.textContent = 'إضافة مقدم الخدمة إلى السلة';
   add.addEventListener('click',()=>addProviderToCart(provider));
   box.appendChild(add);
-
   detail.appendChild(box);
   showPage('provider-detail-page');
 }
@@ -686,9 +754,7 @@ function addProviderToCart(provider){
     alert('هالمقدم موجود بالسلة من قبل.');
     return;
   }
-
   const category = categoryById(currentCategoryId);
-
   cart.push({
     providerId:provider.id,
     serviceId:provider.service_id,
@@ -698,7 +764,6 @@ function addProviderToCart(provider){
     address:provider.address || '',
     price:provider.price
   });
-
   saveCart();
   renderCart();
   alert('تمت إضافة مقدم الخدمة إلى سلة حجوزاتك.');
@@ -707,48 +772,35 @@ function addProviderToCart(provider){
 function renderCart(){
   $('header-cart-count').textContent = cart.length;
   $('cart-count').textContent = cart.length;
-
   const list = $('cart-list');
   list.innerHTML = '';
-
   if(!cart.length){
     list.innerHTML = '<div class="empty">سلتك فارغة حالياً. ارجع واختر مقدم خدمة.</div>';
     return;
   }
-
   cart.forEach((item,index)=>{
     const row = document.createElement('div');
     row.className = 'cart-item';
-
     const info = document.createElement('div');
     info.className = 'cart-text';
-
     const name = document.createElement('strong');
     name.textContent = `${index+1}. ${item.providerName}`;
-
     const small = document.createElement('small');
-    small.textContent =
-      `${item.categoryName} — ${item.serviceName} — ${item.address}`;
-
+    small.textContent = `${item.categoryName} — ${item.serviceName} — ${item.address}`;
     const price = document.createElement('small');
     price.textContent =
       item.price !== null && item.price !== undefined
-        ? `السعر المسجل: ${item.price}`
-        : 'السعر يُحدَّد بعد تأكيد التفاصيل';
-
+        ? `السعر المسجل: ${item.price}` : 'السعر يُحدَّد بعد تأكيد التفاصيل';
     info.append(name,small,price);
-
     const remove = document.createElement('button');
     remove.type = 'button';
     remove.className = 'remove-btn';
     remove.textContent = 'حذف';
-
     remove.addEventListener('click',()=>{
       cart.splice(index,1);
       saveCart();
       renderCart();
     });
-
     row.append(info,remove);
     list.appendChild(row);
   });
@@ -757,58 +809,350 @@ function renderCart(){
 function openCart(){
   previousPage = document.querySelector('.page.active')?.id || 'home-page';
   renderCart();
+  updateAuthUI();
   showPage('cart-page');
 }
+function openAccount(){
+  updateAuthUI();
+  showPage('account-page');
+}
 
-function showStatus(message,type='info'){
-  const box = $('form-status');
-  box.textContent = message;
-  box.className = `status-message show ${type}`;
+function showAuthMode(mode){
+  authMode = mode;
+  $('signup-name-wrap').style.display = mode === 'signup' ? 'block' : 'none';
+  $('auth-name').required = mode === 'signup';
+  $('auth-password').autocomplete =
+    mode === 'signup' ? 'new-password' : 'current-password';
+  $('auth-submit').textContent =
+    mode === 'signup' ? 'إنشاء الحساب' : 'تسجيل الدخول';
+  clearMessage('auth-status');
+}
+
+async function loadProfile(){
+  if(!currentUser) return null;
+  const rows = await api(
+    `customer_profiles?select=id,full_name,phone&id=eq.${encodeURIComponent(currentUser.id)}&limit=1`
+  );
+  return rows?.[0] || null;
+}
+
+function updateAuthUI(){
+  const loggedIn = !!currentUser;
+  $('checkout-auth-box').style.display = loggedIn ? 'none' : 'block';
+  $('booking-box').style.display = loggedIn ? 'block' : 'none';
+  $('account-guest-box').style.display = loggedIn ? 'none' : 'block';
+  $('account-user-box').style.display = loggedIn ? 'block' : 'none';
+
+  if(loggedIn && currentProfile){
+    $('account-user-name').textContent = currentProfile.full_name || 'زبون';
+    $('account-user-phone').textContent = currentProfile.phone || '';
+    $('customer-name').value = currentProfile.full_name || '';
+    $('customer-phone').value = currentProfile.phone || '';
+  }
+}
+
+async function handleAuthSubmit(event){
+  event.preventDefault();
+  clearMessage('auth-status');
+  const password = $('auth-password').value;
+  if(password.length < 8){
+    showMessage('auth-status','كلمة المرور يجب أن تكون 8 خانات على الأقل.','error');
+    return;
+  }
+
+  let phone;
+  try{
+    phone = normalizeSyrianPhone($('auth-phone').value);
+  }catch(error){
+    showMessage('auth-status',error.message,'error');
+    return;
+  }
+
+  const email = emailFromPhone(phone);
+  const button = $('auth-submit');
+  button.disabled = true;
+  button.textContent = 'لحظة من فضلك…';
+
+  try{
+    if(authMode === 'signup'){
+      const fullName = $('auth-name').value.trim();
+      if(!fullName){
+        throw new Error('اكتب اسمك الكامل.');
+      }
+
+      const {data,error} = await supabaseClient.auth.signUp({
+        email,
+        password,
+        options:{
+          data:{
+            full_name:fullName,
+            phone:phone
+          }
+        }
+      });
+      if(error) throw error;
+
+      let session = data.session;
+      if(!session){
+        const signed = await supabaseClient.auth.signInWithPassword({
+          email,password
+        });
+        if(signed.error) throw signed.error;
+        session = signed.data.session;
+      }
+
+      if(!session){
+        throw new Error('لم يتم إنشاء جلسة دخول. تأكد أن تأكيد البريد الإلكتروني معطّل في إعدادات Supabase.');
+      }
+
+      currentSession = session;
+      currentUser = session.user;
+
+      const {error:profileError} = await supabaseClient
+        .from('customer_profiles')
+        .upsert({
+          id:currentUser.id,
+          full_name:fullName,
+          phone:phone
+        },{onConflict:'id'});
+
+      if(profileError) throw profileError;
+      currentProfile = {id:currentUser.id,full_name:fullName,phone};
+
+      showMessage('auth-status','تم إنشاء حسابك وتسجيل دخولك بنجاح.','success');
+
+    }else{
+      const {data,error} = await supabaseClient.auth.signInWithPassword({
+        email,password
+      });
+      if(error) throw error;
+      currentSession = data.session;
+      currentUser = data.user;
+      currentProfile = await loadProfile();
+
+      if(!currentProfile){
+        throw new Error('تم الدخول، لكن ملف الزبون غير موجود. تواصل مع الإدارة.');
+      }
+      showMessage('auth-status','تم تسجيل الدخول بنجاح.','success');
+    }
+
+    $('auth-password').value = '';
+    updateAuthUI();
+
+  }catch(error){
+    console.error('خطأ الحساب:',error);
+    showMessage('auth-status',friendlyAuthError(error),'error');
+  }finally{
+    button.disabled = false;
+    button.textContent = authMode === 'signup' ? 'إنشاء الحساب' : 'تسجيل الدخول';
+  }
+}
+
+function friendlyAuthError(error){
+  const message = String(error?.message || error || '');
+  if(message.toLowerCase().includes('already registered') ||
+     message.toLowerCase().includes('user already')){
+    return 'هذا الرقم لديه حساب من قبل. جرّب تسجيل الدخول.';
+  }
+  if(message.toLowerCase().includes('invalid login credentials')){
+    return 'رقم الهاتف أو كلمة المرور غير صحيحة.';
+  }
+  if(message.toLowerCase().includes('password')){
+    return 'كلمة المرور غير مقبولة. استخدم 8 خانات على الأقل.';
+  }
+  if(message.toLowerCase().includes('duplicate key') ||
+     message.toLowerCase().includes('customer_profiles_phone_key')){
+    return 'رقم الهاتف مستخدم في حساب آخر. تواصل مع الإدارة.';
+  }
+  return message || 'حدث خطأ أثناء تنفيذ العملية.';
+}
+
+async function logout(){
+  const {error} = await supabaseClient.auth.signOut();
+  if(error){
+    alert('تعذر تسجيل الخروج: ' + error.message);
+    return;
+  }
+  currentSession = null;
+  currentUser = null;
+  currentProfile = null;
+  $('my-bookings-box').style.display = 'none';
+  $('my-notifications-box').style.display = 'none';
+  updateAuthUI();
+  showPage('home-page');
+  alert('تم تسجيل الخروج.');
+}
+
+async function loadMyBookings(){
+  if(!currentUser) return;
+  $('my-bookings-box').style.display = 'block';
+  $('my-notifications-box').style.display = 'none';
+  const list = $('my-bookings-list');
+  list.innerHTML = '<div class="empty">عم نحمّل طلباتك…</div>';
+  try{
+    const bookings = await api(
+      `Bookings?select=id,customer_name,customer_phone,service_date,service_location,service_details,status,created_at&user_id=eq.${encodeURIComponent(currentUser.id)}&order=created_at.desc`
+    );
+    if(!bookings.length){
+      list.innerHTML = '<div class="empty">ما عندك طلبات حجز حالياً.</div>';
+      return;
+    }
+    list.innerHTML = '';
+    for(const booking of bookings){
+      const card = document.createElement('div');
+      card.className = 'data-card';
+      const title = document.createElement('strong');
+      title.textContent = `طلب رقم ${booking.id}`;
+      const date = document.createElement('p');
+      date.textContent = `تاريخ المناسبة: ${booking.service_date || 'غير محدد'}`;
+      const location = document.createElement('p');
+      location.textContent = `المكان: ${booking.service_location || 'غير محدد'}`;
+      const status = document.createElement('p');
+      status.textContent = `الحالة: ${bookingStatusArabic(booking.status)}`;
+      card.append(title,date,location,status);
+
+      const itemsBox = document.createElement('div');
+      itemsBox.className = 'note';
+      itemsBox.textContent = 'الخدمات: عم نحمّل…';
+      card.appendChild(itemsBox);
+      list.appendChild(card);
+
+      try{
+        const items = await api(
+          `booking_items?select=id,service_name,quantity,unit_price,status,provider_id&booking_id=eq.${encodeURIComponent(booking.id)}&order=id.asc`
+        );
+        if(!items.length){
+          itemsBox.textContent = 'لا توجد تفاصيل خدمات ظاهرة لهذا الطلب.';
+        }else{
+          itemsBox.textContent = 'الخدمات: ' + items.map(item=>{
+            const price = item.unit_price !== null ? ` — ${item.unit_price}` : '';
+            return `${item.service_name || 'خدمة'}${price}`;
+          }).join('، ');
+        }
+      }catch(error){
+        itemsBox.textContent = 'تعذر تحميل تفاصيل الخدمات.';
+        console.warn(error);
+      }
+    }
+  }catch(error){
+    console.error(error);
+    list.innerHTML = `<div class="empty">تعذر تحميل طلباتك: ${escapeHtml(error.message)}</div>`;
+  }
+}
+
+async function loadMyNotifications(){
+  if(!currentUser) return;
+  $('my-notifications-box').style.display = 'block';
+  $('my-bookings-box').style.display = 'none';
+  const list = $('my-notifications-list');
+  list.innerHTML = '<div class="empty">عم نحمّل إشعاراتك…</div>';
+  try{
+    const notifications = await api(
+      `notifications?select=id,title,message,is_read,created_at,booking_id&user_id=eq.${encodeURIComponent(currentUser.id)}&order=created_at.desc`
+    );
+    if(!notifications.length){
+      list.innerHTML = '<div class="empty">ما عندك إشعارات حالياً.</div>';
+      return;
+    }
+    list.innerHTML = '';
+    notifications.forEach(notification=>{
+      const card = document.createElement('div');
+      card.className = `data-card ${notification.is_read ? '' : 'unread'}`;
+      const title = document.createElement('strong');
+      title.textContent = notification.title || 'إشعار جديد';
+      const message = document.createElement('p');
+      message.textContent = notification.message || '';
+      const date = document.createElement('p');
+      date.textContent = notification.created_at
+        ? new Date(notification.created_at).toLocaleString('ar-SY')
+        : '';
+      card.append(title,message,date);
+      if(!notification.is_read){
+        const read = document.createElement('button');
+        read.type = 'button';
+        read.className = 'secondary-btn';
+        read.textContent = 'تحديد كمقروء';
+        read.addEventListener('click',()=>markNotificationRead(notification.id,card,read));
+        card.appendChild(read);
+      }
+      list.appendChild(card);
+    });
+  }catch(error){
+    console.error(error);
+    list.innerHTML = `<div class="empty">تعذر تحميل الإشعارات: ${escapeHtml(error.message)}</div>`;
+  }
+}
+
+async function markNotificationRead(id,card,button){
+  button.disabled = true;
+  try{
+    await api(`notifications?id=eq.${encodeURIComponent(id)}`,{
+      method:'PATCH',
+      headers:{
+        'Content-Type':'application/json',
+        Prefer:'return=minimal'
+      },
+      body:JSON.stringify({is_read:true})
+    });
+    card.classList.remove('unread');
+    button.remove();
+  }catch(error){
+    button.disabled = false;
+    alert('تعذر تحديث الإشعار: ' + error.message);
+  }
+}
+
+function bookingStatusArabic(status){
+  const map = {
+    pending:'قيد الانتظار',
+    confirmed:'تم التأكيد',
+    cancelled:'ملغي',
+    completed:'مكتمل'
+  };
+  return map[String(status || '').toLowerCase()] || status || 'غير محدد';
 }
 
 function prepareBookingItems(){
   return cart.map(item=>{
     if(!item.serviceId || !item.providerId){
-      throw new Error(
-        `بيانات الخدمة أو مقدم الخدمة غير مكتملة: ${item.serviceName}`
-      );
+      throw new Error(`بيانات الخدمة أو مقدم الخدمة غير مكتملة: ${item.serviceName}`);
     }
-
     return {
       serviceId:String(item.serviceId),
       serviceName:item.serviceName,
       providerId:String(item.providerId),
-      price:
-        item.price !== null && item.price !== undefined
-          ? String(item.price)
-          : null
+      price:item.price !== null && item.price !== undefined
+        ? String(item.price) : null
     };
   });
 }
 
 async function submitBooking(event){
   event.preventDefault();
-
   if(isSubmitting) return;
 
+  if(!currentSession || !currentUser){
+    showStatus('سجّل الدخول أولاً حتى نرسل طلبك.','error');
+    updateAuthUI();
+    return;
+  }
   if(!cart.length){
     showStatus('أضف مقدم خدمة واحداً على الأقل إلى السلة.','error');
     return;
   }
 
   const name = $('customer-name').value.trim();
-  const phone = $('customer-phone').value.trim();
+  const phone = currentProfile?.phone || '';
   const date = $('service-date').value;
   const location = $('service-location').value.trim();
   const extra = $('service-details').value.trim();
 
   if(!name || !phone || !date || !location){
-    showStatus('تأكد من تعبئة الاسم ورقم الهاتف والتاريخ والمنطقة.','error');
+    showStatus('تأكد من تعبئة الاسم والتاريخ والمنطقة.','error');
     return;
   }
 
   let bookingItems;
-
   try{
     bookingItems = prepareBookingItems();
   }catch(error){
@@ -817,11 +1161,8 @@ async function submitBooking(event){
   }
 
   const itemsText = cart.map((item,index)=>{
-    const price =
-      item.price !== null && item.price !== undefined
-        ? `السعر: ${item.price}`
-        : 'السعر يُحدَّد بعد تأكيد التفاصيل';
-
+    const price = item.price !== null && item.price !== undefined
+      ? `السعر: ${item.price}` : 'السعر يُحدَّد بعد تأكيد التفاصيل';
     return `${index+1}. ${item.categoryName} — ${item.serviceName}\n`+
       `مقدم الخدمة: ${item.providerName}\nالمكان: ${item.address}\n${price}`;
   }).join('\n\n');
@@ -831,36 +1172,38 @@ async function submitBooking(event){
     customer_phone:phone,
     service_date:date,
     service_location:location,
-    service_details:
-      `مقدمو الخدمات المختارون:\n${itemsText}`+
+    service_details:`مقدمو الخدمات المختارون:\n${itemsText}`+
       `${extra ? `\n\nتفاصيل إضافية: ${extra}` : ''}`,
     status:'pending'
   };
 
   isSubmitting = true;
-
   const button = $('submit-booking');
   button.disabled = true;
   button.textContent = 'عم نحفظ الطلب والخدمات…';
-
   showStatus('عم نحفظ طلبك وخدماتك بشكل مستقل…','info');
 
   try{
-    const response = await fetch(
-      `${REST}/rpc/create_booking_with_items`,
-      {
-        method:'POST',
-        headers:{
-          apikey:SUPABASE_KEY,
-          'Content-Type':'application/json',
-          Accept:'application/json'
-        },
-        body:JSON.stringify({
-          p_booking:record,
-          p_items:bookingItems
-        })
-      }
-    );
+    const {data:{session},error:sessionError} =
+      await supabaseClient.auth.getSession();
+    if(sessionError) throw sessionError;
+    if(!session?.access_token) throw new Error('انتهت جلسة الدخول. سجّل الدخول من جديد.');
+
+    currentSession = session;
+
+    const response = await fetch(`${REST}/rpc/create_booking_with_items`,{
+      method:'POST',
+      headers:{
+        apikey:SUPABASE_KEY,
+        Authorization:`Bearer ${session.access_token}`,
+        'Content-Type':'application/json',
+        Accept:'application/json'
+      },
+      body:JSON.stringify({
+        p_booking:record,
+        p_items:bookingItems
+      })
+    });
 
     if(!response.ok){
       const errorText = await response.text();
@@ -868,13 +1211,7 @@ async function submitBooking(event){
     }
 
     const bookingId = await response.json();
-
-    if(!bookingId){
-      throw new Error('لم نستلم رقم طلب الحجز من قاعدة البيانات.');
-    }
-
-    console.log('تم حفظ طلب الحجز رقم:',bookingId);
-    console.log('عدد الخدمات المحفوظة:',bookingItems.length);
+    if(!bookingId) throw new Error('لم نستلم رقم طلب الحجز من قاعدة البيانات.');
 
     cart = [];
     saveCart();
@@ -887,10 +1224,8 @@ async function submitBooking(event){
 
     const message =
       `مرحبا، بدي قدّم طلب حجز جديد من كملت جمعتنا.\n\n`+
-      `رقم الطلب: ${bookingId}\n`+
-      `الاسم: ${name}\nرقم الهاتف: ${phone}\n`+
-      `التاريخ: ${date}\nالمنطقة: ${location}\n\n`+
-      `${itemsText}\n\n`+
+      `رقم الطلب: ${bookingId}\nالاسم: ${name}\nرقم الهاتف: ${phone}\n`+
+      `التاريخ: ${date}\nالمنطقة: ${location}\n\n${itemsText}\n\n`+
       `${extra ? `تفاصيل إضافية: ${extra}\n\n` : ''}`+
       `بعرف إنو الطلب بحاجة لتأكيد التوفر والتفاصيل من الإدارة.`;
 
@@ -910,21 +1245,61 @@ async function submitBooking(event){
   }
 }
 
+function showStatus(message,type='info'){
+  const box = $('form-status');
+  box.textContent = message;
+  box.className = `status-message show ${type}`;
+}
+
 function escapeHtml(value){
   return String(value).replace(/[&<>"']/g,char=>({
-    '&':'&amp;',
-    '<':'&lt;',
-    '>':'&gt;',
-    '"':'&quot;',
-    "'":'&#39;'
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
   })[char]);
 }
 
+$('checkout-auth-form').addEventListener('submit',handleAuthSubmit);
 $('booking-form').addEventListener('submit',submitBooking);
 
-/* بدء الموقع */
+async function initializeAuth(){
+  try{
+    const {data,error} = await supabaseClient.auth.getSession();
+    if(error) throw error;
+    currentSession = data.session;
+    currentUser = data.session?.user || null;
+    if(currentUser){
+      currentProfile = await loadProfile();
+    }
+  }catch(error){
+    console.error('تعذر استرجاع جلسة الحساب:',error);
+    currentSession = null;
+    currentUser = null;
+    currentProfile = null;
+  }
+  updateAuthUI();
+}
+
+supabaseClient.auth.onAuthStateChange((event,session)=>{
+  currentSession = session;
+  currentUser = session?.user || null;
+  if(!currentUser){
+    currentProfile = null;
+    updateAuthUI();
+  }else if(event === 'SIGNED_IN'){
+    setTimeout(async()=>{
+      try{
+        currentProfile = await loadProfile();
+        updateAuthUI();
+      }catch(error){
+        console.error('تعذر تحميل ملف الزبون:',error);
+      }
+    },0);
+  }
+});
+
+showAuthMode('login');
 renderCart();
 loadCategories();
+initializeAuth();
 </script>
 </body>
-</html>
+  </html>
