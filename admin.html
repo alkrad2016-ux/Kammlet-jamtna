@@ -69,7 +69,65 @@ $('add-promo').onclick=async()=>{const name=$('promo-name').value.trim(),target_
 async function loadJoinRequests(){const {data,error}=await db.from('provider_join_requests').select('*').order('created_at',{ascending:false});if(error)throw error;joinRequests=data||[];$('join-list').innerHTML='';joinRequests.forEach(r=>{const d=document.createElement('div');d.className='item';d.innerHTML=`<div class="row"><strong>${esc(r.full_name)}</strong>${badge(r.status)}</div><p>الهاتف: ${esc(r.phone)} — المدينة: ${esc(r.city)}</p><p>الأقسام: ${esc((r.requested_categories||[]).join('، '))}</p><p>${esc(r.services_description)}</p><p>التواصل المفضل: ${r.contact_preference==='whatsapp'?'واتساب':'اتصال'}</p><label>حالة الطلب</label><select class="status-select"><option value="pending">بانتظار المراجعة</option><option value="contacted">تم التواصل</option><option value="interview_scheduled">موعد مقابلة محدد</option><option value="approved">مقبول</option><option value="rejected">مرفوض</option></select><label>موعد المقابلة</label><input class="interview" type="datetime-local"><label>ملاحظة الإدارة</label><textarea class="admin-note"></textarea><div class="actions"><button class="btn save">حفظ الحالة</button><button class="green invite">إنشاء رابط التسجيل</button></div><div class="invite-result"></div>`;d.querySelector('.status-select').value=r.status;d.querySelector('.interview').value=r.interview_at?new Date(r.interview_at).toISOString().slice(0,16):'';d.querySelector('.admin-note').value=r.admin_note||'';d.querySelector('.invite').disabled=r.status!=='approved';d.querySelector('.save').onclick=async()=>{const status=d.querySelector('.status-select').value,interview=d.querySelector('.interview').value,note=d.querySelector('.admin-note').value.trim();const {error}=await db.from('provider_join_requests').update({status,interview_at:interview?new Date(interview).toISOString():null,admin_note:note||null,reviewed_by:currentUser.id,reviewed_at:new Date().toISOString()}).eq('id',r.id);if(error)throw error;await loadJoinRequests();toast('تم حفظ طلب الانضمام')};d.querySelector('.invite').onclick=async()=>{if(d.querySelector('.status-select').value!=='approved')return toast('احفظ حالة الطلب كمقبول أولاً','error');try{const {data,error}=await db.functions.invoke('create-provider-invite',{body:{request_id:r.id}});if(error)throw error;if(!data?.success)throw new Error(data?.error||'تعذر إنشاء الرابط');const result=d.querySelector('.invite-result');let phone=r.phone.replace(/\D/g,'');if(phone.startsWith('00'))phone=phone.slice(2);if(phone.startsWith('0'))phone='963'+phone.slice(1);else if(!phone.startsWith('963'))phone='963'+phone;const wa=`https://wa.me/${phone}?text=${encodeURIComponent('مرحباً '+r.full_name+'، تم قبول طلب انضمامك إلى كملت جمعتنا. أكمل تسجيل حسابك من هذا الرابط (صالح لمدة 7 أيام): '+data.registration_url)}`;result.innerHTML=`<p class="notice success">تم إنشاء رابط التسجيل، صالح لمدة 7 أيام ويستخدم مرة واحدة.</p><div class="linkbox"></div><div class="actions"><button class="light copy">نسخ الرابط</button><a class="btn" target="_blank" rel="noopener" href="${wa}">فتح واتساب لإرسال الرابط</a></div>`;result.querySelector('.linkbox').textContent=data.registration_url;result.querySelector('.copy').onclick=()=>navigator.clipboard?.writeText(data.registration_url).then(()=>toast('تم نسخ الرابط')).catch(()=>toast('انسخ الرابط يدوياً من المربع','error'))}catch(e){toast(e.message,'error')}};$('join-list').append(d)});if(!joinRequests.length)$('join-list').innerHTML='<div class="empty">لا توجد طلبات انضمام حالياً.</div>'}
 $('reload-join').onclick=()=>withError('join',loadJoinRequests);
 async function loadBookings(){const {data,error}=await db.from('Bookings').select('*').order('created_at',{ascending:false});if(error)throw error;bookings=data||[];const {data:items,error:ie}=await db.from('booking_items').select('*').order('id');if(ie)throw ie;bookingItems=items||[];$('bookings-list').innerHTML='';bookings.forEach(b=>{const related=bookingItems.filter(x=>x.booking_id===b.id),d=document.createElement('div');d.className='item';d.innerHTML=`<div class="row"><strong>طلب رقم ${b.id}</strong>${badge(b.status)}</div><p>الاسم: ${esc(b.customer_name)} — الهاتف: ${esc(b.customer_phone)}</p><p>التاريخ: ${esc(b.service_date)} — المكان: ${esc(b.service_location)}</p><p>${esc(b.service_details||'')}</p><hr><strong>العناصر المستقلة (${related.length})</strong><div class="items"></div><label>حالة الطلب الرئيسي</label><select class="main-status"><option value="pending">قيد الانتظار</option><option value="confirmed">تم التأكيد</option><option value="cancelled">ملغي</option></select><button class="btn save-main">حفظ حالة الطلب</button>`;d.querySelector('.main-status').value=b.status||'pending';d.querySelector('.save-main').onclick=async()=>{const {error}=await db.from('Bookings').update({status:d.querySelector('.main-status').value}).eq('id',b.id);if(error)throw error;await loadBookings();toast('تم تحديث حالة الطلب')};const list=d.querySelector('.items');related.forEach(it=>{const x=document.createElement('div');x.className='item';x.innerHTML=`<strong>${esc([it.category_name,it.service_name,it.offering_name].filter(Boolean).join(' — ')||'الخدمة')}</strong><p>مقدم الخدمة #${esc(it.provider_id)} — الكمية ${esc(it.quantity)} — السعر ${it.price_on_request?'عند التواصل':esc(it.unit_price)+' '+esc(it.currency||'SYP')}</p><p>السعر الأصلي: ${esc(it.original_unit_price??'—')} — الخصم: ${esc(it.discount_amount||0)} ${esc(it.currency||'SYP')} ${esc(it.promotion_name||'')}</p><label>حالة هذا العنصر</label><select class="item-status"><option value="pending">قيد الانتظار</option><option value="confirmed">تم التأكيد</option><option value="cancelled">ملغي</option></select><button class="light save-item">حفظ حالة العنصر</button>`;x.querySelector('.item-status').value=it.status||'pending';x.querySelector('.save-item').onclick=async()=>{const {error}=await db.from('booking_items').update({status:x.querySelector('.item-status').value}).eq('id',it.id);if(error)throw error;await loadBookings();toast('تم تحديث حالة العنصر')};list.append(x)});if(!related.length)list.textContent='لا توجد عناصر مستقلة لهذا الطلب.';$('bookings-list').append(d)});if(!bookings.length)$('bookings-list').innerHTML='<div class="empty">لا توجد حجوزات بعد.</div>'}$('reload-bookings').onclick=()=>withError('bookings',loadBookings);
-async function loadAccounts(){const {data,error}=await db.from('provider_profiles').select('*').order('created_at',{ascending:false});if(error)throw error;accounts=data||[];$('accounts-list').innerHTML='';accounts.forEach(a=>{const p=providers.find(x=>x.owner_user_id===a.user_id),d=document.createElement('div');d.className='item';d.innerHTML=`<strong>${esc(a.display_name)}</strong><p>رقم الحساب: ${esc(a.user_id)}</p><p>الهاتف: ${esc(a.phone||'—')} — المنطقة: ${esc(a.region||'—')}</p>${badge(a.approval_status)}<span class="badge ${a.is_active?'ok':'bad'}">${a.is_active?'نشط':'غير نشط'}</span><p>ملف مقدم الخدمة: ${esc(p?.name||'لم يتم ربط الملف')}</p>`;$('accounts-list').append(d)});if(!accounts.length)$('accounts-list').innerHTML='<div class="empty">لا توجد حسابات مقدمي خدمات حتى الآن.</div>';fillPaymentProvider()}
+async function grantFreeSubscription(account,button){
+  if(!account?.user_id)return toast('معرّف الحساب غير موجود','error');
+  if(account.approval_status!=='approved')return toast('لا يمكن تفعيل الاشتراك قبل اعتماد الحساب','error');
+  if(monthlySetting?.enabled===false)return toast('الاشتراكات متوقفة حالياً من إعدادات المنصة','error');
+  if(!confirm(`تفعيل اشتراك مجاني لمدة 30 يوماً للحساب ${account.display_name||account.user_id}؟ لن يتم تسجيل أي دفعة.`))return;
+  const oldText=button.textContent;
+  button.disabled=true;
+  button.textContent='جارٍ التفعيل…';
+  try{
+    const {data,error}=await db.rpc('admin_grant_free_subscription',{p_provider_id:account.user_id,p_duration_days:30});
+    if(error)throw error;
+    if(!data?.success)throw new Error(data?.error||'تعذر تفعيل الاشتراك المجاني');
+    await loadSubscriptions();
+    await loadProviders();
+    await loadAccounts();
+    $('m-active-subs').textContent=subscriptions.filter(x=>x.status==='active'&&x.ends_at&&new Date(x.ends_at)>new Date()).length;
+    const end=data.ends_at?new Date(data.ends_at).toLocaleDateString('ar-SY'):'';
+    toast(`تم تفعيل الاشتراك المجاني لمدة 30 يوماً${end?'، وينتهي في '+end:''}`);
+  }catch(e){
+    toast(e.message||'تعذر تفعيل الاشتراك','error');
+    try{await logEvent('subscriptions','error',e.message||'free subscription grant failed')}catch(_){}
+  }finally{
+    if(button.isConnected){button.disabled=false;button.textContent=oldText}
+  }
+}
+async function loadAccounts(){
+  const {data,error}=await db.from('provider_profiles').select('*').order('created_at',{ascending:false});
+  if(error)throw error;
+  accounts=data||[];
+  $('accounts-list').innerHTML='';
+  accounts.forEach(a=>{
+    const p=providers.find(x=>x.owner_user_id===a.user_id);
+    const d=document.createElement('div');
+    d.className='item';
+    d.innerHTML=`<strong>${esc(a.display_name)}</strong><p>رقم الحساب: ${esc(a.user_id)}</p><p>الهاتف: ${esc(a.phone||'—')} — المنطقة: ${esc(a.region||'—')}</p>${badge(a.approval_status)}<span class="badge ${a.is_active?'ok':'bad'}">${a.is_active?'نشط':'غير نشط'}</span><p>ملف مقدم الخدمة: ${esc(p?.name||'لم يتم ربط الملف')}</p><div class="actions account-actions"></div>`;
+    const actions=d.querySelector('.account-actions');
+    if(a.approval_status!=='approved'){
+      const note=document.createElement('span');
+      note.className='muted';
+      note.textContent='يتاح تفعيل الاشتراك بعد اعتماد الحساب.';
+      actions.append(note);
+    }else if(monthlySetting?.enabled===false){
+      const note=document.createElement('span');
+      note.className='muted';
+      note.textContent='تفعيل الاشتراكات متوقف حالياً من إعدادات المنصة.';
+      actions.append(note);
+    }else{
+      const btn=document.createElement('button');
+      btn.type='button';
+      btn.className='green';
+      btn.textContent='تفعيل اشتراك مجاني 30 يوماً';
+      btn.addEventListener('click',()=>grantFreeSubscription(a,btn));
+      actions.append(btn);
+    }
+    $('accounts-list').append(d);
+  });
+  if(!accounts.length)$('accounts-list').innerHTML='<div class="empty">لا توجد حسابات مقدمي خدمات حتى الآن.</div>';
+  fillPaymentProvider();
+}
 async function loadMedia(){const kind=$('media-kind').value,id=$('media-owner').value,list=$('media-list');list.innerHTML='';if(!id)return;const table=kind==='provider'?'provider_media':kind==='service'?'service_media':'offering_media',foreign=kind==='provider'?'provider_id':kind==='service'?'service_id':'offering_id';const {data,error}=await db.from(table).select('*').eq(foreign,id).order('sort_order').order('id');if(error)throw error;for(const m of data||[]){try{const url=await db.storage.from(BUCKET).createSignedUrl(m.storage_path,3600);if(url.error)throw url.error;const c=document.createElement('div');c.className='media-card';const el=document.createElement(m.media_type==='video'?'video':'img');el.src=url.data.signedUrl;if(el.tagName==='VIDEO'){el.controls=true;el.playsInline=true}else{el.alt='صورة';el.loading='lazy'}c.append(el);const p=document.createElement('p');p.className='muted';p.textContent=`${m.media_type} — ${statusLabel(m.approval_status)}${m.is_cover?' — غلاف':''}`;c.append(p);const acts=document.createElement('div');acts.className='actions';const yes=document.createElement('button');yes.className='green';yes.textContent='اعتماد';yes.onclick=()=>changeMedia(table,m,{approval_status:'approved'});const no=document.createElement('button');no.className='red';no.textContent='إخفاء';no.onclick=()=>changeMedia(table,m,{approval_status:'rejected'});const cover=document.createElement('button');cover.className='light';cover.textContent='تعيين غلاف';cover.onclick=()=>setCover(table,foreign,id,m);acts.append(yes,no,cover);c.append(acts);list.append(c)}catch(e){const x=document.createElement('div');x.textContent='تعذر عرض الملف: '+e.message;list.append(x)}}if(!data?.length)list.innerHTML='<div class="empty">لا توجد وسائط لهذا السجل.</div>'}
 async function changeMedia(table,m,changes){const {error}=await db.from(table).update(changes).eq('id',m.id);if(error)throw error;await loadMedia();toast('تم تحديث الوسيط')}async function setCover(table,foreign,id,m){const {error:e1}=await db.from(table).update({is_cover:false}).eq(foreign,id);if(e1)throw e1;const {error:e2}=await db.from(table).update({is_cover:true}).eq('id',m.id);if(e2)throw e2;await loadMedia();toast('تم تعيين الغلاف')}
 function fillMediaOwners(){const kind=$('media-kind')?.value,sel=$('media-owner');if(!sel)return;const old=sel.value;sel.innerHTML='';const rows=kind==='provider'?providers:kind==='service'?services:offerings;rows.forEach(x=>sel.add(new Option(x.name,x.id)));if([...sel.options].some(x=>x.value===old))sel.value=old} $('media-kind').onchange=fillMediaOwners;$('media-owner').onchange=()=>withError('media',loadMedia);
