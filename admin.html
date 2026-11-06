@@ -41,7 +41,7 @@
 <div class="card"><h2>الخدمات الموجودة</h2><div id="services-list"></div></div>
 </section>
 <section id="providers" class="page">
-<div class="card"><h2>إضافة مقدم خدمة</h2><div class="notice">رقم الهاتف هنا خاص بالإدارة ولا يظهر للزبائن.</div><div class="two"><div><label>الاسم</label><input id="provider-name"></div><div><label>الخدمة التابعة</label><select id="provider-service"></select></div><div><label>الهاتف الخاص</label><input id="provider-phone" type="tel"></div><div><label>العنوان والمنطقة</label><input id="provider-address"></div><div><label>السعر</label><input id="provider-price" type="number" min="0" step="0.01"></div><div><label>الوصف</label><textarea id="provider-description"></textarea></div></div><button id="add-provider" class="btn">إضافة مقدم الخدمة مخفياً</button></div>
+<div class="card"><h2>إضافة مقدم خدمة</h2><div class="notice">اختر القسم الرئيسي الذي ينتمي إليه مقدم الخدمة. رقم الهاتف هنا خاص بالإدارة ولا يظهر للزبائن.</div><div class="two"><div><label>الاسم</label><input id="provider-name"></div><div><label>القسم التابع</label><select id="provider-category"></select></div><div><label>الهاتف الخاص</label><input id="provider-phone" type="tel"></div><div><label>العنوان والمنطقة</label><input id="provider-address"></div><div><label>السعر</label><input id="provider-price" type="number" min="0" step="0.01"></div><div><label>الوصف</label><textarea id="provider-description"></textarea></div></div><button id="add-provider" class="btn">إضافة مقدم الخدمة مخفياً</button></div>
 <div class="card"><h2>قائمة مقدمي الخدمات</h2><div id="providers-list"></div></div>
 </section>
 <section id="bookings" class="page"><div class="card"><div class="row"><h2>طلبات الحجز</h2><button id="reload-bookings" class="btn">تحديث</button></div><div id="bookings-list"></div></div></section>
@@ -98,66 +98,503 @@ $('login-button').onclick=async()=>{const email=$('login-email').value.trim(),pa
 $('logout').onclick=async()=>{await db.auth.signOut();location.reload()};
 async function refreshAll(){await withError('refresh',async()=>{await loadCategories();await loadServices();await loadProviders();await loadBookings();await loadAccounts();await loadSettings();await loadSubscriptions();await loadPayments();await loadLogs();updateMetrics();showMessage('home-status','تم تحديث بيانات المنصة بنجاح.','success')})}
 $('refresh-all').onclick=refreshAll;
-function updateMetrics(){ $('m-categories').textContent=categories.length;$('m-services').textContent=services.length;$('m-providers').textContent=providers.length;$('m-bookings').textContent=bookings.length;$('m-accounts').textContent=accounts.length;$('m-active-subs').textContent=subscriptions.filter(x=>x.status==='active'&&x.ends_at&&new Date(x.ends_at)>new Date()).length;$('m-pending-payments').textContent=payments.filter(x=>x.status==='pending').length;const unresolved=window.__unresolvedLogs||[];$('m-errors').textContent=unresolved.length;$('home-errors').textContent=unresolved.length?unresolved.slice(0,4).map(x=>`${x.area}: ${x.message}`).join(' | '):'لا توجد أخطاء غير معالجة مسجلة.'}
+function updateMetrics(){$('m-categories').textContent=categories.length;$('m-services').textContent=services.length;$('m-providers').textContent=providers.length;$('m-bookings').textContent=bookings.length;$('m-accounts').textContent=accounts.length;$('m-active-subs').textContent=subscriptions.filter(x=>x.status==='active'&&x.ends_at&&new Date(x.ends_at)>new Date()).length;$('m-pending-payments').textContent=payments.filter(x=>x.status==='pending').length;const unresolved=window.__unresolvedLogs||[];$('m-errors').textContent=unresolved.length;$('home-errors').textContent=unresolved.length?unresolved.slice(0,4).map(x=>`${x.area}: ${x.message}`).join(' | '):'لا توجد أخطاء غير معالجة مسجلة.'}
+
 // الأقسام
-async function loadCategories(){categories=await getRows('categories');$('categories-list').innerHTML='';$('service-category').innerHTML='';categories.forEach(c=>{const o=new Option(c.name,c.id);$('service-category').add(o);const d=document.createElement('div');d.className='item';d.innerHTML=`<div class="row"><strong>${esc(c.name)}</strong><span class="muted">#${esc(c.id)}</span></div><div class="actions"><button class="light edit">تعديل الاسم</button></div>`;d.querySelector('.edit').onclick=async()=>{const n=prompt('اسم القسم:',c.name);if(n===null||!n.trim())return;await withError('categories',async()=>{const {error}=await db.from('categories').update({name:n.trim()}).eq('id',c.id);if(error)throw error;await loadCategories();toast('تم تعديل القسم');await logEvent('categories','info','تعديل اسم قسم',{category_id:c.id})})};$('categories-list').append(d)});}
-$('add-category').onclick=async()=>{const name=$('category-name').value.trim();if(!name)return toast('اكتب اسم القسم أولاً','error');await withError('categories',async()=>{const {error}=await db.from('categories').insert({name});if(error)throw error;$('category-name').value='';await loadCategories();toast('تمت إضافة القسم');await logEvent('categories','info','إضافة قسم',{name})})};
+async function loadCategories(){
+  categories=await getRows('categories');
+  $('categories-list').innerHTML='';
+  $('service-category').innerHTML='';
+  $('provider-category').innerHTML='';
+  categories.forEach(c=>{
+    $('service-category').add(new Option(c.name,c.id));
+    $('provider-category').add(new Option(c.name,c.id));
+    const d=document.createElement('div');d.className='item';
+    d.innerHTML=`<div class="row"><strong>${esc(c.name)}</strong><span class="muted">#${esc(c.id)}</span></div><div class="actions"><button class="light edit">تعديل الاسم</button></div>`;
+    d.querySelector('.edit').onclick=async()=>{
+      const n=prompt('اسم القسم:',c.name);if(n===null||!n.trim())return;
+      await withError('categories',async()=>{
+        const {error}=await db.from('categories').update({name:n.trim()}).eq('id',c.id);
+        if(error)throw error;await loadCategories();toast('تم تعديل القسم');
+        await logEvent('categories','info','تعديل اسم قسم',{category_id:c.id});
+      });
+    };
+    $('categories-list').append(d);
+  });
+}
+$('add-category').onclick=async()=>{
+  const name=$('category-name').value.trim();if(!name)return toast('اكتب اسم القسم أولاً','error');
+  await withError('categories',async()=>{
+    const {error}=await db.from('categories').insert({name});if(error)throw error;
+    $('category-name').value='';await loadCategories();toast('تمت إضافة القسم');
+    await logEvent('categories','info','إضافة قسم',{name});
+  });
+};
+
 // الخدمات
-async function loadServices(){services=await getRows('services');$('services-list').innerHTML='';$('provider-service').innerHTML='';services.forEach(s=>{const opt=new Option(s.name,s.id);$('provider-service').add(opt);const d=document.createElement('div');d.className='item';d.innerHTML=`<div class="row"><strong>${esc(s.name)}</strong>${badge(s.approval_status)}<span class="badge ${s.is_available?'ok':'bad'}">${s.is_available?'متاحة':'مخفية'}</span></div><p>القسم: ${esc(categories.find(c=>String(c.id)===String(s.category_id))?.name||s.category_id)} — السعر: ${esc(s.price??'غير محدد')}</p><p>${esc(s.description||'لا يوجد وصف')}</p><div class="actions"><button class="light edit">تعديل</button><button class="${s.is_available?'red':'green'} toggle">${s.is_available?'إخفاء':'إظهار'}</button></div>`;d.querySelector('.edit').onclick=()=>editService(s);d.querySelector('.toggle').onclick=()=>toggleService(s);$('services-list').append(d)});}
-async function editService(s){const name=prompt('اسم الخدمة:',s.name);if(name===null)return;const desc=prompt('الوصف:',s.description||'');if(desc===null)return;const price=prompt('السعر:',s.price??'');if(price===null)return;const cat=prompt('رقم القسم:',s.category_id);if(cat===null)return;await withError('services',async()=>{const {error}=await db.from('services').update({name:name.trim(),description:desc.trim(),price:price.trim()===''?null:Number(price),category_id:Number(cat)}).eq('id',s.id);if(error)throw error;await loadServices();toast('تم تعديل الخدمة');await logEvent('services','info','تعديل خدمة',{service_id:s.id})})}
-async function toggleService(s){await withError('services',async()=>{const {error}=await db.rpc('admin_set_service_availability',{p_service_id:String(s.id),p_is_available:!s.is_available});if(error)throw error;await loadServices();toast('تم تحديث حالة الخدمة');await logEvent('services','info','تغيير إتاحة خدمة',{service_id:s.id,is_available:!s.is_available})})}
-$('add-service').onclick=async()=>{const name=$('service-name').value.trim(),cat=Number($('service-category').value),desc=$('service-description').value.trim(),price=$('service-price').value.trim();if(!name||!cat)return toast('أدخل اسم الخدمة والقسم','error');await withError('services',async()=>{const {error}=await db.from('services').insert({name,category_id:cat,description:desc,price:price===''?null:Number(price),is_available:false,approval_status:'approved'});if(error)throw error;['service-name','service-description','service-price'].forEach(id=>$(id).value='');await loadServices();toast('تمت إضافة الخدمة وهي مخفية');await logEvent('services','info','إضافة خدمة',{name,category_id:cat})})};
+async function loadServices(){
+  services=await getRows('services');$('services-list').innerHTML='';
+  services.forEach(s=>{
+    const d=document.createElement('div');d.className='item';
+    d.innerHTML=`<div class="row"><strong>${esc(s.name)}</strong>${badge(s.approval_status)}<span class="badge ${s.is_available?'ok':'bad'}">${s.is_available?'متاحة':'مخفية'}</span></div><p>القسم: ${esc(categories.find(c=>String(c.id)===String(s.category_id))?.name||s.category_id)} — السعر: ${esc(s.price??'غير محدد')}</p><p>${esc(s.description||'لا يوجد وصف')}</p><div class="actions"><button class="light edit">تعديل</button><button class="${s.is_available?'red':'green'} toggle">${s.is_available?'إخفاء':'إظهار'}</button></div>`;
+    d.querySelector('.edit').onclick=()=>editService(s);d.querySelector('.toggle').onclick=()=>toggleService(s);$('services-list').append(d);
+  });
+}
+async function editService(s){
+  const name=prompt('اسم الخدمة:',s.name);if(name===null)return;
+  const desc=prompt('الوصف:',s.description||'');if(desc===null)return;
+  const price=prompt('السعر:',s.price??'');if(price===null)return;
+  const cat=prompt('رقم القسم:',s.category_id);if(cat===null)return;
+  await withError('services',async()=>{
+    const {error}=await db.from('services').update({name:name.trim(),description:desc.trim(),price:price.trim()===''?null:Number(price),category_id:Number(cat)}).eq('id',s.id);
+    if(error)throw error;await loadServices();toast('تم تعديل الخدمة');await logEvent('services','info','تعديل خدمة',{service_id:s.id});
+  });
+}
+async function toggleService(s){
+  await withError('services',async()=>{
+    const {error}=await db.rpc('admin_set_service_availability',{p_service_id:String(s.id),p_is_available:!s.is_available});
+    if(error)throw error;await loadServices();toast('تم تحديث حالة الخدمة');
+    await logEvent('services','info','تغيير إتاحة خدمة',{service_id:s.id,is_available:!s.is_available});
+  });
+}
+$('add-service').onclick=async()=>{
+  const name=$('service-name').value.trim(),cat=Number($('service-category').value),desc=$('service-description').value.trim(),price=$('service-price').value.trim();
+  if(!name||!cat)return toast('أدخل اسم الخدمة والقسم','error');
+  await withError('services',async()=>{
+    const {error}=await db.from('services').insert({name,category_id:cat,description:desc,price:price===''?null:Number(price),is_available:false,approval_status:'approved'});
+    if(error)throw error;['service-name','service-description','service-price'].forEach(id=>$(id).value='');
+    await loadServices();toast('تمت إضافة الخدمة وهي مخفية');await logEvent('services','info','إضافة خدمة',{name,category_id:cat});
+  });
+};
+
+// ربط مقدم الخدمة بالقسم مباشرة مع الاحتفاظ بمعرّف الخدمة الداخلي اللازم للحجوزات
+async function serviceForCategory(categoryId){
+  const matches=services.filter(s=>Number(s.category_id)===Number(categoryId)&&s.is_available===true&&s.approval_status==='approved').sort((a,b)=>Number(a.id)-Number(b.id));
+  if(matches.length)return matches[0];
+  const category=categories.find(c=>Number(c.id)===Number(categoryId));
+  if(!category)throw new Error('القسم المختار غير موجود.');
+  const {data,error}=await db.from('services').insert({
+    name:`خدمات قسم ${category.name}`,
+    description:'ربط داخلي لمقدمي الخدمات ضمن هذا القسم. يختار الزبون مقدم الخدمة مباشرة من القسم.',
+    category_id:Number(categoryId),
+    is_available:true,
+    approval_status:'approved'
+  }).select('*').single();
+  if(error)throw error;
+  services.push(data);
+  return data;
+}
+
 // مقدمو الخدمات
-async function loadProviders(){providers=await getRows('service_providers');$('providers-list').innerHTML='';$('media-owner').innerHTML='';providers.forEach(p=>{const o=new Option(p.name,p.id);if($('media-kind').value==='provider')$('media-owner').add(o);const s=services.find(x=>String(x.id)===String(p.service_id));const d=document.createElement('div');d.className='item';d.innerHTML=`<div class="row"><strong>${esc(p.name)}</strong>${badge(p.approval_status)}<span class="badge ${p.is_active?'ok':'bad'}">${p.is_active?'ظاهر':'مخفي'}</span></div><p>الخدمة: ${esc(s?.name||p.service_id)} — السعر: ${esc(p.price??'غير محدد')}</p><p>الهاتف: ${esc(p.phone||'غير مسجل')} <span class="badge wait">خاص بالإدارة</span></p><p>العنوان: ${esc(p.address||'غير محدد')}</p><p>${esc(p.description||'')}</p><div class="actions"><button class="light edit">تعديل الملف</button><button class="green approve">اعتماد</button><button class="${p.is_active?'red':'green'} toggle">${p.is_active?'إخفاء':'إظهار'}</button></div>`;d.querySelector('.edit').onclick=()=>editProvider(p);d.querySelector('.approve').onclick=()=>approveProvider(p);d.querySelector('.toggle').onclick=()=>toggleProvider(p);$('providers-list').append(d)});refreshAccountProviderOptions();}
-function refreshAccountProviderOptions(){const opts=providers.filter(p=>!p.owner_user_id);['account-provider'].forEach(id=>{const sel=$(id),old=sel.value;sel.innerHTML='<option value="">اختر مقدم الخدمة</option>';opts.forEach(p=>sel.add(new Option(p.name, p.id)));if([...sel.options].some(o=>o.value===old))sel.value=old})}
-$('add-provider').onclick=async()=>{const name=$('provider-name').value.trim(),service_id=Number($('provider-service').value),phone=$('provider-phone').value.trim(),address=$('provider-address').value.trim(),description=$('provider-description').value.trim(),price=$('provider-price').value.trim();if(!name||!service_id)return toast('أدخل اسم مقدم الخدمة والخدمة','error');await withError('providers',async()=>{const {error}=await db.from('service_providers').insert({name,service_id,phone:phone||null,address:address||'غير محدد',description:description||null,price:price===''?null:Number(price),is_active:false,approval_status:'approved'});if(error)throw error;['provider-name','provider-phone','provider-address','provider-description','provider-price'].forEach(id=>$(id).value='');await loadProviders();toast('تمت إضافة مقدم الخدمة مخفياً');await logEvent('providers','info','إضافة مقدم خدمة',{name})})};
-async function editProvider(p){const name=prompt('الاسم:',p.name);if(name===null)return;const phone=prompt('الهاتف الخاص بالإدارة:',p.phone||'');if(phone===null)return;const address=prompt('العنوان:',p.address||'');if(address===null)return;const description=prompt('الوصف:',p.description||'');if(description===null)return;const price=prompt('السعر:',p.price??'');if(price===null)return;await withError('providers',async()=>{const {error}=await db.from('service_providers').update({name:name.trim(),phone:phone.trim()||null,address:address.trim()||'غير محدد',description:description.trim()||null,price:price.trim()===''?null:Number(price)}).eq('id',p.id);if(error)throw error;await loadProviders();toast('تم تعديل ملف مقدم الخدمة')})}
-async function approveProvider(p){await withError('providers',async()=>{const {error}=await db.from('service_providers').update({approval_status:'approved',is_active:false}).eq('id',p.id);if(error)throw error;await loadProviders();toast('تم اعتماد المحتوى وبقي مخفياً')})}
-async function toggleProvider(p){if(!p.is_active){const s=services.find(x=>String(x.id)===String(p.service_id));if(p.approval_status!=='approved'||!s||!s.is_available||s.approval_status!=='approved'){return toast('اعتمد مقدم الخدمة وأتح الخدمة التابعة أولاً','error')}if(p.owner_user_id){const paid=subscriptions.some(x=>x.provider_id===p.owner_user_id&&x.status==='active'&&x.ends_at&&new Date(x.ends_at)>new Date());if(!paid)return toast('لا يمكن إظهار مقدم الخدمة قبل تأكيد اشتراكه','error')}}await withError('providers',async()=>{const {error}=await db.from('service_providers').update({is_active:!p.is_active}).eq('id',p.id);if(error)throw error;await loadProviders();toast('تم تحديث ظهور مقدم الخدمة')})}
+async function loadProviders(){
+  providers=await getRows('service_providers');
+  $('providers-list').innerHTML='';$('media-owner').innerHTML='';
+  providers.forEach(p=>{
+    const o=new Option(p.name,p.id);if($('media-kind').value==='provider')$('media-owner').add(o);
+    const s=services.find(x=>String(x.id)===String(p.service_id));
+    const category=categories.find(x=>String(x.id)===String(p.category_id));
+    const d=document.createElement('div');d.className='item';
+    d.innerHTML=`<div class="row"><strong>${esc(p.name)}</strong>${badge(p.approval_status)}<span class="badge ${p.is_active?'ok':'bad'}">${p.is_active?'ظاهر':'مخفي'}</span></div>
+      <p><strong>القسم:</strong> ${esc(category?.name||'غير محدد')}</p>
+      <p>السعر: ${esc(p.price??'غير محدد')}</p>
+      <p>الهاتف: ${esc(p.phone||'غير مسجل')} <span class="badge wait">خاص بالإدارة</span></p>
+      <p>العنوان: ${esc(p.address||'غير محدد')}</p><p>${esc(p.description||'')}</p>
+      <label>تغيير القسم</label><select class="category-select"></select>
+      <div class="actions"><button class="light edit">تعديل الملف</button><button class="blue change-category">حفظ القسم</button><button class="green approve">اعتماد</button><button class="${p.is_active?'red':'green'} toggle">${p.is_active?'إخفاء':'إظهار'}</button></div>`;
+    const categorySelect=d.querySelector('.category-select');
+    categories.forEach(c=>categorySelect.add(new Option(c.name,c.id)));
+    categorySelect.value=String(p.category_id||'');
+    d.querySelector('.edit').onclick=()=>editProvider(p);
+    d.querySelector('.change-category').onclick=()=>changeProviderCategory(p,categorySelect.value);
+    d.querySelector('.approve').onclick=()=>approveProvider(p);
+    d.querySelector('.toggle').onclick=()=>toggleProvider(p);
+    $('providers-list').append(d);
+  });
+  refreshAccountProviderOptions();
+}
+function refreshAccountProviderOptions(){
+  const opts=providers.filter(p=>!p.owner_user_id);
+  ['account-provider'].forEach(id=>{
+    const sel=$(id),old=sel.value;sel.innerHTML='<option value="">اختر مقدم الخدمة</option>';
+    opts.forEach(p=>sel.add(new Option(p.name,p.id)));
+    if([...sel.options].some(o=>o.value===old))sel.value=old;
+  });
+}
+$('add-provider').onclick=async()=>{
+  const name=$('provider-name').value.trim(),category_id=Number($('provider-category').value),phone=$('provider-phone').value.trim(),address=$('provider-address').value.trim(),description=$('provider-description').value.trim(),price=$('provider-price').value.trim();
+  if(!name||!category_id)return toast('أدخل اسم مقدم الخدمة واختر القسم','error');
+  await withError('providers',async()=>{
+    const linkedService=await serviceForCategory(category_id);
+    const {error}=await db.from('service_providers').insert({
+      name,category_id,service_id:linkedService.id,phone:phone||null,
+      address:address||'غير محدد',description:description||null,
+      price:price===''?null:Number(price),is_active:false,approval_status:'approved'
+    });
+    if(error)throw error;
+    ['provider-name','provider-phone','provider-address','provider-description','provider-price'].forEach(id=>$(id).value='');
+    await loadProviders();toast('تمت إضافة مقدم الخدمة ضمن القسم المختار، وهو مخفي حالياً');
+    await logEvent('providers','info','إضافة مقدم خدمة',{name,category_id,service_id:linkedService.id});
+  });
+};
+async function changeProviderCategory(p,value){
+  const categoryId=Number(value);if(!categoryId)return toast('اختر القسم أولاً','error');
+  if(categoryId===Number(p.category_id))return toast('مقدم الخدمة تابع لهذا القسم بالفعل.');
+  await withError('providers',async()=>{
+    const linkedService=await serviceForCategory(categoryId);
+    const {error}=await db.from('service_providers').update({category_id:categoryId,service_id:linkedService.id}).eq('id',p.id);
+    if(error)throw error;
+    await loadProviders();toast('تم تغيير قسم مقدم الخدمة بنجاح');
+    await logEvent('providers','info','تغيير قسم مقدم خدمة',{provider_id:p.id,category_id:categoryId,service_id:linkedService.id});
+  });
+}
+async function editProvider(p){
+  const name=prompt('الاسم:',p.name);if(name===null)return;
+  const phone=prompt('الهاتف الخاص بالإدارة:',p.phone||'');if(phone===null)return;
+  const address=prompt('العنوان:',p.address||'');if(address===null)return;
+  const description=prompt('الوصف:',p.description||'');if(description===null)return;
+  const price=prompt('السعر:',p.price??'');if(price===null)return;
+  await withError('providers',async()=>{
+    const {error}=await db.from('service_providers').update({
+      name:name.trim(),phone:phone.trim()||null,address:address.trim()||'غير محدد',
+      description:description.trim()||null,price:price.trim()===''?null:Number(price)
+    }).eq('id',p.id);
+    if(error)throw error;await loadProviders();toast('تم تعديل ملف مقدم الخدمة');
+  });
+}
+async function approveProvider(p){
+  await withError('providers',async()=>{
+    const {error}=await db.from('service_providers').update({approval_status:'approved',is_active:false}).eq('id',p.id);
+    if(error)throw error;await loadProviders();toast('تم اعتماد المحتوى وبقي مخفياً');
+  });
+}
+async function toggleProvider(p){
+  if(!p.is_active){
+    const s=services.find(x=>String(x.id)===String(p.service_id));
+    if(p.approval_status!=='approved'||!s||!s.is_available||s.approval_status!=='approved')return toast('اعتمد مقدم الخدمة وتأكد من توفر الخدمة المرتبطة أولاً','error');
+    if(p.owner_user_id){
+      const paid=subscriptions.some(x=>x.provider_id===p.owner_user_id&&x.status==='active'&&x.ends_at&&new Date(x.ends_at)>new Date());
+      if(!paid)return toast('لا يمكن إظهار مقدم الخدمة قبل تأكيد اشتراكه','error');
+    }
+  }
+  await withError('providers',async()=>{
+    const {error}=await db.from('service_providers').update({is_active:!p.is_active}).eq('id',p.id);
+    if(error)throw error;await loadProviders();toast('تم تحديث ظهور مقدم الخدمة');
+  });
+}
+
 // الحجوزات
-async function loadBookings(){bookings=await getRows('Bookings','created_at');bookingItems=await getRows('booking_items','id');$('bookings-list').innerHTML='';bookings.forEach(b=>{const related=bookingItems.filter(i=>String(i.booking_id)===String(b.id));const d=document.createElement('div');d.className='item';d.innerHTML=`<div class="row"><strong>طلب رقم ${esc(b.id)}</strong>${badge(b.status)}</div><p>الاسم: ${esc(b.customer_name)} — الهاتف: ${esc(b.customer_phone)}</p><p>التاريخ: ${esc(b.service_date)} — المكان: ${esc(b.service_location)}</p><p>التفاصيل: ${esc(b.service_details)}</p><hr><strong>الخدمات المستقلة (${related.length})</strong><div class="items"></div><label>حالة الطلب الرئيسي</label><select class="main-status"><option value="pending">قيد الانتظار</option><option value="confirmed">تم التأكيد</option><option value="cancelled">ملغي</option></select><button class="btn save-main">حفظ حالة الطلب</button>`;d.querySelector('.main-status').value=b.status||'pending';d.querySelector('.save-main').onclick=async()=>{await withError('bookings',async()=>{const {error}=await db.from('Bookings').update({status:d.querySelector('.main-status').value}).eq('id',b.id);if(error)throw error;await loadBookings();toast('تم تحديث حالة الطلب')})};const list=d.querySelector('.items');related.forEach(it=>{const x=document.createElement('div');x.className='item';x.innerHTML=`<strong>${esc(it.service_name)}</strong><p>مقدم الخدمة: ${esc(it.provider_id??'غير محدد')} — الكمية: ${esc(it.quantity)} — السعر: ${esc(it.unit_price)}</p><label>حالة الخدمة</label><select class="item-status"><option value="pending">قيد الانتظار</option><option value="confirmed">تم التأكيد</option><option value="cancelled">ملغي</option></select><button class="light save-item">حفظ حالة الخدمة</button>`;x.querySelector('.item-status').value=it.status||'pending';x.querySelector('.save-item').onclick=async()=>{await withError('booking_items',async()=>{const {error}=await db.from('booking_items').update({status:x.querySelector('.item-status').value}).eq('id',it.id);if(error)throw error;await loadBookings();toast('تم تحديث حالة الخدمة بشكل مستقل')})};list.append(x)});if(!related.length)list.textContent='لا توجد عناصر مستقلة محفوظة لهذا الطلب.';$('bookings-list').append(d)})}
+async function loadBookings(){
+  bookings=await getRows('Bookings','created_at');bookingItems=await getRows('booking_items','id');$('bookings-list').innerHTML='';
+  bookings.forEach(b=>{
+    const related=bookingItems.filter(i=>String(i.booking_id)===String(b.id));
+    const d=document.createElement('div');d.className='item';
+    d.innerHTML=`<div class="row"><strong>طلب رقم ${esc(b.id)}</strong>${badge(b.status)}</div><p>الاسم: ${esc(b.customer_name)} — الهاتف: ${esc(b.customer_phone)}</p><p>التاريخ: ${esc(b.service_date)} — المكان: ${esc(b.service_location)}</p><p>التفاصيل: ${esc(b.service_details)}</p><hr><strong>الخدمات المستقلة (${related.length})</strong><div class="items"></div><label>حالة الطلب الرئيسي</label><select class="main-status"><option value="pending">قيد الانتظار</option><option value="confirmed">تم التأكيد</option><option value="cancelled">ملغي</option></select><button class="btn save-main">حفظ حالة الطلب</button>`;
+    d.querySelector('.main-status').value=b.status||'pending';
+    d.querySelector('.save-main').onclick=async()=>{
+      await withError('bookings',async()=>{
+        const {error}=await db.from('Bookings').update({status:d.querySelector('.main-status').value}).eq('id',b.id);
+        if(error)throw error;await loadBookings();toast('تم تحديث حالة الطلب');
+      });
+    };
+    const list=d.querySelector('.items');
+    related.forEach(it=>{
+      const x=document.createElement('div');x.className='item';
+      x.innerHTML=`<strong>${esc(it.service_name)}</strong><p>مقدم الخدمة: ${esc(it.provider_id??'غير محدد')} — الكمية: ${esc(it.quantity)} — السعر: ${esc(it.unit_price)}</p><label>حالة الخدمة</label><select class="item-status"><option value="pending">قيد الانتظار</option><option value="confirmed">تم التأكيد</option><option value="cancelled">ملغي</option></select><button class="light save-item">حفظ حالة الخدمة</button>`;
+      x.querySelector('.item-status').value=it.status||'pending';
+      x.querySelector('.save-item').onclick=async()=>{
+        await withError('booking_items',async()=>{
+          const {error}=await db.from('booking_items').update({status:x.querySelector('.item-status').value}).eq('id',it.id);
+          if(error)throw error;await loadBookings();toast('تم تحديث حالة الخدمة بشكل مستقل');
+        });
+      };
+      list.append(x);
+    });
+    if(!related.length)list.textContent='لا توجد عناصر مستقلة محفوظة لهذا الطلب.';
+    $('bookings-list').append(d);
+  });
+}
 $('reload-bookings').onclick=()=>withError('bookings',loadBookings);
+
 // الحسابات ومقدمو الخدمات
-async function loadAccounts(){accounts=await getRows('provider_profiles','created_at');$('accounts-list').innerHTML='';accounts.forEach(p=>{const d=document.createElement('div');d.className='item';d.innerHTML=`<strong>${esc(p.display_name)}</strong><p>معرّف الحساب: ${esc(p.user_id)}</p><p>الهاتف: ${esc(p.phone||'غير محدد')} — المنطقة: ${esc(p.region||'درعا')}</p>${badge(p.approval_status)}<span class="badge ${p.is_active?'ok':'bad'}">${p.is_active?'نشط':'غير نشط'}</span><div class="actions"><button class="green approve">موافقة</button><button class="red reject">رفض</button></div>`;d.querySelector('.approve').onclick=()=>updateAccount(p,{approval_status:'approved',is_active:true});d.querySelector('.reject').onclick=()=>updateAccount(p,{approval_status:'rejected',is_active:false});$('accounts-list').append(d)});if(!accounts.length)$('accounts-list').textContent='لا توجد حسابات مقدمي خدمات حالياً.';refreshAccountProviderOptions()}
-async function updateAccount(p,changes){await withError('provider_accounts',async()=>{const {data,error}=await db.rpc('admin_review_provider_profile',{p_provider_user_id:p.user_id,p_approval_status:changes.approval_status});if(error)throw error;if(!data?.success)throw new Error('لم يتم تحديث حالة الحساب');await loadAccounts();await loadProviders();toast(changes.approval_status==='approved'&&!data.subscription_active?'تم اعتماد الحساب، ويبقى غير نشط حتى تأكيد الاشتراك':'تم تحديث حالة الحساب')})}
-async function loadRegistration(){const {data,error}=await db.from('platform_settings').select('setting_value').eq('setting_key','provider_self_registration_enabled').maybeSingle();if(error)throw error;registrationEnabled=data?.setting_value===true;renderRegistration()}
-function renderRegistration(){const text=registrationEnabled?'التسجيل الذاتي مفتوح حالياً.':'التسجيل الذاتي مغلق حالياً.';['registration-state','settings-registration'].forEach(id=>{if($(id))$(id).textContent=text});['registration-toggle','settings-registration-toggle'].forEach(id=>{if($(id))$(id).textContent=registrationEnabled?'إغلاق التسجيل الذاتي':'فتح التسجيل الذاتي'})}
-async function toggleRegistration(){const next=!registrationEnabled;if(next&&!confirm('فتح التسجيل الذاتي لمقدمي الخدمات؟'))return;await withError('settings',async()=>{const {error}=await db.from('platform_settings').upsert({setting_key:'provider_self_registration_enabled',setting_value:next,updated_at:new Date().toISOString()},{onConflict:'setting_key'});if(error)throw error;registrationEnabled=next;renderRegistration();toast(next?'تم فتح التسجيل الذاتي':'تم إغلاق التسجيل الذاتي');await logEvent('settings','info','تغيير التسجيل الذاتي',{enabled:next})})}
+async function loadAccounts(){
+  accounts=await getRows('provider_profiles','created_at');$('accounts-list').innerHTML='';
+  accounts.forEach(p=>{
+    const d=document.createElement('div');d.className='item';
+    d.innerHTML=`<strong>${esc(p.display_name)}</strong><p>معرّف الحساب: ${esc(p.user_id)}</p><p>الهاتف: ${esc(p.phone||'غير محدد')} — المنطقة: ${esc(p.region||'درعا')}</p>${badge(p.approval_status)}<span class="badge ${p.is_active?'ok':'bad'}">${p.is_active?'نشط':'غير نشط'}</span><div class="actions"><button class="green approve">موافقة</button><button class="red reject">رفض</button></div>`;
+    d.querySelector('.approve').onclick=()=>updateAccount(p,{approval_status:'approved',is_active:true});
+    d.querySelector('.reject').onclick=()=>updateAccount(p,{approval_status:'rejected',is_active:false});
+    $('accounts-list').append(d);
+  });
+  if(!accounts.length)$('accounts-list').textContent='لا توجد حسابات مقدمي خدمات حالياً.';
+  refreshAccountProviderOptions();
+}
+async function updateAccount(p,changes){
+  await withError('provider_accounts',async()=>{
+    const {data,error}=await db.rpc('admin_review_provider_profile',{p_provider_user_id:p.user_id,p_approval_status:changes.approval_status});
+    if(error)throw error;if(!data?.success)throw new Error('لم يتم تحديث حالة الحساب');
+    await loadAccounts();await loadProviders();
+    toast(changes.approval_status==='approved'&&!data.subscription_active?'تم اعتماد الحساب، ويبقى غير نشط حتى تأكيد الاشتراك':'تم تحديث حالة الحساب');
+  });
+}
+async function loadRegistration(){
+  const {data,error}=await db.from('platform_settings').select('setting_value').eq('setting_key','provider_self_registration_enabled').maybeSingle();
+  if(error)throw error;registrationEnabled=data?.setting_value===true;renderRegistration();
+}
+function renderRegistration(){
+  const text=registrationEnabled?'التسجيل الذاتي مفتوح حالياً.':'التسجيل الذاتي مغلق حالياً.';
+  ['registration-state','settings-registration'].forEach(id=>{if($(id))$(id).textContent=text});
+  ['registration-toggle','settings-registration-toggle'].forEach(id=>{if($(id))$(id).textContent=registrationEnabled?'إغلاق التسجيل الذاتي':'فتح التسجيل الذاتي'});
+}
+async function toggleRegistration(){
+  const next=!registrationEnabled;if(next&&!confirm('فتح التسجيل الذاتي لمقدمي الخدمات؟'))return;
+  await withError('settings',async()=>{
+    const {error}=await db.from('platform_settings').upsert({setting_key:'provider_self_registration_enabled',setting_value:next,updated_at:new Date().toISOString()},{onConflict:'setting_key'});
+    if(error)throw error;registrationEnabled=next;renderRegistration();toast(next?'تم فتح التسجيل الذاتي':'تم إغلاق التسجيل الذاتي');
+    await logEvent('settings','info','تغيير التسجيل الذاتي',{enabled:next});
+  });
+}
 $('registration-toggle').onclick=toggleRegistration;$('settings-registration-toggle').onclick=toggleRegistration;
-$('create-account').onclick=async()=>{const provider_id=Number($('account-provider').value),display_name=$('account-name').value.trim(),email=$('account-email').value.trim(),password=$('account-password').value,phone=$('account-phone').value.trim(),region=$('account-region').value.trim();if(!provider_id||!display_name||!email||!password)return showMessage('account-message','أكمل الحقول المطلوبة.','error');if(password.length<8)return showMessage('account-message','كلمة المرور يجب أن تكون 8 أحرف على الأقل.','error');const b=$('create-account');b.disabled=true;try{const {data,error}=await db.functions.invoke(PROVIDER_ACCOUNT_FUNCTION,{body:{provider_id,display_name,email,password,phone,region}});if(error)throw error;if(!data?.success)throw new Error(data?.error||'تعذر إنشاء الحساب');showMessage('account-message','تم إنشاء الحساب وربطه بمقدم الخدمة.','success');['account-name','account-email','account-password','account-phone'].forEach(id=>$(id).value='');await loadProviders();await loadAccounts();await logEvent('provider_accounts','info','إنشاء حساب مقدم خدمة',{provider_id,user_id:data.user_id})}catch(e){showMessage('account-message',e.message,'error');await logEvent('provider_accounts','error',e.message)}finally{b.disabled=false}};
+$('create-account').onclick=async()=>{
+  const provider_id=Number($('account-provider').value),display_name=$('account-name').value.trim(),email=$('account-email').value.trim(),password=$('account-password').value,phone=$('account-phone').value.trim(),region=$('account-region').value.trim();
+  if(!provider_id||!display_name||!email||!password)return showMessage('account-message','أكمل الحقول المطلوبة.','error');
+  if(password.length<8)return showMessage('account-message','كلمة المرور يجب أن تكون 8 أحرف على الأقل.','error');
+  const b=$('create-account');b.disabled=true;
+  try{
+    const {data,error}=await db.functions.invoke(PROVIDER_ACCOUNT_FUNCTION,{body:{provider_id,display_name,email,password,phone,region}});
+    if(error)throw error;if(!data?.success)throw new Error(data?.error||'تعذر إنشاء الحساب');
+    showMessage('account-message','تم إنشاء الحساب وربطه بمقدم الخدمة.','success');
+    ['account-name','account-email','account-password','account-phone'].forEach(id=>$(id).value='');
+    await loadProviders();await loadAccounts();await logEvent('provider_accounts','info','إنشاء حساب مقدم خدمة',{provider_id,user_id:data.user_id});
+  }catch(e){showMessage('account-message',e.message,'error');await logEvent('provider_accounts','error',e.message)}
+  finally{b.disabled=false}
+};
+
 // الوسائط
 $('media-kind').onchange=async()=>{await loadProviders();await loadServices();};
-async function loadMediaOwner(){const kind=$('media-kind').value,sel=$('media-owner');sel.innerHTML='';const rows=kind==='provider'?providers:services;rows.forEach(x=>sel.add(new Option(x.name,x.id)));await loadMedia()}
+async function loadMediaOwner(){
+  const kind=$('media-kind').value,sel=$('media-owner');sel.innerHTML='';
+  const rows=kind==='provider'?providers:services;rows.forEach(x=>sel.add(new Option(x.name,x.id)));
+  await loadMedia();
+}
 $('media-owner').onchange=loadMedia;$('upload-media').onclick=uploadMedia;
 async function signedUrl(path){const {data,error}=await db.storage.from(MEDIA_BUCKET).createSignedUrl(path,3600);if(error)throw error;return data.signedUrl}
-async function loadMedia(){const kind=$('media-kind').value,id=$('media-owner').value,list=$('media-list');list.innerHTML='';if(!id)return;const table=kind==='provider'?'provider_media':'service_media',foreign=kind==='provider'?'provider_id':'service_id';await withError('media',async()=>{const {data,error}=await db.from(table).select('*').eq(foreign,id).order('sort_order').order('id');if(error)throw error;for(const item of data||[]){try{const url=await signedUrl(item.storage_path),card=document.createElement('div');card.className='media-card';const media=document.createElement(item.media_type==='video'?'video':'img');media.src=url;if(item.media_type==='video'){media.controls=true;media.playsInline=true}else{media.loading='lazy';media.alt='صورة مرفوعة'}card.append(media);const info=document.createElement('p');info.className='muted';info.textContent=`${item.media_type==='video'?'فيديو':'صورة'} — ${statusLabel(item.approval_status)}${item.is_cover?' — غلاف':''}`;card.append(info);const acts=document.createElement('div');acts.className='actions';const approve=document.createElement('button');approve.className='green';approve.textContent='نشر';approve.onclick=()=>changeMedia(item,table,{approval_status:'approved'});const hide=document.createElement('button');hide.className='red';hide.textContent='إخفاء';hide.onclick=()=>changeMedia(item,table,{approval_status:'rejected'});const cover=document.createElement('button');cover.className='light';cover.textContent='تعيين غلاف';cover.onclick=()=>setMediaCover(item,table,foreign,id);acts.append(approve,hide,cover);card.append(acts);list.append(card)}catch(e){const p=document.createElement('p');p.textContent='تعذر عرض ملف: '+e.message;list.append(p)}}if(!data?.length)list.textContent='لا توجد وسائط لهذا السجل.'})}
-async function changeMedia(item,table,changes){await withError('media',async()=>{const {error}=await db.from(table).update(changes).eq('id',item.id);if(error)throw error;await loadMedia();toast('تم تحديث الوسيط')})}
-async function setMediaCover(item,table,foreign,id){await withError('media',async()=>{const {error:e1}=await db.from(table).update({is_cover:false}).eq(foreign,id);if(e1)throw e1;const {error:e2}=await db.from(table).update({is_cover:true}).eq('id',item.id);if(e2)throw e2;await loadMedia();toast('تم تعيين الغلاف')})}
-async function uploadMedia(){const kind=$('media-kind').value,id=$('media-owner').value,files=[...($('media-files').files||[])];if(!id||!files.length)return toast('اختر السجل والملفات أولاً','error');const table=kind==='provider'?'provider_media':'service_media',foreign=kind==='provider'?'provider_id':'service_id';let count=0;$('upload-media').disabled=true;try{for(const f of files){if(!f.type.startsWith('image/')&&!f.type.startsWith('video/'))continue;const ext=(f.name.split('.').pop()||'file').replace(/[^a-zA-Z0-9]/g,''),path=`${kind==='provider'?'providers':'services'}/${id}/${Date.now()}-${crypto.randomUUID()}.${ext}`;const {error:up}=await db.storage.from(MEDIA_BUCKET).upload(path,f,{upsert:false});if(up)throw up;const {error:row}=await db.from(table).insert({[foreign]:Number(id),storage_path:path,media_type:f.type.startsWith('video/')?'video':'image',is_cover:false,sort_order:count,approval_status:'approved',uploaded_by:currentUser.id});if(row)throw row;count++}$('media-files').value='';showMessage('media-message',`تم رفع ${count} ملف.`, 'success');await loadMedia();await logEvent('media','info','رفع وسائط',{kind,owner_id:id,count})}catch(e){showMessage('media-message',`تعذر إكمال الرفع بعد ${count} ملف: ${e.message}`,'error');await logEvent('media','error',e.message,{kind,owner_id:id,uploaded:count})}finally{$('upload-media').disabled=false}}
+async function loadMedia(){
+  const kind=$('media-kind').value,id=$('media-owner').value,list=$('media-list');list.innerHTML='';if(!id)return;
+  const table=kind==='provider'?'provider_media':'service_media',foreign=kind==='provider'?'provider_id':'service_id';
+  await withError('media',async()=>{
+    const {data,error}=await db.from(table).select('*').eq(foreign,id).order('sort_order').order('id');
+    if(error)throw error;
+    for(const item of data||[]){
+      try{
+        const url=await signedUrl(item.storage_path),card=document.createElement('div');card.className='media-card';
+        const media=document.createElement(item.media_type==='video'?'video':'img');media.src=url;
+        if(item.media_type==='video'){media.controls=true;media.playsInline=true}else{media.loading='lazy';media.alt='صورة مرفوعة'}
+        card.append(media);
+        const info=document.createElement('p');info.className='muted';info.textContent=`${item.media_type==='video'?'فيديو':'صورة'} — ${statusLabel(item.approval_status)}${item.is_cover?' — غلاف':''}`;card.append(info);
+        const acts=document.createElement('div');acts.className='actions';
+        const approve=document.createElement('button');approve.className='green';approve.textContent='نشر';approve.onclick=()=>changeMedia(item,table,{approval_status:'approved'});
+        const hide=document.createElement('button');hide.className='red';hide.textContent='إخفاء';hide.onclick=()=>changeMedia(item,table,{approval_status:'rejected'});
+        const cover=document.createElement('button');cover.className='light';cover.textContent='تعيين غلاف';cover.onclick=()=>setMediaCover(item,table,foreign,id);
+        acts.append(approve,hide,cover);card.append(acts);list.append(card);
+      }catch(e){const p=document.createElement('p');p.textContent='تعذر عرض ملف: '+e.message;list.append(p)}
+    }
+    if(!data?.length)list.textContent='لا توجد وسائط لهذا السجل.';
+  });
+}
+async function changeMedia(item,table,changes){
+  await withError('media',async()=>{
+    const {error}=await db.from(table).update(changes).eq('id',item.id);if(error)throw error;
+    await loadMedia();toast('تم تحديث الوسيط');
+  });
+}
+async function setMediaCover(item,table,foreign,id){
+  await withError('media',async()=>{
+    const {error:e1}=await db.from(table).update({is_cover:false}).eq(foreign,id);if(e1)throw e1;
+    const {error:e2}=await db.from(table).update({is_cover:true}).eq('id',item.id);if(e2)throw e2;
+    await loadMedia();toast('تم تعيين الغلاف');
+  });
+}
+async function uploadMedia(){
+  const kind=$('media-kind').value,id=$('media-owner').value,files=[...($('media-files').files||[])];
+  if(!id||!files.length)return toast('اختر السجل والملفات أولاً','error');
+  const table=kind==='provider'?'provider_media':'service_media',foreign=kind==='provider'?'provider_id':'service_id';
+  let count=0;$('upload-media').disabled=true;
+  try{
+    for(const f of files){
+      if(!f.type.startsWith('image/')&&!f.type.startsWith('video/'))continue;
+      const ext=(f.name.split('.').pop()||'file').replace(/[^a-zA-Z0-9]/g,'');
+      const path=`${kind==='provider'?'providers':'services'}/${id}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+      const {error:up}=await db.storage.from(MEDIA_BUCKET).upload(path,f,{upsert:false});if(up)throw up;
+      const {error:row}=await db.from(table).insert({[foreign]:Number(id),storage_path:path,media_type:f.type.startsWith('video/')?'video':'image',is_cover:false,sort_order:count,approval_status:'approved',uploaded_by:currentUser.id});
+      if(row)throw row;count++;
+    }
+    $('media-files').value='';showMessage('media-message',`تم رفع ${count} ملف.`,'success');await loadMedia();
+    await logEvent('media','info','رفع وسائط',{kind,owner_id:id,count});
+  }catch(e){
+    showMessage('media-message',`تعذر إكمال الرفع بعد ${count} ملف: ${e.message}`,'error');
+    await logEvent('media','error',e.message,{kind,owner_id:id,uploaded:count});
+  }finally{$('upload-media').disabled=false}
+}
+
 // الاشتراكات والدفعات
-async function loadSettings(){const {data,error}=await db.from('platform_settings').select('setting_key,setting_value').in('setting_key',['provider_monthly_subscription','provider_self_registration_enabled','nationwide_launch']);if(error)throw error;const map=Object.fromEntries((data||[]).map(x=>[x.setting_key,x.setting_value]));monthlySetting=map.provider_monthly_subscription||{amount:0,currency:'SYP',duration_days:30,enabled:true};$('plan-amount').value=monthlySetting.amount??0;$('plan-currency').value=monthlySetting.currency||'SYP';$('plan-days').value=monthlySetting.duration_days??30;$('plan-enabled').value=String(monthlySetting.enabled!==false);registrationEnabled=map.provider_self_registration_enabled===true;renderRegistration();$('registration-toggle').disabled=false;const nation=map.nationwide_launch||{enabled:false,scope:'SY'};$('nationwide-toggle').value=String(nation.enabled===true);$('nationwide-state').textContent=nation.enabled?'الإعداد محفوظ كمفعّل؛ تحقق من ربطه بصفحة الزبائن قبل اعتباره إطلاقاً فعلياً.':'الإطلاق على مستوى سوريا غير مفعّل.'}
-$('save-plan').onclick=async()=>{const amount=Number($('plan-amount').value),currency=$('plan-currency').value,days=Number($('plan-days').value),enabled=$('plan-enabled').value==='true';if(!Number.isFinite(amount)||amount<0||!Number.isInteger(days)||days<1)return showMessage('plan-message','تحقق من المبلغ والمدة.','error');await withError('subscriptions',async()=>{const {data,error}=await db.rpc('admin_save_subscription_settings',{p_amount:amount,p_currency:currency,p_duration_days:days,p_enabled:enabled});if(error)throw error;if(!data?.success)throw new Error('لم يتم حفظ إعدادات الاشتراك');showMessage('plan-message','تم حفظ إعدادات الاشتراك في قاعدة البيانات.','success');await loadSubscriptions();await logEvent('subscriptions','info','تعديل إعدادات الاشتراك',{amount,currency,duration_days:days,enabled})})};
-async function loadSubscriptions(){subscriptions=await getRows('provider_subscriptions','created_at');plans=await getRows('subscription_plans');$('subscriptions-list').innerHTML='';if(!subscriptions.length){$('subscriptions-list').textContent='لا توجد اشتراكات مسجلة حالياً.';return}subscriptions.forEach(s=>{const profile=accounts.find(a=>a.user_id===s.provider_id);const plan=plans.find(p=>p.id===s.plan_id);const d=document.createElement('div');d.className='item';d.innerHTML=`<strong>${esc(profile?.display_name||s.provider_id)}</strong>${badge(s.status)}<p>الخطة: ${esc(plan?.name||'—')} — المدة: ${esc(plan?.duration_days||'—')} يوم</p><p>البداية: ${esc(s.starts_at||'لم تبدأ')} — النهاية: ${esc(s.ends_at||'لم تحدد')}</p>`;$('subscriptions-list').append(d)})}
-async function loadPayments(){payments=await getRows('subscription_payments','created_at');$('payments-list').innerHTML='';if(!payments.length){$('payments-list').textContent='لا توجد دفعات مسجلة.';return}payments.forEach(p=>{const profile=accounts.find(a=>a.user_id===p.provider_id);const d=document.createElement('div');d.className='item';d.innerHTML=`<div class="row"><strong>دفعة رقم ${esc(p.id)} — ${esc(profile?.display_name||p.provider_id)}</strong>${badge(p.status)}</div><p>المبلغ: ${esc(p.amount)} ${esc(p.currency)} — الطريقة: ${esc(p.payment_method)}</p><p>مرجع الدفع: ${esc(p.reference_code||'غير مسجل')} — الاشتراك: ${esc(p.subscription_id)}</p><p>تاريخ التسجيل: ${esc(p.created_at)}</p><p>ملاحظة: ${esc(p.admin_note||'—')}</p><div class="actions"></div>`;const a=d.querySelector('.actions');if(p.status==='pending'){const yes=document.createElement('button');yes.className='green';yes.textContent='تأكيد استلام الدفع';yes.onclick=()=>confirmPayment(p);const no=document.createElement('button');no.className='red';no.textContent='رفض الدفعة';no.onclick=()=>rejectPayment(p);a.append(yes,no)}$('payments-list').append(d)})}
-async function confirmPayment(p){if(!confirm(`تأكيد استلام مبلغ ${p.amount} ${p.currency}؟ سيتم تفعيل الاشتراك وفق شروط الموافقة.`))return;const note=prompt('ملاحظة تأكيد (اختياري):','');await withError('subscription_payments',async()=>{const {data,error}=await db.rpc('admin_confirm_subscription_payment',{p_payment_id:p.id,p_admin_note:note||null});if(error)throw error;if(!data?.success)throw new Error('لم يتم تأكيد الدفعة');await loadPayments();await loadSubscriptions();await loadAccounts();await loadProviders();toast('تم تأكيد الدفع وتحديث الاشتراك تلقائياً');await logEvent('subscription_payments','info','تأكيد دفعة',{payment_id:p.id,subscription_id:data.subscription_id,ends_at:data.ends_at})})}
-async function rejectPayment(p){if(!confirm('هل تريد رفض هذه الدفعة؟'))return;const note=prompt('سبب الرفض (اختياري):','');await withError('subscription_payments',async()=>{const {data,error}=await db.rpc('admin_reject_subscription_payment',{p_payment_id:p.id,p_admin_note:note||null});if(error)throw error;if(!data?.success)throw new Error('لم يتم رفض الدفعة');await loadPayments();toast('تم رفض الدفعة');await logEvent('subscription_payments','warning','رفض دفعة',{payment_id:p.id,note})})}
-$('create-payment').onclick=async()=>{const provider_id=$('payment-provider').value,amount=Number($('payment-amount').value),method=$('payment-method').value,reference=$('payment-reference').value.trim(),note=$('payment-note').value.trim();if(!provider_id)return showMessage('payment-message','اختر حساب مقدم الخدمة.','error');if(!Number.isFinite(amount)||amount<=0)return showMessage('payment-message','المبلغ يجب أن يكون أكبر من صفر.','error');await withError('subscription_payments',async()=>{const {data,error}=await db.rpc('admin_create_subscription_payment',{p_provider_id:provider_id,p_amount:amount,p_currency:$('plan-currency').value,p_payment_method:method,p_reference_code:reference||null,p_admin_note:note||null});if(error)throw error;if(!data?.success)throw new Error('تعذر إنشاء سجل الدفعة');showMessage('payment-message',`تم حفظ الدفعة رقم ${data.payment_id} بحالة انتظار التأكيد.`, 'success');$('payment-amount').value='';$('payment-reference').value='';$('payment-note').value='';await loadSubscriptions();await loadPayments();await logEvent('subscription_payments','info','تسجيل دفعة جديدة',{payment_id:data.payment_id,provider_id,amount,method})})};
+async function loadSettings(){
+  const {data,error}=await db.from('platform_settings').select('setting_key,setting_value').in('setting_key',['provider_monthly_subscription','provider_self_registration_enabled','nationwide_launch']);
+  if(error)throw error;
+  const map=Object.fromEntries((data||[]).map(x=>[x.setting_key,x.setting_value]));
+  monthlySetting=map.provider_monthly_subscription||{amount:0,currency:'SYP',duration_days:30,enabled:true};
+  $('plan-amount').value=monthlySetting.amount??0;$('plan-currency').value=monthlySetting.currency||'SYP';$('plan-days').value=monthlySetting.duration_days??30;$('plan-enabled').value=String(monthlySetting.enabled!==false);
+  registrationEnabled=map.provider_self_registration_enabled===true;renderRegistration();$('registration-toggle').disabled=false;
+  const nation=map.nationwide_launch||{enabled:false,scope:'SY'};
+  $('nationwide-toggle').value=String(nation.enabled===true);
+  $('nationwide-state').textContent=nation.enabled?'الإعداد محفوظ كمفعّل؛ تحقق من ربطه بصفحة الزبائن قبل اعتباره إطلاقاً فعلياً.':'الإطلاق على مستوى سوريا غير مفعّل.';
+}
+$('save-plan').onclick=async()=>{
+  const amount=Number($('plan-amount').value),currency=$('plan-currency').value,days=Number($('plan-days').value),enabled=$('plan-enabled').value==='true';
+  if(!Number.isFinite(amount)||amount<0||!Number.isInteger(days)||days<1)return showMessage('plan-message','تحقق من المبلغ والمدة.','error');
+  await withError('subscriptions',async()=>{
+    const {data,error}=await db.rpc('admin_save_subscription_settings',{p_amount:amount,p_currency:currency,p_duration_days:days,p_enabled:enabled});
+    if(error)throw error;if(!data?.success)throw new Error('لم يتم حفظ إعدادات الاشتراك');
+    showMessage('plan-message','تم حفظ إعدادات الاشتراك في قاعدة البيانات.','success');await loadSubscriptions();
+    await logEvent('subscriptions','info','تعديل إعدادات الاشتراك',{amount,currency,duration_days:days,enabled});
+  });
+};
+async function loadSubscriptions(){
+  subscriptions=await getRows('provider_subscriptions','created_at');plans=await getRows('subscription_plans');$('subscriptions-list').innerHTML='';
+  if(!subscriptions.length){$('subscriptions-list').textContent='لا توجد اشتراكات مسجلة حالياً.';return}
+  subscriptions.forEach(s=>{
+    const profile=accounts.find(a=>a.user_id===s.provider_id),plan=plans.find(p=>p.id===s.plan_id),d=document.createElement('div');d.className='item';
+    d.innerHTML=`<strong>${esc(profile?.display_name||s.provider_id)}</strong>${badge(s.status)}<p>الخطة: ${esc(plan?.name||'—')} — المدة: ${esc(plan?.duration_days||'—')} يوم</p><p>البداية: ${esc(s.starts_at||'لم تبدأ')} — النهاية: ${esc(s.ends_at||'لم تحدد')}</p>`;
+    $('subscriptions-list').append(d);
+  });
+}
+async function loadPayments(){
+  payments=await getRows('subscription_payments','created_at');$('payments-list').innerHTML='';
+  if(!payments.length){$('payments-list').textContent='لا توجد دفعات مسجلة.';return}
+  payments.forEach(p=>{
+    const profile=accounts.find(a=>a.user_id===p.provider_id),d=document.createElement('div');d.className='item';
+    d.innerHTML=`<div class="row"><strong>دفعة رقم ${esc(p.id)} — ${esc(profile?.display_name||p.provider_id)}</strong>${badge(p.status)}</div><p>المبلغ: ${esc(p.amount)} ${esc(p.currency)} — الطريقة: ${esc(p.payment_method)}</p><p>مرجع الدفع: ${esc(p.reference_code||'غير مسجل')} — الاشتراك: ${esc(p.subscription_id)}</p><p>تاريخ التسجيل: ${esc(p.created_at)}</p><p>ملاحظة: ${esc(p.admin_note||'—')}</p><div class="actions"></div>`;
+    const a=d.querySelector('.actions');
+    if(p.status==='pending'){
+      const yes=document.createElement('button');yes.className='green';yes.textContent='تأكيد استلام الدفع';yes.onclick=()=>confirmPayment(p);
+      const no=document.createElement('button');no.className='red';no.textContent='رفض الدفعة';no.onclick=()=>rejectPayment(p);a.append(yes,no);
+    }
+    $('payments-list').append(d);
+  });
+}
+async function confirmPayment(p){
+  if(!confirm(`تأكيد استلام مبلغ ${p.amount} ${p.currency}؟ سيتم تفعيل الاشتراك وفق شروط الموافقة.`))return;
+  const note=prompt('ملاحظة تأكيد (اختياري):','');
+  await withError('subscription_payments',async()=>{
+    const {data,error}=await db.rpc('admin_confirm_subscription_payment',{p_payment_id:p.id,p_admin_note:note||null});
+    if(error)throw error;if(!data?.success)throw new Error('لم يتم تأكيد الدفعة');
+    await loadPayments();await loadSubscriptions();await loadAccounts();await loadProviders();toast('تم تأكيد الدفع وتحديث الاشتراك تلقائياً');
+    await logEvent('subscription_payments','info','تأكيد دفعة',{payment_id:p.id,subscription_id:data.subscription_id,ends_at:data.ends_at});
+  });
+}
+async function rejectPayment(p){
+  if(!confirm('هل تريد رفض هذه الدفعة؟'))return;const note=prompt('سبب الرفض (اختياري):','');
+  await withError('subscription_payments',async()=>{
+    const {data,error}=await db.rpc('admin_reject_subscription_payment',{p_payment_id:p.id,p_admin_note:note||null});
+    if(error)throw error;if(!data?.success)throw new Error('لم يتم رفض الدفعة');
+    await loadPayments();toast('تم رفض الدفعة');await logEvent('subscription_payments','warning','رفض دفعة',{payment_id:p.id,note});
+  });
+}
+$('create-payment').onclick=async()=>{
+  const provider_id=$('payment-provider').value,amount=Number($('payment-amount').value),method=$('payment-method').value,reference=$('payment-reference').value.trim(),note=$('payment-note').value.trim();
+  if(!provider_id)return showMessage('payment-message','اختر حساب مقدم الخدمة.','error');
+  if(!Number.isFinite(amount)||amount<=0)return showMessage('payment-message','المبلغ يجب أن يكون أكبر من صفر.','error');
+  await withError('subscription_payments',async()=>{
+    const {data,error}=await db.rpc('admin_create_subscription_payment',{p_provider_id:provider_id,p_amount:amount,p_currency:$('plan-currency').value,p_payment_method:method,p_reference_code:reference||null,p_admin_note:note||null});
+    if(error)throw error;if(!data?.success)throw new Error('تعذر إنشاء سجل الدفعة');
+    showMessage('payment-message',`تم حفظ الدفعة رقم ${data.payment_id} بحالة انتظار التأكيد.`,'success');
+    $('payment-amount').value='';$('payment-reference').value='';$('payment-note').value='';
+    await loadSubscriptions();await loadPayments();await logEvent('subscription_payments','info','تسجيل دفعة جديدة',{payment_id:data.payment_id,provider_id,amount,method});
+  });
+};
 $('reload-payments').onclick=()=>withError('subscription_payments',async()=>{await loadPayments();await loadSubscriptions()});
-function fillPaymentProviderSelect(){const s=$('payment-provider'),old=s.value;s.innerHTML='<option value="">اختر الحساب</option>';accounts.forEach(a=>s.add(new Option(a.display_name||a.user_id,a.user_id)));if([...s.options].some(o=>o.value===old))s.value=old}
+function fillPaymentProviderSelect(){
+  const s=$('payment-provider'),old=s.value;s.innerHTML='<option value="">اختر الحساب</option>';
+  accounts.forEach(a=>s.add(new Option(a.display_name||a.user_id,a.user_id)));
+  if([...s.options].some(o=>o.value===old))s.value=old;
+}
+
 // إعدادات الإطلاق
-$('save-nationwide').onclick=async()=>{const enabled=$('nationwide-toggle').value==='true';if(enabled&&!confirm('هذا يحفظ إعداد الإطلاق فقط؛ هل تؤكد أنك تريد تفعيله؟ لا يعني ذلك أن صفحة الزبائن أصبحت مرتبطة به بعد.'))return;await withError('settings',async()=>{const {error}=await db.from('platform_settings').upsert({setting_key:'nationwide_launch',setting_value:{enabled,scope:'SY'},updated_at:new Date().toISOString()},{onConflict:'setting_key'});if(error)throw error;$('nationwide-state').textContent=enabled?'الإعداد محفوظ كمفعّل، لكن يلزم ربطه بصفحة الزبائن قبل إطلاقه فعلياً.':'الإطلاق على مستوى سوريا غير مفعّل.';toast('تم حفظ الإعداد');await logEvent('settings','info','تعديل إعداد إطلاق سوريا',{enabled})})};
+$('save-nationwide').onclick=async()=>{
+  const enabled=$('nationwide-toggle').value==='true';
+  if(enabled&&!confirm('هذا يحفظ إعداد الإطلاق فقط؛ هل تؤكد أنك تريد تفعيله؟ لا يعني ذلك أن صفحة الزبائن أصبحت مرتبطة به بعد.'))return;
+  await withError('settings',async()=>{
+    const {error}=await db.from('platform_settings').upsert({setting_key:'nationwide_launch',setting_value:{enabled,scope:'SY'},updated_at:new Date().toISOString()},{onConflict:'setting_key'});
+    if(error)throw error;
+    $('nationwide-state').textContent=enabled?'الإعداد محفوظ كمفعّل، لكن يلزم ربطه بصفحة الزبائن قبل إطلاقه فعلياً.':'الإطلاق على مستوى سوريا غير مفعّل.';
+    toast('تم حفظ الإعداد');await logEvent('settings','info','تعديل إعداد إطلاق سوريا',{enabled});
+  });
+};
+
 // سجل الأخطاء والفحص التقني
-async function loadLogs(){const {data,error}=await db.from('admin_system_logs').select('*').order('created_at',{ascending:false}).limit(100);if(error)throw error;const logs=data||[];window.__unresolvedLogs=logs.filter(x=>!x.resolved_at&&x.severity==='error');$('logs-list').innerHTML='';logs.forEach(x=>{const d=document.createElement('div');d.className='item';d.innerHTML=`<div class="row"><strong>${esc(x.area)} — ${esc(x.severity)}</strong><span class="muted">${esc(x.created_at)}</span></div><p>${esc(x.message)}</p><p class="muted">${esc(JSON.stringify(x.details||{}))}</p>${x.resolved_at?'<span class="badge ok">تمت المعالجة</span>':'<button class="green resolve">تحديد كمعالج</button>'}`;const b=d.querySelector('.resolve');if(b)b.onclick=async()=>{await withError('system_logs',async()=>{const {error}=await db.from('admin_system_logs').update({resolved_at:new Date().toISOString(),resolved_by:currentUser.id,resolution_note:'تمت المراجعة من لوحة الإدارة'}).eq('id',x.id);if(error)throw error;await loadLogs();updateMetrics()})};$('logs-list').append(d)});if(!logs.length)$('logs-list').textContent='لا توجد سجلات حتى الآن.';updateMetrics()}
+async function loadLogs(){
+  const {data,error}=await db.from('admin_system_logs').select('*').order('created_at',{ascending:false}).limit(100);
+  if(error)throw error;const logs=data||[];window.__unresolvedLogs=logs.filter(x=>!x.resolved_at&&x.severity==='error');$('logs-list').innerHTML='';
+  logs.forEach(x=>{
+    const d=document.createElement('div');d.className='item';
+    d.innerHTML=`<div class="row"><strong>${esc(x.area)} — ${esc(x.severity)}</strong><span class="muted">${esc(x.created_at)}</span></div><p>${esc(x.message)}</p><p class="muted">${esc(JSON.stringify(x.details||{}))}</p>${x.resolved_at?'<span class="badge ok">تمت المعالجة</span>':'<button class="green resolve">تحديد كمعالج</button>'}`;
+    const b=d.querySelector('.resolve');
+    if(b)b.onclick=async()=>{
+      await withError('system_logs',async()=>{
+        const {error}=await db.from('admin_system_logs').update({resolved_at:new Date().toISOString(),resolved_by:currentUser.id,resolution_note:'تمت المراجعة من لوحة الإدارة'}).eq('id',x.id);
+        if(error)throw error;await loadLogs();updateMetrics();
+      });
+    };
+    $('logs-list').append(d);
+  });
+  if(!logs.length)$('logs-list').textContent='لا توجد سجلات حتى الآن.';updateMetrics();
+}
 $('reload-logs').onclick=()=>withError('system_logs',loadLogs);
-async function healthCheck(){const out=$('health-results');out.innerHTML='';const tests=[['جلسة الإدارة',async()=>{const {data,error}=await db.auth.getSession();if(error)throw error;if(!data.session)throw new Error('لا توجد جلسة نشطة');return 'جلسة نشطة وصلاحية الإدارة متاحة'}],['قاعدة البيانات',async()=>{const {error}=await db.from('categories').select('id').limit(1);if(error)throw error;return 'الاتصال ناجح'}],['جدول الحجوزات',async()=>{const {error}=await db.from('Bookings').select('id').limit(1);if(error)throw error;return 'متاح'}],['عناصر الحجوزات',async()=>{const {error}=await db.from('booking_items').select('id').limit(1);if(error)throw error;return 'متاح'}],['إعدادات المنصة',async()=>{const {error}=await db.from('platform_settings').select('setting_key').limit(1);if(error)throw error;return 'متاحة'}],['جداول الاشتراكات',async()=>{const {error}=await db.from('provider_subscriptions').select('id').limit(1);if(error)throw error;const {error:e}=await db.from('subscription_payments').select('id').limit(1);if(e)throw e;return 'الاشتراكات والدفعات متاحة'}],['التخزين والوسائط',async()=>{const {data,error}=await db.storage.listBuckets();if(error)throw error;if(!(data||[]).some(x=>x.name===MEDIA_BUCKET))throw new Error('مجلد التخزين service-media غير موجود');return 'مجلد الوسائط متاح'}],['سجل الصيانة',async()=>{const {error}=await db.from('admin_system_logs').select('id').limit(1);if(error)throw error;return 'متاح'}]];for(const [name,fn] of tests){const d=document.createElement('div');d.className='item';d.textContent=name+' — جارٍ الفحص';out.append(d);try{const msg=await fn();d.innerHTML=`<strong>${esc(name)}</strong><span class="badge ok">سليم</span><p>${esc(msg)}</p>`}catch(e){d.innerHTML=`<strong>${esc(name)}</strong><span class="badge bad">يحتاج مراجعة</span><p>${esc(e.message)}</p>`;await logEvent('health_check','error',`${name}: ${e.message}`)}}await loadLogs();toast('انتهى الفحص الشامل')}
+async function healthCheck(){
+  const out=$('health-results');out.innerHTML='';
+  const tests=[
+    ['جلسة الإدارة',async()=>{const {data,error}=await db.auth.getSession();if(error)throw error;if(!data.session)throw new Error('لا توجد جلسة نشطة');return 'جلسة نشطة وصلاحية الإدارة متاحة'}],
+    ['قاعدة البيانات',async()=>{const {error}=await db.from('categories').select('id').limit(1);if(error)throw error;return 'الاتصال ناجح'}],
+    ['جدول الحجوزات',async()=>{const {error}=await db.from('Bookings').select('id').limit(1);if(error)throw error;return 'متاح'}],
+    ['عناصر الحجوزات',async()=>{const {error}=await db.from('booking_items').select('id').limit(1);if(error)throw error;return 'متاح'}],
+    ['إعدادات المنصة',async()=>{const {error}=await db.from('platform_settings').select('setting_key').limit(1);if(error)throw error;return 'متاحة'}],
+    ['جداول الاشتراكات',async()=>{const {error}=await db.from('provider_subscriptions').select('id').limit(1);if(error)throw error;const {error:e}=await db.from('subscription_payments').select('id').limit(1);if(e)throw e;return 'الاشتراكات والدفعات متاحة'}],
+    ['التخزين والوسائط',async()=>{const {data,error}=await db.storage.listBuckets();if(error)throw error;if(!(data||[]).some(x=>x.name===MEDIA_BUCKET))throw new Error('مجلد التخزين service-media غير موجود');return 'مجلد الوسائط متاح'}],
+    ['سجل الصيانة',async()=>{const {error}=await db.from('admin_system_logs').select('id').limit(1);if(error)throw error;return 'متاح'}],
+    ['ربط أقسام مقدمي الخدمات',async()=>{const {error}=await db.from('service_providers').select('id,category_id').limit(1);if(error)throw error;return 'عمود القسم متاح'}]
+  ];
+  for(const [name,fn] of tests){
+    const d=document.createElement('div');d.className='item';d.textContent=name+' — جارٍ الفحص';out.append(d);
+    try{const msg=await fn();d.innerHTML=`<strong>${esc(name)}</strong><span class="badge ok">سليم</span><p>${esc(msg)}</p>`}
+    catch(e){d.innerHTML=`<strong>${esc(name)}</strong><span class="badge bad">يحتاج مراجعة</span><p>${esc(e.message)}</p>`;await logEvent('health_check','error',`${name}: ${e.message}`)}
+  }
+  await loadLogs();toast('انتهى الفحص الشامل');
+}
 $('run-health').onclick=()=>withError('health_check',healthCheck);
-$('repair-settings').onclick=async()=>{await withError('system_repair',async()=>{const defaults=[{setting_key:'provider_monthly_subscription',setting_value:{amount:0,currency:'SYP',duration_days:30,enabled:true}},{setting_key:'nationwide_launch',setting_value:{enabled:false,scope:'SY'}},{setting_key:'provider_self_registration_enabled',setting_value:false},{setting_key:'provider_self_registration',setting_value:{enabled:false}},{setting_key:'provider_publishing',setting_value:{enabled:false}}];const {error}=await db.from('platform_settings').upsert(defaults,{onConflict:'setting_key',ignoreDuplicates:true});if(error)throw error;await loadSettings();await logEvent('system_repair','info','فحص واستعادة الإعدادات الأساسية الناقصة');toast('تمت مراجعة الإعدادات الأساسية دون استبدال القيم الموجودة')})};
-$('run-expiry').onclick=async()=>{if(!confirm('تشغيل فحص الاشتراكات المنتهية وإخفاء ملفات المقدمين الذين انتهى اشتراكهم؟'))return;await withError('subscription_expiry',async()=>{const {data,error}=await db.rpc('admin_run_subscription_expiry');if(error)throw error;await loadSubscriptions();await loadAccounts();await loadProviders();await logEvent('subscription_expiry','info','تشغيل فحص انتهاء الاشتراكات',data||{});toast(`اكتمل الفحص: ${data?.expired_subscriptions??0} اشتراك منتهٍ`)})};
-// معالجة أخطاء JavaScript غير المتوقعة وتسجيلها
+$('repair-settings').onclick=async()=>{
+  await withError('system_repair',async()=>{
+    const defaults=[
+      {setting_key:'provider_monthly_subscription',setting_value:{amount:0,currency:'SYP',duration_days:30,enabled:true}},
+      {setting_key:'nationwide_launch',setting_value:{enabled:false,scope:'SY'}},
+      {setting_key:'provider_self_registration_enabled',setting_value:false},
+      {setting_key:'provider_self_registration',setting_value:{enabled:false}},
+      {setting_key:'provider_publishing',setting_value:{enabled:false}}
+    ];
+    const {error}=await db.from('platform_settings').upsert(defaults,{onConflict:'setting_key',ignoreDuplicates:true});
+    if(error)throw error;await loadSettings();await logEvent('system_repair','info','فحص واستعادة الإعدادات الأساسية الناقصة');toast('تمت مراجعة الإعدادات الأساسية دون استبدال القيم الموجودة');
+  });
+};
+$('run-expiry').onclick=async()=>{
+  if(!confirm('تشغيل فحص الاشتراكات المنتهية وإخفاء ملفات المقدمين الذين انتهى اشتراكهم؟'))return;
+  await withError('subscription_expiry',async()=>{
+    const {data,error}=await db.rpc('admin_run_subscription_expiry');if(error)throw error;
+    await loadSubscriptions();await loadAccounts();await loadProviders();
+    await logEvent('subscription_expiry','info','تشغيل فحص انتهاء الاشتراكات',data||{});
+    toast(`اكتمل الفحص: ${data?.expired_subscriptions??0} اشتراك منتهٍ`);
+  });
+};
 window.addEventListener('error',e=>{logEvent('javascript','error',e.message||'خطأ JavaScript',{filename:e.filename,lineno:e.lineno,colno:e.colno})});
 window.addEventListener('unhandledrejection',e=>{const m=e.reason?.message||String(e.reason||'رفض Promise غير معالج');logEvent('javascript','error',m)});
-async function init(){try{await checkAdmin();}catch(e){$('login').classList.remove('hidden');$('app').classList.add('hidden');$('login-error').textContent=e.message;$('login-error').classList.remove('hidden')}}
-// ملء القوائم بعد تحميل بياناتها الأساسية
+async function init(){try{await checkAdmin()}catch(e){$('login').classList.remove('hidden');$('app').classList.add('hidden');$('login-error').textContent=e.message;$('login-error').classList.remove('hidden')}}
 const _loadProviders=loadProviders;
 loadProviders=async function(){await _loadProviders();await loadMediaOwner().catch(()=>{});fillPaymentProviderSelect()};
 const _loadAccounts=loadAccounts;
