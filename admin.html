@@ -94,6 +94,21 @@ async function grantFreeSubscription(account,button){
     if(button.isConnected){button.disabled=false;button.textContent=oldText}
   }
 }
+async function toggleProviderAccount(account,button){
+  if(!account?.user_id)return toast('معرّف الحساب غير موجود','error');
+  const nextActive=!account.is_active;
+  const verb=nextActive?'إعادة تفعيل':'إيقاف';
+  if(!confirm(`${verb} حساب ${account.display_name||account.user_id}؟ ${nextActive?'سيبقى ملف مقدم الخدمة مخفياً إلى أن تعيد الإدارة إظهاره.':'سيتم منعه من استخدام لوحة مقدم الخدمة وإخفاء ملفه عن الزبائن.'}`))return;
+  const old=button.textContent;button.disabled=true;button.textContent='جارٍ التنفيذ…';
+  try{
+    const {error:e1}=await db.from('provider_profiles').update({is_active:nextActive}).eq('user_id',account.user_id);
+    if(e1)throw e1;
+    const {error:e2}=await db.from('service_providers').update({is_active:false}).eq('owner_user_id',account.user_id);
+    if(e2)throw e2;
+    await loadProviders();await loadAccounts();
+    toast(nextActive?'تمت إعادة تفعيل الحساب، والملف ما زال مخفياً':'تم إيقاف الحساب وإخفاء ملفه');
+  }catch(e){toast(e.message||'تعذر تحديث حالة الحساب','error');button.disabled=false;button.textContent=old}
+}
 async function loadAccounts(){
   const {data,error}=await db.from('provider_profiles').select('*').order('created_at',{ascending:false});
   if(error)throw error;
@@ -105,6 +120,12 @@ async function loadAccounts(){
     d.className='item';
     d.innerHTML=`<strong>${esc(a.display_name)}</strong><p>رقم الحساب: ${esc(a.user_id)}</p><p>الهاتف: ${esc(a.phone||'—')} — المنطقة: ${esc(a.region||'—')}</p>${badge(a.approval_status)}<span class="badge ${a.is_active?'ok':'bad'}">${a.is_active?'نشط':'غير نشط'}</span><p>ملف مقدم الخدمة: ${esc(p?.name||'لم يتم ربط الملف')}</p><div class="actions account-actions"></div>`;
     const actions=d.querySelector('.account-actions');
+    const toggle=document.createElement('button');
+    toggle.type='button';
+    toggle.className=a.is_active?'red':'green';
+    toggle.textContent=a.is_active?'إيقاف الحساب':'إعادة تفعيل الحساب';
+    toggle.addEventListener('click',()=>toggleProviderAccount(a,toggle));
+    actions.append(toggle);
     if(a.approval_status!=='approved'){
       const note=document.createElement('span');
       note.className='muted';
