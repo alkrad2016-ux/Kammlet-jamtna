@@ -6,67 +6,27 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#14213d">
 <title>تسجيل مقدم خدمة — كملت جمعتنا</title>
-
 <style>
-:root{
---navy:#14213d;
---gold:#d4af37;
---cream:#f7f5f0;
---line:#e7e2d8;
---muted:#6b7280;
---green:#16834a;
---red:#b42318;
-}
+:root{--navy:#14213d;--gold:#d4af37;--cream:#f7f5f0;--line:#e7e2d8;--muted:#6b7280;--green:#16834a;--red:#b42318}
 *{box-sizing:border-box}
-body{
-margin:0;background:var(--cream);color:var(--navy);
-font-family:Tahoma,Arial,sans-serif;line-height:1.7
-}
-header{
-background:var(--navy);color:white;text-align:center;
-padding:20px 12px;border-bottom:4px solid var(--gold)
-}
+body{margin:0;background:var(--cream);color:var(--navy);font-family:Tahoma,Arial,sans-serif;line-height:1.7}
+header{background:var(--navy);color:white;text-align:center;padding:20px 12px;border-bottom:4px solid var(--gold)}
 header h1{margin:0;font-size:25px}
 header p{margin:4px 0;color:#f0df9c;font-size:13px}
 main{max-width:680px;margin:20px auto;padding:0 12px 35px}
-.card{
-background:white;border:1px solid var(--line);
-border-radius:15px;padding:16px;margin-bottom:12px
-}
+.card{background:white;border:1px solid var(--line);border-radius:15px;padding:16px;margin-bottom:12px}
 h2{font-size:18px;margin:0 0 8px}
 p{font-size:13px;color:var(--muted)}
-label.field-label{
-display:block;font-weight:bold;font-size:13px;margin-top:9px
-}
-input,textarea,select{
-width:100%;font:inherit;font-size:15px;color:var(--navy);
-border:1px solid #d8d4ca;border-radius:9px;
-padding:11px;margin:4px 0 8px;background:white
-}
+label.field-label{display:block;font-weight:bold;font-size:13px;margin-top:9px}
+input,textarea,select{width:100%;font:inherit;font-size:15px;color:var(--navy);border:1px solid #d8d4ca;border-radius:9px;padding:11px;margin:4px 0 8px;background:white}
 textarea{min-height:85px}
-.checklist{
-display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px
-}
-.checkline{
-display:flex;gap:7px;align-items:center;
-border:1px solid var(--line);background:#faf9f6;
-border-radius:8px;padding:8px;font-size:12px
-}
+.checklist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.checkline{display:flex;gap:7px;align-items:center;border:1px solid var(--line);background:#faf9f6;border-radius:8px;padding:8px;font-size:12px}
 .checkline input{width:auto;margin:0}
-.group{
-font-weight:bold;margin:12px 0 4px;
-color:#806313;grid-column:1/-1
-}
-.btn{
-width:100%;border:0;background:var(--gold);color:var(--navy);
-font-weight:bold;border-radius:10px;padding:13px;
-margin-top:12px;font:inherit;cursor:pointer
-}
+.group{font-weight:bold;margin:12px 0 4px;color:#806313;grid-column:1/-1}
+.btn{width:100%;border:0;background:var(--gold);color:var(--navy);font-weight:bold;border-radius:10px;padding:13px;margin-top:12px;font:inherit;cursor:pointer}
 .btn:disabled{opacity:.55;cursor:not-allowed}
-.status{
-display:none;padding:10px;border-radius:9px;margin-top:10px;
-font-size:13px;overflow-wrap:anywhere
-}
+.status{display:none;padding:10px;border-radius:9px;margin-top:10px;font-size:13px;overflow-wrap:anywhere}
 .status.show{display:block}
 .success{background:#e8f6ed;color:var(--green)}
 .error{background:#fff0ef;color:var(--red)}
@@ -74,12 +34,9 @@ font-size:13px;overflow-wrap:anywhere
 .hidden{display:none!important}
 .muted{color:var(--muted);font-size:12px}
 hr{border:0;border-top:1px solid var(--line);margin:18px 0}
-@media(max-width:420px){
-.checklist{grid-template-columns:1fr}
-}
+@media(max-width:420px){.checklist{grid-template-columns:1fr}}
 </style>
 </head>
-
 <body>
 
 <header>
@@ -88,21 +45,17 @@ hr{border:0;border-top:1px solid var(--line);margin:18px 0}
 </header>
 
 <main>
-
 <div class="card">
 <h2>أهلاً بك في عائلة كملت جمعتنا</h2>
 <p>
 هذا رابط تسجيل خاص أرسلته لك الإدارة بعد مراجعة طلب الانضمام.
-بعد إنشاء الحساب تستطيع إضافة ملف نشاطك وخدماتك وأصنافك وصورك وأسعارك.
+بعد إنشاء الحساب تستطيع استكمال ملف نشاطك وإضافة خدماتك وأصنافك وصورك وأسعارك.
 كل المحتوى يبقى بانتظار مراجعة الإدارة قبل ظهوره للزبائن.
 </p>
-<div id="token-status" class="status show info">
-جارٍ التحقق من رابط التسجيل…
-</div>
+<div id="token-status" class="status show info">جارٍ التحقق من رابط التسجيل…</div>
 </div>
 
 <form id="register-form" class="card hidden">
-
 <h2>بيانات الحساب والنشاط</h2>
 
 <label class="field-label" for="business-name">اسم النشاط أو مقدم الخدمة</label>
@@ -113,25 +66,20 @@ hr{border:0;border-top:1px solid var(--line);margin:18px 0}
 
 <label class="field-label" for="password">كلمة المرور</label>
 <input id="password" type="password" required minlength="8" autocomplete="new-password">
-<div class="muted">8 أحرف على الأقل. احتفظ بها لتسجيل الدخول إلى لوحة مقدم الخدمة.</div>
+<div class="muted">8 أحرف على الأقل. احتفظ بها لتسجيل الدخول لاحقاً بعد تفعيل الحساب.</div>
 
 <label class="field-label" for="phone">رقم الهاتف</label>
 <input id="phone" type="tel" required maxlength="30" autocomplete="tel" placeholder="+963...">
 
 <hr>
-
 <h2>موقع النشاط</h2>
 
 <label class="field-label" for="country">الدولة</label>
-<select id="country" disabled>
-<option value="SY">سوريا</option>
-</select>
+<select id="country" disabled><option value="SY">سوريا</option></select>
 <div class="muted">السوق الحالي للتسجيل: سوريا.</div>
 
 <label class="field-label" for="region">المحافظة</label>
-<select id="region" required disabled>
-<option value="">جارٍ تحميل المحافظات...</option>
-</select>
+<select id="region" required disabled><option value="">جارٍ تحميل المحافظات...</option></select>
 
 <label class="field-label" for="city">المدينة أو البلدة</label>
 <input id="city" maxlength="100" placeholder="مثلاً: درعا البلد، إزرع، الصنمين">
@@ -143,24 +91,15 @@ hr{border:0;border-top:1px solid var(--line);margin:18px 0}
 <textarea id="description" maxlength="2000" placeholder="عرّف الزبائن بنشاطك وخبرتك"></textarea>
 
 <hr>
-
 <h2>الخدمات التي تقدمها</h2>
-
-<p>
-يمكنك اختيار أكثر من خدمة ومن أكثر من قسم.
-أول خدمة تختارها ستُعتمد كخدمة رئيسية مؤقتاً.
-</p>
+<p>يمكنك اختيار أكثر من خدمة ومن أكثر من قسم.</p>
 
 <div id="service-options" class="checklist">
 <div class="muted">جارٍ تحميل الخدمات...</div>
 </div>
 
-<button id="submit" class="btn" type="submit">
-إنشاء حسابي
-</button>
-
+<button id="submit" class="btn" type="submit">إنشاء حسابي</button>
 <div id="register-status" class="status" role="status" aria-live="polite"></div>
-
 </form>
 
 <div class="card">
@@ -169,365 +108,209 @@ hr{border:0;border-top:1px solid var(--line);margin:18px 0}
 تواصل مع الإدارة للحصول على رابط تسجيل جديد.
 </p>
 </div>
-
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
 'use strict';
 
-/* إعداد الاتصال */
-const SUPABASE_URL =
-'https://qkzdbbqkkxnrgcpcvjvp.supabase.co';
+const SUPABASE_URL='https://qkzdbbqkkxnrgcpcvjvp.supabase.co';
+const SUPABASE_KEY='sb_publishable_LiOa9cR2KhHDaEvA2_205Q_XL2OSrfp';
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
+ auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}
+});
 
-const SUPABASE_KEY =
-'sb_publishable_LiOa9cR2KhHDaEvA2_205Q_XL2OSrfp';
+const $=id=>document.getElementById(id);
+const token=new URLSearchParams(location.search).get('token')||'';
+const COUNTRY_CODE='SY';
+const TIMEZONE='Asia/Damascus';
+const PHONE_COUNTRY_CODE='+963';
 
-const db = window.supabase.createClient(
-SUPABASE_URL,
-SUPABASE_KEY,
-{
-auth:{
-persistSession:true,
-autoRefreshToken:true,
-detectSessionInUrl:false
-}
-}
-);
+let services=[];
+let regions=[];
 
-const $ = id => document.getElementById(id);
-
-const token =
-new URLSearchParams(location.search).get('token') || '';
-
-const COUNTRY_CODE = 'SY';
-const TIMEZONE = 'Asia/Damascus';
-const PHONE_COUNTRY_CODE = '+963';
-
-let services = [];
-let regions = [];
-
-/* رسائل الحالة */
 function status(id,message,type){
-const el = $(id);
-el.textContent = message;
-el.className = 'status show ' + type;
+ const el=$(id);
+ el.textContent=message;
+ el.className='status show '+type;
 }
 
-/* تحميل المحافظات */
 async function loadRegions(){
+ const {data,error}=await db.from('country_regions')
+  .select('id,name_ar,name_en')
+  .eq('country_code',COUNTRY_CODE)
+  .eq('region_type','governorate')
+  .eq('is_enabled',true)
+  .order('id');
 
-const {data,error} = await db
-.from('country_regions')
-.select('id,name_ar,name_en')
-.eq('country_code',COUNTRY_CODE)
-.eq('region_type','governorate')
-.eq('is_enabled',true)
-.order('id');
+ if(error)throw error;
+ regions=data||[];
+ const select=$('region');
+ select.innerHTML='';
 
-if(error) throw error;
+ if(!regions.length)throw new Error('لا توجد محافظات مفعّلة حالياً.');
 
-regions = data || [];
+ const first=document.createElement('option');
+ first.value='';
+ first.textContent='اختر المحافظة';
+ select.appendChild(first);
 
-const select = $('region');
-select.innerHTML = '';
+ regions.forEach(region=>{
+  const option=document.createElement('option');
+  option.value=String(region.id);
+  option.textContent=region.name_ar||region.name_en||'محافظة';
+  select.appendChild(option);
+ });
 
-if(!regions.length){
-throw new Error('لا توجد محافظات مفعّلة حالياً.');
+ select.disabled=false;
 }
 
-const first = document.createElement('option');
-first.value = '';
-first.textContent = 'اختر المحافظة';
-select.appendChild(first);
-
-regions.forEach(region => {
-
-const option = document.createElement('option');
-
-option.value = String(region.id);
-
-option.textContent =
-region.name_ar || region.name_en || 'محافظة';
-
-select.appendChild(option);
-
-});
-
-select.disabled = false;
-}
-
-/* تحميل الخدمات والأقسام */
 async function loadServices(){
+ const [categoriesResult,servicesResult]=await Promise.all([
+  db.from('categories').select('id,name').order('id'),
+  db.from('services').select('id,name,category_id')
+   .eq('is_available',true)
+   .eq('approval_status','approved')
+   .order('id')
+ ]);
 
-const [categoriesResult,servicesResult] = await Promise.all([
+ if(categoriesResult.error)throw categoriesResult.error;
+ if(servicesResult.error)throw servicesResult.error;
 
-db.from('categories')
-.select('id,name')
-.order('id'),
+ const categories=categoriesResult.data||[];
+ services=servicesResult.data||[];
+ const box=$('service-options');
+ box.innerHTML='';
 
-db.from('services')
-.select('id,name,category_id')
-.eq('is_available',true)
-.eq('approval_status','approved')
-.order('id')
+ if(!services.length){
+  box.textContent='لا توجد خدمات متاحة حالياً. تواصل مع الإدارة.';
+  return;
+ }
 
-]);
+ categories.forEach(category=>{
+  const items=services.filter(service=>
+   Number(service.category_id)===Number(category.id)
+  );
+  if(!items.length)return;
 
-if(categoriesResult.error) throw categoriesResult.error;
-if(servicesResult.error) throw servicesResult.error;
+  const title=document.createElement('div');
+  title.className='group';
+  title.textContent=category.name;
+  box.appendChild(title);
 
-const categories = categoriesResult.data || [];
-services = servicesResult.data || [];
-
-const box = $('service-options');
-box.innerHTML = '';
-
-if(!services.length){
-box.textContent = 'لا توجد خدمات متاحة حالياً. تواصل مع الإدارة.';
-return;
+  items.forEach(service=>{
+   const label=document.createElement('label');
+   label.className='checkline';
+   const checkbox=document.createElement('input');
+   checkbox.type='checkbox';
+   checkbox.value=String(service.id);
+   label.appendChild(checkbox);
+   label.appendChild(document.createTextNode(service.name));
+   box.appendChild(label);
+  });
+ });
 }
 
-categories.forEach(category => {
-
-const items = services.filter(service =>
-Number(service.category_id) === Number(category.id)
-);
-
-if(!items.length) return;
-
-const title = document.createElement('div');
-title.className = 'group';
-title.textContent = category.name;
-box.appendChild(title);
-
-items.forEach(service => {
-
-const label = document.createElement('label');
-label.className = 'checkline';
-
-const checkbox = document.createElement('input');
-checkbox.type = 'checkbox';
-checkbox.value = String(service.id);
-
-label.appendChild(checkbox);
-label.appendChild(document.createTextNode(service.name));
-
-box.appendChild(label);
-
-});
-
-});
-
-}
-
-/* التحقق الأولي من رابط الدعوة */
 async function init(){
+ if(!token||token.length<30||token.length>100){
+  status('token-status','رابط التسجيل غير مكتمل أو غير صحيح. اطلب رابطاً جديداً من الإدارة.','error');
+  return;
+ }
 
-if(!token || token.length < 30 || token.length > 100){
-
-status(
-'token-status',
-'رابط التسجيل غير مكتمل أو غير صحيح. اطلب رابطاً جديداً من الإدارة.',
-'error'
-);
-
-return;
+ try{
+  await Promise.all([loadRegions(),loadServices()]);
+  $('register-form').classList.remove('hidden');
+  status('token-status','تم تجهيز نموذج التسجيل. أكمل بياناتك لإتمام إنشاء الحساب.','success');
+ }catch(error){
+  console.error(error);
+  status('token-status','تعذر تحميل بيانات التسجيل. يرجى المحاولة لاحقاً أو التواصل مع الإدارة.','error');
+ }
 }
 
-try{
+$('register-form').addEventListener('submit',async event=>{
+ event.preventDefault();
 
-await Promise.all([
-loadRegions(),
-loadServices()
-]);
+ const selectedRegionId=Number($('region').value);
+ const regionRecord=regions.find(item=>Number(item.id)===selectedRegionId);
 
-$('register-form').classList.remove('hidden');
+ if(!regionRecord){
+  status('register-status','يرجى اختيار المحافظة من القائمة.','error');
+  return;
+ }
 
-status(
-'token-status',
-'تم تجهيز نموذج التسجيل. أكمل بياناتك لإتمام إنشاء الحساب.',
-'success'
-);
+ const service_ids=[
+  ...document.querySelectorAll('#service-options input:checked')
+ ].map(input=>Number(input.value));
 
-}catch(error){
+ if(!service_ids.length){
+  status('register-status','اختر خدمة واحدة على الأقل.','error');
+  return;
+ }
 
-console.error(error);
+ if(service_ids.length>12){
+  status('register-status','يمكنك اختيار 12 خدمة كحد أقصى.','error');
+  return;
+ }
 
-status(
-'token-status',
-'تعذر تحميل بيانات التسجيل. يرجى المحاولة لاحقاً أو التواصل مع الإدارة.',
-'error'
-);
+ const body={
+  token,
+  email:$('email').value.trim().toLowerCase(),
+  password:$('password').value,
+  display_name:$('business-name').value.trim(),
+  phone:$('phone').value.trim(),
+  country_code:COUNTRY_CODE,
+  phone_country_code:PHONE_COUNTRY_CODE,
+  timezone:TIMEZONE,
+  region_id:selectedRegionId,
+  region:regionRecord.name_ar||regionRecord.name_en,
+  city:$('city').value.trim(),
+  address:$('address').value.trim(),
+  description:$('description').value.trim(),
+  service_ids
+ };
 
-}
+ const btn=$('submit');
+ btn.disabled=true;
+ btn.textContent='جارٍ إنشاء الحساب...';
 
-}
+ status('register-status','نتحقق من الدعوة وننشئ حسابك وملف مقدم الخدمة...','info');
 
-/* إرسال طلب التسجيل */
-$('register-form').addEventListener('submit',async event => {
+ try{
+  const {data,error}=await db.functions.invoke(
+   'complete-provider-invite',
+   {body}
+  );
 
-event.preventDefault();
+  if(error)throw error;
+  if(!data||!data.success){
+   throw new Error(data?.error||'تعذر إكمال التسجيل.');
+  }
 
-const selectedRegionId = Number($('region').value);
+  /*
+   * لا نسجل دخول المستخدم تلقائياً:
+   * الحساب الجديد يبقى غير مفعّل حتى تراجعه الإدارة.
+   */
+  $('register-form').classList.add('hidden');
 
-const regionRecord = regions.find(item =>
-Number(item.id) === selectedRegionId
-);
+  status(
+   'token-status',
+   'تم إنشاء حسابك بنجاح! 🎉 طلبك الآن بانتظار مراجعة وتفعيل إدارة كملت جمعتنا. بعد تفعيل الحساب يمكنك تسجيل الدخول إلى بوابة مقدم الخدمة باستخدام بريدك الإلكتروني وكلمة المرور التي اخترتهما.',
+   'success'
+  );
 
-if(!regionRecord){
-
-status(
-'register-status',
-'يرجى اختيار المحافظة من القائمة.',
-'error'
-);
-
-return;
-}
-
-const service_ids = [
-...document.querySelectorAll('#service-options input:checked')
-].map(input => Number(input.value));
-
-if(!service_ids.length){
-
-status(
-'register-status',
-'اختر خدمة واحدة على الأقل.',
-'error'
-);
-
-return;
-}
-
-if(service_ids.length > 12){
-
-status(
-'register-status',
-'يمكنك اختيار 12 خدمة كحد أقصى.',
-'error'
-);
-
-return;
-}
-
-/* بيانات التسجيل */
-const body = {
-
-token:token,
-
-email:$('email').value.trim().toLowerCase(),
-
-password:$('password').value,
-
-display_name:$('business-name').value.trim(),
-
-phone:$('phone').value.trim(),
-
-country_code:COUNTRY_CODE,
-
-phone_country_code:PHONE_COUNTRY_CODE,
-
-timezone:TIMEZONE,
-
-region_id:selectedRegionId,
-
-region:regionRecord.name_ar || regionRecord.name_en,
-
-city:$('city').value.trim(),
-
-address:$('address').value.trim(),
-
-description:$('description').value.trim(),
-
-service_ids:service_ids
-
-};
-
-const btn = $('submit');
-
-btn.disabled = true;
-btn.textContent = 'جارٍ إنشاء الحساب...';
-
-status(
-'register-status',
-'نتحقق من الدعوة وننشئ حسابك وملف مقدم الخدمة...',
-'info'
-);
-
-try{
-
-const {data,error} = await db.functions.invoke(
-'complete-provider-invite',
-{body}
-);
-
-if(error) throw error;
-
-if(!data || !data.success){
-
-throw new Error(
-data?.error || 'تعذر إكمال التسجيل.'
-);
-
-}
-
-/* تسجيل الدخول بعد إنشاء الحساب */
-const {error:loginError} = await db.auth.signInWithPassword({
-
-email:body.email,
-password:body.password
-
+ }catch(error){
+  console.error(error);
+  status(
+   'register-status',
+   error.message||'حدث خطأ أثناء التسجيل. يرجى المحاولة مجدداً.',
+   'error'
+  );
+  btn.disabled=false;
+  btn.textContent='إنشاء حسابي';
+ }
 });
 
-if(loginError){
-
-status(
-'register-status',
-'تم إنشاء الحساب بنجاح. يمكنك الآن الدخول إلى لوحة مقدم الخدمة باستخدام بريدك وكلمة مرورك.',
-'success'
-);
-
-return;
-}
-
-status(
-'register-status',
-'تم إنشاء حسابك بنجاح. جارٍ فتح لوحة مقدم الخدمة...',
-'success'
-);
-
-btn.textContent = 'تم التسجيل بنجاح';
-
-setTimeout(() => {
-
-location.href = 'provider.html';
-
-},1000);
-
-}catch(error){
-
-console.error(error);
-
-status(
-'register-status',
-error.message || 'حدث خطأ أثناء التسجيل. يرجى المحاولة مجدداً.',
-'error'
-);
-
-btn.disabled = false;
-btn.textContent = 'إنشاء حسابي';
-
-}
-
-});
-
-/* بدء التشغيل */
 init();
-
 </script>
-
 </body>
 </html>
