@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
@@ -37,7 +38,9 @@
       <div><label for="customer-name">الاسم الكامل</label><input id="customer-name" required maxlength="120" autocomplete="name"></div>
       <div><label for="customer-phone">رقم الهاتف السوري</label><input id="customer-phone" type="tel" inputmode="tel" required maxlength="30" placeholder="09XXXXXXXX"></div>
       <div><label for="service-date">تاريخ المناسبة</label><input id="service-date" type="date" required></div>
-      <div><label for="service-location">المنطقة / مكان المناسبة</label><input id="service-location" required maxlength="200" placeholder="مثلاً: درعا البلد"></div>
+      <div><label for="customer-region">المحافظة</label><select id="customer-region" required><option value="">جارٍ تحميل المحافظات…</option></select></div>
+      <div><label for="customer-city">المدينة / البلدة</label><input id="customer-city" maxlength="100" placeholder="مثلاً: درعا البلد"></div>
+      <div><label for="service-location">العنوان أو مكان المناسبة بالتفصيل</label><input id="service-location" required maxlength="200" placeholder="الحي، الشارع، أو أقرب معلم"></div>
       <div><label for="service-details">تفاصيل إضافية (اختياري)</label><textarea id="service-details" maxlength="2000" placeholder="عدد الضيوف أو تفاصيل أخرى"></textarea></div>
     </div><button class="primary-btn" id="submit-booking" type="submit">إرسال الطلب عبر واتساب</button><div id="booking-status" class="status" role="status" aria-live="polite"></div></form>
   </div>
@@ -70,7 +73,7 @@ const $=id=>document.getElementById(id);
 const escHtml=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const categoryDesign={1:{icon:'💍',subtitle:'كل تفاصيل فرحتك'},2:{icon:'🏡',subtitle:'أماكن لمناسبتك'},3:{icon:'🎤',subtitle:'أجواء وفرح'},4:{icon:'🍽️',subtitle:'ضيافة بتليق بضيوفك'},5:{icon:'📷',subtitle:'صور وذكريات مناسبتك'},6:{icon:'🌸',subtitle:'ديكور وورد يزيّن مناسبتك'}};
 const fallbackCategories=[{id:1,name:'أفراح وأعراس'},{id:2,name:'صالات ومزارع'},{id:3,name:'مطربين وفرق'},{id:4,name:'الطعام وضيافة'},{id:5,name:'تصوير ومصورون'},{id:6,name:'ديكور وورد'}];
-let categories=[],services=[],providers=[],promotions=[],cart=[];
+let categories=[],services=[],providers=[],promotions=[],cart=[],governorates=[];
 let currentCategory=null,currentService=null,currentProvider=null,currentPage='home-page',submitting=false;
 function showStatus(id,msg,type='info'){const e=$(id);e.textContent=msg;e.className='status show '+type}
 function clearStatus(id){const e=$(id);e.textContent='';e.className='status'}
@@ -119,7 +122,28 @@ function priceMarkup(price,currency,promo){
 function loadCart(){try{const v=JSON.parse(localStorage.getItem(CART_KEY)||'[]');if(!Array.isArray(v))return [];return v.filter(x=>x&&Number.isSafeInteger(Number(x.providerId))&&Number(x.providerId)>0&&Number.isSafeInteger(Number(x.serviceId))&&Number(x.serviceId)>0).map(x=>({...x,quantity:Math.min(99,Math.max(1,Math.floor(Number(x.quantity)||1)))}))}catch{return []}}
 cart=loadCart();function saveCart(){try{localStorage.setItem(CART_KEY,JSON.stringify(cart))}catch(e){console.warn('تعذر حفظ السلة محلياً',e);showStatus('booking-status','تعذر حفظ السلة على هذا الجهاز. تأكد من مساحة التخزين المتاحة.','error')}}
 function updateCartCount(){$('header-count').textContent=cart.reduce((n,x)=>n+Number(x.quantity||1),0)}
-async function loadHome(){try{const {data,error}=await db.from('categories').select('id,name').order('id');if(error)throw error;categories=data?.length?data:fallbackCategories}catch(e){console.warn(e);categories=fallbackCategories}renderCategories();renderJoinCategories();try{const {data,error}=await db.from('promotions').select('id,name,target_type,target_id,provider_id,discount_type,discount_value,currency,starts_at,ends_at').eq('is_active',true).eq('approval_status','approved');if(error)throw error;const now=Date.now();promotions=(data||[]).filter(p=>{const start=p.starts_at?Date.parse(p.starts_at):0,end=p.ends_at?Date.parse(p.ends_at):Infinity;return Number.isFinite(start)&&start<=now&&(!p.ends_at||(Number.isFinite(end)&&end>=now))})}catch(e){console.warn('promotions',e);promotions=[]}}
+async function loadLocationData(){
+ const select=$('customer-region');
+ select.innerHTML='<option value="">اختر المحافظة</option>';
+ const {data,error}=await db.from('country_regions').select('id,name_ar').eq('country_code','SY').eq('region_type','governorate').eq('is_enabled',true).order('id');
+ if(error)throw error;
+ governorates=data||[];
+ governorates.forEach(r=>select.add(new Option(r.name_ar,String(r.id))));
+ if(!governorates.length)throw new Error('لا توجد محافظات مفعّلة لسوريا');
+}
+async function loadHome(){
+ try{await loadLocationData()}
+ catch(e){console.error('تعذر تحميل المحافظات',e);showStatus('booking-status','تعذر تحميل قائمة المحافظات. حاول تحديث الصفحة.','error')}
+ try{const {data,error}=await db.from('categories').select('id,name').order('id');if(error)throw error;categories=data?.length?data:fallbackCategories}
+ catch(e){console.warn(e);categories=fallbackCategories}
+ renderCategories();renderJoinCategories();
+ try{
+  const {data,error}=await db.from('promotions').select('id,name,target_type,target_id,provider_id,discount_type,discount_value,currency,starts_at,ends_at').eq('is_active',true).eq('approval_status','approved');
+  if(error)throw error;
+  const now=Date.now();
+  promotions=(data||[]).filter(p=>{const start=p.starts_at?Date.parse(p.starts_at):0,end=p.ends_at?Date.parse(p.ends_at):Infinity;return Number.isFinite(start)&&start<=now&&(!p.ends_at||(Number.isFinite(end)&&end>=now))})
+ }catch(e){console.warn('promotions',e);promotions=[]}
+}
 function renderCategories(){const g=$('category-grid');g.innerHTML='';categories.forEach(c=>{const d=design(c.id),b=document.createElement('button');b.className='category-card';b.innerHTML=`<span class="ico">${d.icon}</span><strong></strong><small></small>`;b.querySelector('strong').textContent=c.name;b.querySelector('small').textContent=d.subtitle;b.onclick=()=>openCategory(c);g.append(b)})}
 function renderJoinCategories(){const box=$('join-categories');if(!box)return;box.innerHTML='';categories.forEach(c=>{const l=document.createElement('label');l.className='checkline';const i=document.createElement('input');i.type='checkbox';i.value=c.name;l.append(i,document.createTextNode(c.name));box.append(l)})}
 async function openCategory(c){currentCategory=c;$('services-heading').textContent=`${design(c.id).icon} ${c.name}`;showPage('services-page');const list=$('services-list');list.innerHTML='<div class="empty">عم نحمّل الخدمات…</div>';try{const {data,error}=await db.from('services').select('id,name,description,category_id,is_available,approval_status').eq('category_id',c.id).eq('is_available',true).eq('approval_status','approved').order('id');if(error)throw error;services=data||[];list.innerHTML='';if(!services.length){list.innerHTML='<div class="empty">لا توجد خدمات منشورة ضمن هذا القسم حالياً.</div>';return}for(const s of services){const b=document.createElement('button');b.className='service-row';b.innerHTML=`<span class="ico">${design(c.id).icon}</span><span class="grow"><strong></strong><div class="muted"></div></span><span>‹</span>`;b.querySelector('strong').textContent=s.name;b.querySelector('.muted').textContent=s.description||'اضغط لمشاهدة مقدمي الخدمة';const sm=await getMedia('service_media','service_id',s.id);const sc=sm.find(m=>m.is_cover&&m.media_type==='image')||sm.find(m=>m.media_type==='image');if(sc){const im=document.createElement('img');im.src=sc.url;im.alt=s.name;b.querySelector('.ico').replaceChildren(im)}b.onclick=()=>openService(s);list.append(b)}}catch(e){list.innerHTML=`<div class="empty">تعذر تحميل الخدمات: ${escHtml(e.message)}</div>`}}
@@ -150,24 +174,70 @@ function addProviderRequestToCart(p){const key=`p-${p.id}-${currentService.id}`;
 function renderCart(){updateCartCount();$('cart-count').textContent=`(${cart.length} بند)`;const list=$('cart-list');list.innerHTML='';if(!cart.length){list.innerHTML='<div class="empty">السلة فارغة. ارجع واختر صنفاً أو مقدم خدمة.</div>';return}cart.forEach((x,i)=>{const row=document.createElement('div');row.className='cart-item';const info=document.createElement('div');info.className='grow';const name=document.createElement('strong');name.textContent=`${i+1}. ${x.offeringName||x.providerName}`;const meta=document.createElement('small');meta.className='muted';meta.textContent=`${x.categoryName} — ${x.serviceName} — ${x.providerName}`;const price=document.createElement('small');price.className='muted';price.textContent=x.price===null?'السعر يحدد بعد التواصل':`سعر الوحدة: ${money(x.displayPrice??x.price,x.currency)}${x.promotionName?' — '+x.promotionName:''}`;info.append(name,meta,price);const qty=document.createElement('div');qty.className='qty';const minus=document.createElement('button');minus.textContent='−';minus.onclick=()=>changeQty(i,-1);const number=document.createElement('strong');number.textContent=x.quantity||1;const plus=document.createElement('button');plus.textContent='+';plus.onclick=()=>changeQty(i,1);qty.append(minus,number,plus);const del=document.createElement('button');del.className='remove';del.textContent='حذف';del.onclick=()=>{cart.splice(i,1);saveCart();renderCart()};row.append(info,qty,del);list.append(row)})}
 function changeQty(i,delta){cart[i].quantity=Number(cart[i].quantity||1)+delta;if(cart[i].quantity<1)cart.splice(i,1);saveCart();renderCart()}
 function normalizePhone(value){let d=String(value||'').replace(/\D/g,'');if(d.startsWith('00963'))d=d.slice(5);else if(d.startsWith('963'))d=d.slice(3);if(d.startsWith('0'))d=d.slice(1);if(!/^9\d{8}$/.test(d))throw new Error('أدخل رقم موبايل سوري صحيح مثل 09XXXXXXXX');return '+963'+d}
-$('booking-form').addEventListener('submit',async e=>{e.preventDefault();if(submitting)return;if(!cart.length)return showStatus('booking-status','أضف صنفاً أو مقدم خدمة واحداً على الأقل.','error');let phone;try{phone=normalizePhone($('customer-phone').value)}catch(err){showStatus('booking-status',err.message,'error');return}const name=$('customer-name').value.trim(),date=$('service-date').value,location=$('service-location').value.trim(),extra=$('service-details').value.trim();if(!name||!date||!location)return showStatus('booking-status','أكمل الاسم والتاريخ والمنطقة.','error');if(date<localDateValue())return showStatus('booking-status','تاريخ المناسبة يجب أن يكون اليوم أو في المستقبل.','error');const items=cart.map(x=>({serviceId:String(x.serviceId),providerId:String(x.providerId),offeringId:x.offeringId?String(x.offeringId):null,quantity:Number(x.quantity||1)}));const payload={customer_name:name,customer_phone:phone,service_date:date,service_location:location,service_details:extra};submitting=true;const btn=$('submit-booking');btn.disabled=true;btn.textContent='عم نحفظ الطلب…';showStatus('booking-status','يتم التحقق من الأسعار والتوفر وحفظ كل صنف بشكل مستقل…','info');try{const {data,error}=await db.rpc('create_booking_with_items_v2',{p_booking:payload,p_items:items});if(error)throw error;if(!data?.booking_id)throw new Error('لم نستلم رقم الطلب');const lines=(data.items||[]).map((x,i)=>`${i+1}. ${x.category_name?x.category_name+' — ':''}${x.service_name||'الخدمة'}${x.offering_name?' — '+x.offering_name:''}
+$('booking-form').addEventListener('submit',async e=>{
+ e.preventDefault();
+ if(submitting)return;
+ if(!cart.length)return showStatus('booking-status','أضف صنفاً أو مقدم خدمة واحداً على الأقل.','error');
+ let phone;
+ try{phone=normalizePhone($('customer-phone').value)}
+ catch(err){showStatus('booking-status',err.message,'error');return}
+ const name=$('customer-name').value.trim();
+ const date=$('service-date').value;
+ const location=$('service-location').value.trim();
+ const extra=$('service-details').value.trim();
+ const regionId=Number($('customer-region').value);
+ const region=governorates.find(r=>Number(r.id)===regionId);
+ const city=$('customer-city').value.trim();
+ if(!name||!date||!location||!region)return showStatus('booking-status','أكمل الاسم والتاريخ والمحافظة ومكان المناسبة.','error');
+ if(date<localDateValue())return showStatus('booking-status','تاريخ المناسبة يجب أن يكون اليوم أو في المستقبل.','error');
+ const items=cart.map(x=>({serviceId:String(x.serviceId),providerId:String(x.providerId),offeringId:x.offeringId?String(x.offeringId):null,quantity:Number(x.quantity||1)}));
+ const payload={customer_name:name,customer_phone:phone,service_date:date,service_location:location,service_details:extra,country_code:'SY',city,region:region.name_ar,region_id:region.id,timezone:'Asia/Damascus'};
+ submitting=true;
+ const btn=$('submit-booking');
+ btn.disabled=true;
+ btn.textContent='عم نحفظ الطلب…';
+ showStatus('booking-status','يتم التحقق من الأسعار والتوفر وحفظ كل صنف بشكل مستقل…','info');
+ try{
+  const {data,error}=await db.rpc('create_booking_with_items_v2',{p_booking:payload,p_items:items});
+  if(error)throw error;
+  if(!data?.booking_id)throw new Error('لم نستلم رقم الطلب');
+  const lines=(data.items||[]).map((x,i)=>`${i+1}. ${x.category_name?x.category_name+' — ':''}${x.service_name||'الخدمة'}${x.offering_name?' — '+x.offering_name:''}
 مقدم الخدمة: ${x.provider_name}
 الكمية: ${x.quantity} ${x.unit_label||''}
 ${x.price_on_request?'السعر: عند التواصل والاتفاق':`السعر للوحدة: ${money(x.unit_price,x.currency)}${Number(x.discount_amount)>0?' (بعد خصم '+money(x.discount_amount,x.currency)+')':''}
-الإجمالي: ${money(x.line_total,x.currency)}`}${x.promotion_name&&!x.price_on_request?' — العرض: '+x.promotion_name:''}`).join('\n\n');const id=data.booking_id;cart=[];saveCart();renderCart();showStatus('booking-status',`تم حفظ طلبك رقم ${id} مع ${data.items?.length||items.length} بنود مستقلة. سيتم فتح واتساب لإرسال التفاصيل.`,'success');const message=`مرحبا، بدي قدّم طلب حجز من كملت جمعتنا.
+الإجمالي: ${money(x.line_total,x.currency)}`}${x.promotion_name&&!x.price_on_request?' — العرض: '+x.promotion_name:''}`).join('\n\n');
+  const id=data.booking_id;
+  cart=[];
+  saveCart();
+  renderCart();
+  showStatus('booking-status',`تم حفظ طلبك رقم ${id} مع ${data.items?.length||items.length} بنود مستقلة. سيتم فتح واتساب لإرسال التفاصيل.`,'success');
+  const message=`مرحبا، بدي قدّم طلب حجز من كملت جمعتنا.
 رقم الطلب: ${id}
 الاسم: ${name}
 الهاتف: ${phone}
 التاريخ: ${date}
+المحافظة: ${region.name_ar}
+المدينة / البلدة: ${city||'غير محددة'}
 المكان: ${location}
 
 ${lines}
 
-${extra?'تفاصيل إضافية: '+extra+'\n\n':''}الطلب بحاجة لتأكيد التوفر من الإدارة.`;window.location.href=`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`}catch(err){console.error(err);showStatus('booking-status','تعذر حفظ الطلب: '+(err.message||'خطأ غير معروف'),'error')}finally{submitting=false;btn.disabled=false;btn.textContent='إرسال الطلب عبر واتساب'}});
+${extra?'تفاصيل إضافية: '+extra+'\n\n':''}الطلب بحاجة لتأكيد التوفر من الإدارة.`;
+  window.location.href=`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+ }catch(err){
+  console.error(err);
+  showStatus('booking-status','تعذر حفظ الطلب: '+(err.message||'خطأ غير معروف'),'error');
+ }finally{
+  submitting=false;
+  btn.disabled=false;
+  btn.textContent='إرسال الطلب عبر واتساب';
+ }
+});
 $('join-form').addEventListener('submit',async e=>{e.preventDefault();const name=$('join-name').value.trim(),phone=$('join-phone').value.trim(),city=$('join-city').value.trim(),description=$('join-services').value.trim(),contact=$('join-contact').value;const selected=[...document.querySelectorAll('#join-categories input:checked')].map(x=>x.value);if(!name||!phone||!city||description.length<5)return showStatus('join-status','أكمل البيانات المطلوبة.','error');if(!selected.length)return showStatus('join-status','اختر قسماً واحداً على الأقل.','error');const b=$('send-join');b.disabled=true;b.textContent='عم نرسل الطلب…';try{const {error}=await db.from('provider_join_requests').insert({full_name:name,phone,city,requested_categories:selected,services_description:description,contact_preference:contact,status:'pending'});if(error)throw error;$('join-form').reset();renderJoinCategories();showStatus('join-status','وصل طلبك بنجاح! رح نتواصل معك عبر الطريقة التي اخترتها لتحديد موعد مقابلة.','success')}catch(err){showStatus('join-status','تعذر إرسال الطلب: '+err.message,'error')}finally{b.disabled=false;b.textContent='إرسال طلب الانضمام'}});
 function localDateValue(date=new Date()){const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,'0'),d=String(date.getDate()).padStart(2,'0');return `${y}-${m}-${d}`}
 $('service-date').min=localDateValue();
-renderCart();loadHome();
+renderCart();
+loadHome();
 </script>
 </body>
 </html>
