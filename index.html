@@ -122,16 +122,7 @@ function priceMarkup(price,currency,promo){
 function loadCart(){try{const v=JSON.parse(localStorage.getItem(CART_KEY)||'[]');if(!Array.isArray(v))return [];return v.filter(x=>x&&Number.isSafeInteger(Number(x.providerId))&&Number(x.providerId)>0&&Number.isSafeInteger(Number(x.serviceId))&&Number(x.serviceId)>0).map(x=>({...x,quantity:Math.min(99,Math.max(1,Math.floor(Number(x.quantity)||1)))}))}catch{return []}}
 cart=loadCart();function saveCart(){try{localStorage.setItem(CART_KEY,JSON.stringify(cart))}catch(e){console.warn('تعذر حفظ السلة محلياً',e);showStatus('booking-status','تعذر حفظ السلة على هذا الجهاز. تأكد من مساحة التخزين المتاحة.','error')}}
 function updateCartCount(){$('header-count').textContent=cart.reduce((n,x)=>n+Number(x.quantity||1),0)}
-async function loadLocationData(){
- const select=$('customer-region');
- select.innerHTML='<option value="">اختر المحافظة</option>';
- const {data,error}=await db.from('country_regions').select('id,name_ar').eq('country_code','SY').eq('region_type','governorate').eq('is_enabled',true).order('id');
- if(error)throw error;
- governorates=data||[];
- governorates.forEach(r=>select.add(new Option(r.name_ar,String(r.id))));
- if(!governorates.length)throw new Error('لا توجد محافظات مفعّلة لسوريا');
-}
-async function loadHome(){
+async function loadLocationData(){const select=$('customer-region');select.innerHTML='<option value="">اختر المحافظة</option>';const {data:market,error:marketError}=await db.from('platform_markets').select('settings').eq('country_code','SY').eq('is_enabled',true).single();if(marketError)throw marketError;const allowedIds=Array.isArray(market?.settings?.launch_region_ids)?market.settings.launch_region_ids.map(Number).filter(Number.isSafeInteger):[];let regionsQuery=db.from('country_regions').select('id,name_ar').eq('country_code','SY').eq('region_type','governorate').eq('is_enabled',true);if(allowedIds.length)regionsQuery=regionsQuery.in('id',allowedIds);const {data,error}=await regionsQuery.order('id');if(error)throw error;governorates=data||[];governorates.forEach(r=>select.add(new Option(r.name_ar,String(r.id))));if(!governorates.length)throw new Error('لا توجد محافظات ضمن نطاق الإطلاق الحالي');} async function loadHome(){
  try{await loadLocationData()}
  catch(e){console.error('تعذر تحميل المحافظات',e);showStatus('booking-status','تعذر تحميل قائمة المحافظات. حاول تحديث الصفحة.','error')}
  try{const {data,error}=await db.from('categories').select('id,name').order('id');if(error)throw error;categories=data?.length?data:fallbackCategories}
@@ -234,7 +225,7 @@ ${extra?'تفاصيل إضافية: '+extra+'\n\n':''}الطلب بحاجة لت
  }
 });
 $('join-form').addEventListener('submit',async e=>{e.preventDefault();const name=$('join-name').value.trim(),phone=$('join-phone').value.trim(),city=$('join-city').value.trim(),description=$('join-services').value.trim(),contact=$('join-contact').value;const selected=[...document.querySelectorAll('#join-categories input:checked')].map(x=>x.value);if(!name||!phone||!city||description.length<5)return showStatus('join-status','أكمل البيانات المطلوبة.','error');if(!selected.length)return showStatus('join-status','اختر قسماً واحداً على الأقل.','error');const b=$('send-join');b.disabled=true;b.textContent='عم نرسل الطلب…';try{const {error}=await db.from('provider_join_requests').insert({full_name:name,phone,city,requested_categories:selected,services_description:description,contact_preference:contact,status:'pending'});if(error)throw error;$('join-form').reset();renderJoinCategories();showStatus('join-status','وصل طلبك بنجاح! رح نتواصل معك عبر الطريقة التي اخترتها لتحديد موعد مقابلة.','success')}catch(err){showStatus('join-status','تعذر إرسال الطلب: '+err.message,'error')}finally{b.disabled=false;b.textContent='إرسال طلب الانضمام'}});
-function localDateValue(date=new Date()){const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,'0'),d=String(date.getDate()).padStart(2,'0');return `${y}-${m}-${d}`}
+function localDateValue(date=new Date()){const p=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Damascus',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date).map(x=>[x.type,x.value]));return p.year+'-'+p.month+'-'+p.day;}
 $('service-date').min=localDateValue();
 renderCart();
 loadHome();
