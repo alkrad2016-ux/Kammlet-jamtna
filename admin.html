@@ -337,8 +337,7 @@ footer{text-align:center;padding:18px;color:var(--muted);font-size:12px}
 </div>
 </section>
 
-<section id="system" class="page">
-<div class="card">
+<section id="system" class="page"><div class="card">
 <h2>الفحص والصيانة</h2>
 <div class="actions">
 <button id="run-health" class="btn">فحص سلامة النظام</button>
@@ -517,8 +516,7 @@ async function loadServices(){
       <p>القسم: ${escapeHTML(categoryName(s.category_id))}</p>
       <p>${escapeHTML(s.description||'')}</p>
       <p>الظهور للزبائن: ${s.is_available?'مفعّل':'متوقف'}</p>
-      <div class="actions">
-        <button class="${s.is_available?'red':'green'}" data-service-toggle="${escapeHTML(s.id)}" data-enabled="${s.is_available?'true':'false'}">
+      <div class="actions">        <button class="${s.is_available?'red':'green'}" data-service-toggle="${escapeHTML(s.id)}" data-enabled="${s.is_available?'true':'false'}">
           ${s.is_available?'إيقاف الظهور':'تفعيل الظهور'}
         </button>
       </div>
@@ -757,8 +755,7 @@ async function reviewOffering(id,status){
     is_available:status==='approved'
   }).eq('id',id);
   if(error)throw error;
-  toast('تم تحديث مراجعة الصنف.');
-  await loadOfferings();
+  toast('تم تحديث مراجعة الصنف.');  await loadOfferings();
 }
 
 async function uploadMediaFiles(kind,ownerId,files){
@@ -769,11 +766,11 @@ async function uploadMediaFiles(kind,ownerId,files){
   for(let i=0;i<files.length;i++){
     const file=files[i];
     if(file.size>50*1024*1024)throw new Error(`الملف ${file.name} أكبر من 50 ميغابايت.`);
-    if(!/^(image\\/(jpeg|png|webp|gif)|video\\/(mp4|webm|quicktime))$/i.test(file.type)){
+    if(!/^(image\/(jpeg|png|webp|gif)|video\/(mp4|webm|quicktime))$/i.test(file.type)){
       throw new Error(`نوع الملف غير مدعوم: ${file.name}`);
     }
 
-    const safeName=file.name.replace(/[^\\w.\\-ء-ي]/g,'_');
+    const safeName=file.name.replace(/[^\w.\-ء-ي]/g,'_');
     const path=`${kind}/${ownerId}/${Date.now()}_${i}_${safeName}`;
     const {error:uploadError}=await db.storage.from(BUCKET).upload(path,file,{
       upsert:false,
