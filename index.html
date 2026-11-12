@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
@@ -350,18 +349,10 @@ async function loadHome(){
  renderCategories();
  renderJoinCategories();
  try{
-  const {data,error}=await db.from('promotions').select('id,name,target_type,target_id,provider_id,discount_type,discount_value,currency,starts_at,ends_at').eq('is_active',true).eq('approval_status','approved');
-  if(error)throw error;
-  const now=Date.now();
-  promotions=(data||[]).filter(p=>{
-   const start=p.starts_at?Date.parse(p.starts_at):0;
-   const end=p.ends_at?Date.parse(p.ends_at):Infinity;
-   return Number.isFinite(start)&&start<=now&&(!p.ends_at||(Number.isFinite(end)&&end>=now));
-  });
- }catch(e){console.warn('promotions',e);promotions=[]}
-}
-
-function renderCategories(){
+  const {data,error}=await db.from('promotions').select('*').eq('is_active',true);
+  if(!error)promotions=data||[];
+ }catch(e){console.warn('promotions',e)}
+}function renderCategories(){
  const g=$('category-grid');
  g.innerHTML='';
  categories.forEach(c=>{
@@ -441,9 +432,9 @@ async function openService(s){
    list.innerHTML='<div class="empty">لا يوجد مقدمو خدمة منشورون لهذه الخدمة حالياً.</div>';
    return;
   }
-  const {data,error}=await db.from('service_providers').select('id,service_id,category_id,name,address,description,price,is_active,approval_status').in('id',ids).eq('is_active',true).eq('approval_status','approved').order('id');
+  const {data,error}=await db.from('service_providers').select('id,service_id,category_id,name,address,description,price,is_active,approval_status,region_id,region').in('id',ids).eq('is_active',true).eq('approval_status','approved').order('id');
   if(error)throw error;
-  providers=data||[];
+  providers=(data||[]).filter(p=>governorates.some(r=>Number(p.region_id)===Number(r.id)||String(p.region||'').trim()===String(r.name_ar||'').trim()));
   list.innerHTML='';
   for(const p of providers){
    const card=document.createElement('article');
@@ -467,7 +458,9 @@ async function openService(s){
  }catch(e){
   list.innerHTML=`<div class="empty">تعذر تحميل مقدمي الخدمة: ${escHtml(e.message)}</div>`;
  }
-}function addMediaGrid(parent,media,alt){
+}
+
+function addMediaGrid(parent,media,alt){
  const grid=document.createElement('div');
  grid.className='media-grid';
  for(const m of media){
@@ -629,7 +622,9 @@ async function openProvider(p,providerMedia){
  }catch(e){
   root.innerHTML=`<div class="empty">تعذر تحميل ملف مقدم الخدمة: ${escHtml(e.message)}</div>`;
  }
-}function addOfferingToCart(p,o,promo){
+}
+
+function addOfferingToCart(p,o,promo){
  const key=`o-${o.id}`;
  const found=cart.find(x=>x.key===key);
 
@@ -770,126 +765,54 @@ function normalizePhone(value){
   throw new Error('أدخل رقم موبايل سوري صحيح مثل 09XXXXXXXX');
  }
  return '+963'+d;
-}$('booking-form').addEventListener('submit',async e=>{
- e.preventDefault();
+}
 
+$('booking-form').addEventListener('submit',async e=>{
+ e.preventDefault();
  if(submitting)return;
-
- if(!cart.length){
-  return showStatus('booking-status','أضف صنفاً أو مقدم خدمة واحداً على الأقل.','error');
- }
-
+ if(!cart.length)return showStatus('booking-status','أضف صنفاً أو مقدم خدمة واحداً على الأقل.','error');
  let phone;
- try{
-  phone=normalizePhone($('customer-phone').value);
- }catch(err){
-  showStatus('booking-status',err.message,'error');
-  return;
- }
-
- const name=$('customer-name').value.trim();
- const date=$('service-date').value;
- const location=$('service-location').value.trim();
- const extra=$('service-details').value.trim();
- const regionId=Number($('customer-region').value);
- const region=governorates.find(r=>Number(r.id)===regionId);
- const city=$('customer-city').value.trim();
-
- if(!name||!date||!location||!region){
-  return showStatus('booking-status','أكمل الاسم والتاريخ والمحافظة ومكان المناسبة.','error');
- }
-
- if(date<localDateValue()){
-  return showStatus('booking-status','تاريخ المناسبة يجب أن يكون اليوم أو في المستقبل.','error');
- }
-
- const items=cart.map(x=>({
-  serviceId:String(x.serviceId),
-  providerId:String(x.providerId),
-  offeringId:x.offeringId?String(x.offeringId):null,
-  quantity:Number(x.quantity||1)
- }));
-
- const payload={
-  customer_name:name,
-  customer_phone:phone,
-  service_date:date,
-  service_location:location,
-  service_details:extra,
-  country_code:'SY',
-  city,
-  region:region.name_ar,
-  region_id:region.id,
-  timezone:'Asia/Damascus'
- };
-
+ try{phone=normalizePhone($('customer-phone').value)}catch(err){showStatus('booking-status',err.message,'error');return}
+ const name=$('customer-name').value.trim(),date=$('service-date').value,locationText=$('service-location').value.trim(),extra=$('service-details').value.trim(),regionId=Number($('customer-region').value),region=governorates.find(r=>Number(r.id)===regionId),city=$('customer-city').value.trim();
+ if(!name||!date||!locationText||!region)return showStatus('booking-status','أكمل الاسم والتاريخ والمحافظة ومكان المناسبة.','error');
+ if(date<localDateValue())return showStatus('booking-status','تاريخ المناسبة يجب أن يكون اليوم أو في المستقبل.','error');
+ const items=cart.map(x=>({serviceId:String(x.serviceId),providerId:String(x.providerId),offeringId:x.offeringId?String(x.offeringId):null,quantity:Number(x.quantity||1)}));
+ const payload={customer_name:name,customer_phone:phone,service_date:date,service_location:locationText,service_details:extra,country_code:'SY',city,region:region.name_ar,region_id:region.id,timezone:'Asia/Damascus'};
+ const waWindow=window.open('about:blank','_blank');
  submitting=true;
- const btn=$('submit-booking');
- btn.disabled=true;
- btn.textContent='عم نحفظ الطلب…';
-
+ const btn=$('submit-booking');btn.disabled=true;btn.textContent='عم نحفظ الطلب…';
  showStatus('booking-status','يتم التحقق من الأسعار والتوفر وحفظ كل صنف بشكل مستقل…','info');
-
  try{
-  const {data,error}=await db.rpc(
-   'create_booking_with_items_v2',
-   {p_booking:payload,p_items:items}
-  );
-
-  if(error)throw error;
-  if(!data?.booking_id)throw new Error('لم نستلم رقم الطلب');$('join-form').addEventListener('submit',async e=>{
- e.preventDefault();
-
- const name=$('join-name').value.trim();
- const phone=$('join-phone').value.trim();
- const city=$('join-city').value.trim();
- const description=$('join-services').value.trim();
- const contact=$('join-contact').value;
-
- const selected=[
-  ...document.querySelectorAll('#join-categories input:checked')
- ].map(x=>x.value);
-
- if(!name||!phone||!city||description.length<5){
-  return showStatus('join-status','أكمل البيانات المطلوبة.','error');
- }
-
- if(!selected.length){
-  return showStatus('join-status','اختر قسماً واحداً على الأقل.','error');
- }
-
- const b=$('send-join');
- b.disabled=true;
- b.textContent='عم نرسل الطلب…';
-
- try{
-  const {error}=await db.from('provider_join_requests').insert({
-   full_name:name,
-   phone,
-   city,
-   requested_categories:selected,
-   services_description:description,
-   contact_preference:contact,
-   status:'pending'
-  });
-
-  if(error)throw error;
-
-  $('join-form').reset();
-  renderJoinCategories();
-
-  showStatus(
-   'join-status',
-   'وصل طلبك بنجاح! رح نتواصل معك عبر الطريقة التي اخترتها لتحديد موعد مقابلة.',
-   'success'
-  );
-
+  const result=await db.rpc('create_booking_with_items_v2',{p_booking:payload,p_items:items});
+  if(result.error)throw result.error;
+  const data=result.data;
+  if(!data||!data.booking_id)throw new Error('لم نستلم رقم الطلب من قاعدة البيانات.');
+  const lines=cart.map((x,i)=>(i+1)+'. '+(x.offeringName||x.providerName)+' — '+x.serviceName+' — '+x.providerName+' — الكمية: '+(x.quantity||1)+' — '+(x.price===null?'السعر عند التواصل':money(x.displayPrice??x.price,x.currency)));
+  const message=['طلب حجز جديد — كملت جمعتنا','رقم الطلب: '+data.booking_id,'الاسم: '+name,'الهاتف: '+phone,'المناسبة: '+date,'المحافظة: '+region.name_ar,'المدينة: '+(city||'غير محددة'),'المكان: '+locationText,'تفاصيل إضافية: '+(extra||'لا يوجد'),'الخدمات المطلوبة:'].concat(lines).join('\n');
+  const waUrl='https://wa.me/'+WHATSAPP_NUMBER+'?text='+encodeURIComponent(message);
+  cart=[];saveCart();renderCart();$('booking-form').reset();
+  showStatus('booking-status','تم حفظ طلبك بنجاح برقم '+data.booking_id+'. ستفتح رسالة واتساب جاهزة؛ اضغط إرسال داخل واتساب لإيصالها للإدارة.','success');
+  if(waWindow)waWindow.location.href=waUrl;else showStatus('booking-status','تم حفظ الطلب رقم '+data.booking_id+'. افتح واتساب وأرسل للإدارة رقم الطلب.','success');
  }catch(err){
-  showStatus('join-status','تعذر إرسال الطلب: '+err.message,'error');
- }finally{
-  b.disabled=false;
-  b.textContent='إرسال طلب الانضمام';
- }
+  if(waWindow)waWindow.close();
+  console.error('booking submit',err);
+  showStatus('booking-status','تعذر حفظ الطلب: '+(err.message||'حدث خطأ غير متوقع'),'error');
+ }finally{submitting=false;btn.disabled=false;btn.textContent='إرسال الطلب عبر واتساب'}
+});
+
+$('join-form').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const name=$('join-name').value.trim(),phone=$('join-phone').value.trim(),city=$('join-city').value.trim(),description=$('join-services').value.trim(),contact=$('join-contact').value,selected=[...document.querySelectorAll('#join-categories input:checked')].map(x=>x.value);
+ if(!name||!phone||!city||description.length<5)return showStatus('join-status','أكمل البيانات المطلوبة.','error');
+ if(!selected.length)return showStatus('join-status','اختر قسماً واحداً على الأقل.','error');
+ const b=$('send-join');b.disabled=true;b.textContent='عم نرسل الطلب…';
+ try{
+  const result=await db.from('provider_join_requests').insert({full_name:name,phone,city,requested_categories:selected,services_description:description,contact_preference:contact,status:'pending'});
+  if(result.error)throw result.error;
+  $('join-form').reset();renderJoinCategories();
+  showStatus('join-status','وصل طلبك بنجاح! رح نتواصل معك عبر الطريقة التي اخترتها لتحديد موعد مقابلة.','success');
+ }catch(err){showStatus('join-status','تعذر إرسال الطلب: '+err.message,'error')}
+ finally{b.disabled=false;b.textContent='إرسال طلب الانضمام'}
 });
 
 function localDateValue(date=new Date()){
