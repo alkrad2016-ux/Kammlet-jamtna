@@ -141,7 +141,7 @@ window.KammletCalendar={mount};
 <div><label for="customer-city">المدينة / البلدة</label><input id="customer-city" maxlength="100" placeholder="مثلاً: درعا البلد"></div>
 <div><label for="service-location">العنوان أو مكان المناسبة بالتفصيل</label><input id="service-location" required maxlength="200" placeholder="الحي، الشارع، أو أقرب معلم"></div>
 <div><label for="service-details">تفاصيل إضافية (اختياري)</label><textarea id="service-details" maxlength="2000" placeholder="عدد الضيوف أو تفاصيل أخرى"></textarea></div>
-</div><div id="booking-verification" style="margin:12px 0;min-height:65px" aria-label="التحقق الأمني"></div><button class="primary-btn" id="submit-booking" type="submit">إرسال الطلب عبر واتساب</button><div id="booking-status" class="status" role="status" aria-live="polite"></div></form>
+</div><p class="note">تُحفظ بيانات الحجز لدى المنصة للتنسيق والتواصل، وتُجهّز رسالة واتساب تختار إرسالها بنفسك. <a href="privacy.html">اقرأ سياسة الخصوصية</a>.</p><div id="booking-verification" style="margin:12px 0;min-height:65px" aria-label="التحقق الأمني"></div><button class="primary-btn" id="submit-booking" type="submit">إرسال الطلب عبر واتساب</button><div id="booking-status" class="status" role="status" aria-live="polite"></div></form>
 </div>
 </section>
 <section class="page" id="join-page">
@@ -154,7 +154,7 @@ window.KammletCalendar={mount};
 <div><label>الأقسام التي تقدم خدمات ضمنها</label><div id="join-categories" class="checklist"><div class="empty">جارٍ تحميل الأقسام…</div></div></div>
 <div><label for="join-services">اشرح لنا الخدمات التي تقدمها</label><textarea id="join-services" required minlength="5" maxlength="2000" placeholder="اكتب نبذة عن نشاطك والخدمات التي تقدمها"></textarea></div>
 <div><label for="join-contact">طريقة التواصل المفضلة</label><select id="join-contact"><option value="whatsapp">واتساب</option><option value="call">اتصال هاتفي</option></select></div>
-</div><div id="join-verification" style="margin:12px 0;min-height:65px" aria-label="التحقق الأمني"></div><button class="primary-btn" id="send-join" type="submit">إرسال طلب الانضمام</button><div id="join-status" class="status" role="status" aria-live="polite"></div></form>
+</div><p class="note">نستخدم بيانات الطلب لمراجعته والتواصل معك. <a href="privacy.html">سياسة الخصوصية</a> · <a href="delete-data.html">طلب حذف البيانات</a>.</p><div id="join-verification" style="margin:12px 0;min-height:65px" aria-label="التحقق الأمني"></div><button class="primary-btn" id="send-join" type="submit">إرسال طلب الانضمام</button><div id="join-status" class="status" role="status" aria-live="polite"></div></form>
 </div>
 </section>
 </main>
@@ -963,6 +963,8 @@ loadHome();
 
 </script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=kammletTurnstileReady&render=explicit" async defer></script>
+<nav aria-label="روابط الخصوصية والدعم" style="text-align:center;padding:16px;font-size:13px;line-height:2"><a href="privacy.html" style="color:#14213d">سياسة الخصوصية</a> · <a href="delete-data.html" style="color:#14213d">طلب حذف البيانات أو الحساب</a><br><a href="mailto:kammlet.jamtna@gmail.com" style="color:#14213d;direction:ltr;display:inline-block">kammlet.jamtna@gmail.com</a></nav>
 </body>
 </html>
+
 
