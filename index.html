@@ -87,6 +87,28 @@ footer button{border:0;background:none;color:#806313;text-decoration:underline}
 main{padding-left:10px;padding-right:10px}
 }
 </style>
+<script>
+/* Kammlet Jamtna - reusable availability calendar */
+(function(){
+'use strict';
+
+const pad=n=>String(n).padStart(2,'0');
+const key=(y,m,d)=>`${y}-${pad(m+1)}-${pad(d)}`;
+function mount(host,providerId,editable=false){
+ const db=window.kammletCalendarDB;
+ if(!host||!providerId||!db)return;
+ let today=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Damascus'})),year=today.getFullYear(),month=today.getMonth(),selected=null,slots=[],loadVersion=0;
+ const root=document.createElement('section');root.style.cssText='direction:rtl;background:#fff;color:#14213d;border:1px solid #e7e2d8;border-radius:14px;padding:14px;margin:16px 0';host.append(root);
+ function info(s){const el=root.querySelector('[data-info]');if(el)el.textContent=s}
+ async function load(){const version=++loadVersion;info('جار التحميل…');const first=key(year,month,1),last=key(year,month,new Date(year,month+1,0).getDate());const {data,error}=await db.from('provider_calendar_slots').select('id,slot_date,starts_at,ends_at,status').eq('provider_id',providerId).gte('slot_date',first).lte('slot_date',last).order('starts_at');if(version!==loadVersion)return;if(error){slots=[];render();info('تعذر تحميل المواعيد: '+error.message);return;}slots=data||[];render()}
+ function navigate(n){const d=new Date(year,month+n,1);year=d.getFullYear();month=d.getMonth();selected=null;render();load()}
+ function render(){const days=new Date(year,month+1,0).getDate(),offset=(new Date(year,month,1).getDay()+1)%7;let h='<h3>📅 تقويم التوفر</h3><div style="display:flex;justify-content:space-between;align-items:center"><button type="button" data-prev>❯</button><strong>'+new Intl.DateTimeFormat('ar',{month:'long',year:'numeric'}).format(new Date(year,month,1))+'</strong><button type="button" data-next>❮</button></div><div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:12px;text-align:center">';for(const day of ['سبت','أحد','إثن','ثلا','أرب','خمي','جمع'])h+='<small>'+day+'</small>';for(let i=0;i<offset;i++)h+='<span></span>';for(let d=1;d<=days;d++){const date=key(year,month,d),rows=slots.filter(x=>x.slot_date===date),full=rows.some(x=>x.starts_at===null&&x.status!=='available'),partial=rows.some(x=>x.starts_at!==null),available=rows.some(x=>x.status==='available');const bg=full?'#fbdada':partial?'#fff0bc':available?'#dcfce7':'#f1f5f9';h+='<button type="button" data-day="'+d+'" style="padding:9px 0;min-width:0;border:1px solid '+(selected===date?'#14213d':'#ddd')+';border-radius:8px;background:'+bg+'">'+d+'</button>'}h+='</div><p style="font-size:12px">🟩 متاح · 🟨 مواعيد جزئية · 🟥 محجوز/مغلق · ⬜ غير مؤكد</p>';if(selected){const rows=slots.filter(x=>x.slot_date===selected);h+='<div style="border-top:1px solid #ddd;padding-top:10px"><strong>'+selected+'</strong><div>';for(const x of rows){h+='<p>'+(x.status==='available'?'متاح':x.status==='booked'?'محجوز':'غير متاح')+' '+(x.starts_at?x.starts_at.slice(0,5)+' - '+x.ends_at.slice(0,5):'طوال اليوم')+(editable?' <button type="button" data-delete="'+x.id+'">حذف</button>':'')+'</p>'}if(!rows.length)h+='<p>التوفر غير مؤكد</p>';if(!editable)h+='<p style="font-size:12px">التقويم للعرض فقط. يرجى تأكيد الموعد مع مقدم الخدمة قبل تثبيت الحجز.</p>';h+='</div>';if(editable)h+='<form data-add style="display:grid;gap:8px"><select name="status"><option value="available">متاح</option><option value="booked">محجوز</option><option value="unavailable">غير متاح</option></select><label><input type="checkbox" name="allDay" checked> طوال اليوم</label><div data-hours hidden><label>من <input type="time" name="start"></label> <label>إلى <input type="time" name="end"></label></div><button type="submit">حفظ الموعد</button></form>';h+='</div>'}h+='<p data-info role="status" style="font-size:12px"></p>';root.innerHTML=h;root.querySelector('[data-prev]').onclick=()=>navigate(-1);root.querySelector('[data-next]').onclick=()=>navigate(1);root.querySelectorAll('[data-day]').forEach(b=>b.onclick=()=>{selected=key(year,month,Number(b.dataset.day));render()});if(editable&&selected){const f=root.querySelector('[data-add]');f.elements.allDay.onchange=()=>{f.querySelector('[data-hours]').hidden=f.elements.allDay.checked};f.onsubmit=async e=>{e.preventDefault();const all=f.elements.allDay.checked,start=f.elements.start.value,end=f.elements.end.value;if(!all&&(!start||!end||start>=end))return info('أدخل ساعات صحيحة');const button=f.querySelector('[type=submit]');button.disabled=true;const {error}=await db.from('provider_calendar_slots').insert({provider_id:providerId,slot_date:selected,status:f.elements.status.value,starts_at:all?null:start,ends_at:all?null:end});button.disabled=false;if(error)return info('تعذر الحفظ: '+error.message);await load();info('تم حفظ الموعد')};root.querySelectorAll('[data-delete]').forEach(b=>b.onclick=async()=>{if(!confirm('حذف الموعد؟'))return;const {error}=await db.from('provider_calendar_slots').delete().eq('id',Number(b.dataset.delete)).eq('provider_id',providerId);if(error)return info(error.message);await load()})}}
+ render();load();return root;
+}
+window.KammletCalendar={mount};
+})();
+
+</script>
 </head>
 <body>
 <header>
@@ -105,7 +127,7 @@ main{padding-left:10px;padding-right:10px}
 <div class="panel"><h3>هل تقدم خدمات للمناسبات؟</h3><p class="muted">انضم إلى شبكة مقدمي الخدمات في كملت جمعتنا. نراجع طلبك ونتواصل معك لتحديد موعد مقابلة.</p><button class="primary-btn" onclick="openJoin()">قدّم طلب انضمام</button></div>
 </section>
 <section class="page" id="services-page"><h2 class="heading" id="services-heading">الخدمات</h2><div class="list" id="services-list"></div></section>
-<section class="page" id="providers-page"><h2 class="heading" id="providers-heading">مقدمو الخدمة</h2><div class="list" id="providers-list"></div></section>
+<section class="page" id="providers-page"><h2 class="heading" id="providers-heading">مقدمو الخدمة</h2><div class="panel"><label for="provider-region-filter">ابحث حسب المحافظة</label><select id="provider-region-filter"><option value="">كل المحافظات المتاحة</option></select></div><div class="list" id="providers-list"></div></section>
 <section class="page" id="provider-detail-page"><h2 class="heading">ملف مقدم الخدمة</h2><div id="provider-detail"></div></section>
 <section class="page" id="cart-page">
 <h2 class="heading">سلة حجوزاتي</h2>
@@ -114,7 +136,7 @@ main{padding-left:10px;padding-right:10px}
 <form id="booking-form"><div class="form-grid">
 <div><label for="customer-name">الاسم الكامل</label><input id="customer-name" required maxlength="120" autocomplete="name"></div>
 <div><label for="customer-phone">رقم الهاتف السوري</label><input id="customer-phone" type="tel" inputmode="tel" required maxlength="30" placeholder="09XXXXXXXX"></div>
-<div><label for="service-date">تاريخ المناسبة</label><input id="service-date" type="date" required></div>
+<div><label for="service-date">تاريخ المناسبة</label><input id="service-date" type="date" required></div><div><label for="booking-start">ساعة البداية</label><input id="booking-start" type="time" required></div><div><label for="booking-end">ساعة النهاية</label><input id="booking-end" type="time" required></div>
 <div><label for="customer-region">المحافظة</label><select id="customer-region" required><option value="">جارٍ تحميل المحافظات…</option></select></div>
 <div><label for="customer-city">المدينة / البلدة</label><input id="customer-city" maxlength="100" placeholder="مثلاً: درعا البلد"></div>
 <div><label for="service-location">العنوان أو مكان المناسبة بالتفصيل</label><input id="service-location" required maxlength="200" placeholder="الحي، الشارع، أو أقرب معلم"></div>
@@ -178,6 +200,7 @@ const fallbackCategories=[
 let categories=[],services=[],providers=[],promotions=[],cart=[],governorates=[];
 let currentCategory=null,currentService=null,currentProvider=null;
 let currentPage='home-page',submitting=false;
+let providerSearchSerial=0;
 
 function showStatus(id,msg,type='info'){
  const e=$(id);
@@ -333,7 +356,12 @@ async function loadLocationData(){
  if(allowedIds.length)regionsQuery=regionsQuery.in('id',allowedIds);
  const {data,error}=await regionsQuery.order('id');
  if(error)throw error;
- governorates=data||[];
+  governorates=data||[];
+  const filter=$('provider-region-filter');
+  const previousRegion=filter.value;
+  filter.innerHTML='<option value="">كل المحافظات المتاحة</option>';
+ governorates.forEach(r=>filter.add(new Option(r.name_ar,String(r.id))));
+  if(governorates.some(r=>String(r.id)===previousRegion))filter.value=previousRegion;
  governorates.forEach(r=>select.add(new Option(r.name_ar,String(r.id))));
  if(!governorates.length)throw new Error('لا توجد محافظات ضمن نطاق الإطلاق الحالي');
 }
@@ -418,7 +446,10 @@ async function openCategory(c){
  }
 }
 
+$('provider-region-filter').addEventListener('change',()=>{if(currentService)openService(currentService)});
+
 async function openService(s){
+ const searchSerial=++providerSearchSerial;
  currentService=s;
  $('providers-heading').textContent=`مقدمو خدمة: ${s.name}`;
  showPage('providers-page');
@@ -434,8 +465,11 @@ async function openService(s){
   }
   const {data,error}=await db.from('service_providers').select('id,service_id,category_id,name,address,description,price,is_active,approval_status,region_id,region').in('id',ids).eq('is_active',true).eq('approval_status','approved').order('id');
   if(error)throw error;
-  providers=(data||[]).filter(p=>governorates.some(r=>Number(p.region_id)===Number(r.id)||String(p.region||'').trim()===String(r.name_ar||'').trim()));
+  if(searchSerial!==providerSearchSerial)return;
+  const selectedRegion=$('provider-region-filter').value;
+  providers=(data||[]).filter(p=>governorates.some(r=>(!selectedRegion||String(r.id)===selectedRegion)&&(Number(p.region_id)===Number(r.id)||String(p.region||'').trim()===String(r.name_ar||'').trim())));
   list.innerHTML='';
+  if(!providers.length){list.innerHTML='<div class="empty">لا يوجد مقدمو خدمة منشورون ضمن المحافظة المختارة حالياً.</div>';return;}
   for(const p of providers){
    const card=document.createElement('article');
    card.className='provider-card';
@@ -444,6 +478,7 @@ async function openService(s){
    card.querySelector('.address').textContent='📍 '+(p.address||'المكان غير محدد');
    card.querySelector('.description').textContent=p.description||'';
    const media=await getMedia('provider_media','provider_id',p.id);
+   if(searchSerial!==providerSearchSerial)return;
    const cover=media.find(m=>m.is_cover&&m.media_type==='image')||media.find(m=>m.media_type==='image');
    if(cover){
     const img=document.createElement('img');
@@ -456,6 +491,7 @@ async function openService(s){
    list.append(card);
   }
  }catch(e){
+  if(searchSerial!==providerSearchSerial)return;
   list.innerHTML=`<div class="empty">تعذر تحميل مقدمي الخدمة: ${escHtml(e.message)}</div>`;
  }
 }
@@ -619,6 +655,8 @@ async function openProvider(p,providerMedia){
 
   root.innerHTML='';
   root.append(box);
+  window.kammletCalendarDB=db;
+  if(window.KammletCalendar){const host=document.createElement("div");root.append(host);window.KammletCalendar.mount(host,p.id,false);}
  }catch(e){
   root.innerHTML=`<div class="empty">تعذر تحميل ملف مقدم الخدمة: ${escHtml(e.message)}</div>`;
  }
@@ -776,8 +814,22 @@ $('booking-form').addEventListener('submit',async e=>{
  const name=$('customer-name').value.trim(),date=$('service-date').value,locationText=$('service-location').value.trim(),extra=$('service-details').value.trim(),regionId=Number($('customer-region').value),region=governorates.find(r=>Number(r.id)===regionId),city=$('customer-city').value.trim();
  if(!name||!date||!locationText||!region)return showStatus('booking-status','أكمل الاسم والتاريخ والمحافظة ومكان المناسبة.','error');
  if(date<localDateValue())return showStatus('booking-status','تاريخ المناسبة يجب أن يكون اليوم أو في المستقبل.','error');
+ // Check the actual provider governorate, including items from older saved carts.
+ const providerIds=[...new Set(cart.map(x=>Number(x.providerId)))];
+ if(providerIds.some(id=>!Number.isSafeInteger(id)||id<1))return showStatus('booking-status','السلة تحتوي على مقدم خدمة غير صالح.','error');
+ try{
+  const {data:providerRegions,error:regionError}=await db.from('service_providers').select('id,region_id').in('id',providerIds);
+  if(regionError)throw regionError;
+  const byId=new Map((providerRegions||[]).map(p=>[Number(p.id),Number(p.region_id)]));
+  if(providerIds.some(id=>byId.get(id)!==regionId)){
+   showStatus('booking-status','بعض الخدمات في السلة ليست من محافظة المناسبة المختارة. احذفها واختر مقدمي خدمات من نفس المحافظة.','error');
+   return;
+  }
+ }catch(err){showStatus('booking-status','تعذّر التحقق من محافظات مقدمي الخدمات: '+(err.message||err),'error');return}
  const items=cart.map(x=>({serviceId:String(x.serviceId),providerId:String(x.providerId),offeringId:x.offeringId?String(x.offeringId):null,quantity:Number(x.quantity||1)}));
- const payload={customer_name:name,customer_phone:phone,service_date:date,service_location:locationText,service_details:extra,country_code:'SY',city,region:region.name_ar,region_id:region.id,timezone:'Asia/Damascus'};
+ const startsAt=$('booking-start').value,endsAt=$('booking-end').value;
+ if(!startsAt||!endsAt||startsAt>=endsAt)return showStatus('booking-status','حدد ساعة بداية ونهاية صحيحتين.','error');
+ const payload={starts_at:startsAt,ends_at:endsAt,customer_name:name,customer_phone:phone,service_date:date,service_location:locationText,service_details:extra,country_code:'SY',city,region:region.name_ar,region_id:region.id,timezone:'Asia/Damascus'};
  const waWindow=window.open('about:blank','_blank');
  submitting=true;
  const btn=$('submit-booking');btn.disabled=true;btn.textContent='عم نحفظ الطلب…';
@@ -787,8 +839,18 @@ $('booking-form').addEventListener('submit',async e=>{
   if(result.error)throw result.error;
   const data=result.data;
   if(!data||!data.booking_id)throw new Error('لم نستلم رقم الطلب من قاعدة البيانات.');
-  const lines=cart.map((x,i)=>(i+1)+'. '+(x.offeringName||x.providerName)+' — '+x.serviceName+' — '+x.providerName+' — الكمية: '+(x.quantity||1)+' — '+(x.price===null?'السعر عند التواصل':money(x.displayPrice??x.price,x.currency)));
-  const message=['طلب حجز جديد — كملت جمعتنا','رقم الطلب: '+data.booking_id,'الاسم: '+name,'الهاتف: '+phone,'المناسبة: '+date,'المحافظة: '+region.name_ar,'المدينة: '+(city||'غير محددة'),'المكان: '+locationText,'تفاصيل إضافية: '+(extra||'لا يوجد'),'الخدمات المطلوبة:'].concat(lines).join('\n');
+  // Use the server-confirmed item snapshots, never stale cart prices, in the WhatsApp message.
+  if(!Array.isArray(data.items)||data.items.length!==items.length){
+   console.warn('Booking saved, but the item summary was incomplete',data);
+  }
+  const confirmedItems=Array.isArray(data.items)?data.items:[];
+  const lines=confirmedItems.map((x,i)=>{
+   const label=[x.category_name,x.service_name,x.provider_name,x.offering_name].filter(Boolean).join(' — ');
+   const price=x.price_on_request?'السعر عند التواصل':(x.line_total==null?'السعر غير محدد':money(x.line_total,x.currency||'SYP'));
+   return (i+1)+'. '+label+' — الكمية: '+Number(x.quantity||1)+' — الإجمالي: '+price;
+  });
+  if(!lines.length)lines.push('يرجى مراجعة تفاصيل الطلب المحفوظ في لوحة الإدارة.');
+  const message=['طلب حجز جديد — كملت جمعتنا','رقم الطلب: '+data.booking_id,'الاسم: '+name,'الهاتف: '+phone,'المناسبة: '+date,'الوقت: '+startsAt+' - '+endsAt,'المحافظة: '+region.name_ar,'المدينة: '+(city||'غير محددة'),'المكان: '+locationText,'تفاصيل إضافية: '+(extra||'لا يوجد'),'الخدمات المطلوبة:'].concat(lines).join('\n');
   const waUrl='https://wa.me/'+WHATSAPP_NUMBER+'?text='+encodeURIComponent(message);
   cart=[];saveCart();renderCart();$('booking-form').reset();
   showStatus('booking-status','تم حفظ طلبك بنجاح برقم '+data.booking_id+'. ستفتح رسالة واتساب جاهزة؛ اضغط إرسال داخل واتساب لإيصالها للإدارة.','success');
