@@ -141,7 +141,7 @@ window.KammletCalendar={mount};
 <div><label for="customer-city">المدينة / البلدة</label><input id="customer-city" maxlength="100" placeholder="مثلاً: درعا البلد"></div>
 <div><label for="service-location">العنوان أو مكان المناسبة بالتفصيل</label><input id="service-location" required maxlength="200" placeholder="الحي، الشارع، أو أقرب معلم"></div>
 <div><label for="service-details">تفاصيل إضافية (اختياري)</label><textarea id="service-details" maxlength="2000" placeholder="عدد الضيوف أو تفاصيل أخرى"></textarea></div>
-</div><button class="primary-btn" id="submit-booking" type="submit">إرسال الطلب عبر واتساب</button><div id="booking-status" class="status" role="status" aria-live="polite"></div></form>
+</div><div id="booking-verification" style="margin:12px 0;min-height:65px" aria-label="التحقق الأمني"></div><button class="primary-btn" id="submit-booking" type="submit">إرسال الطلب عبر واتساب</button><div id="booking-status" class="status" role="status" aria-live="polite"></div></form>
 </div>
 </section>
 <section class="page" id="join-page">
@@ -154,7 +154,7 @@ window.KammletCalendar={mount};
 <div><label>الأقسام التي تقدم خدمات ضمنها</label><div id="join-categories" class="checklist"><div class="empty">جارٍ تحميل الأقسام…</div></div></div>
 <div><label for="join-services">اشرح لنا الخدمات التي تقدمها</label><textarea id="join-services" required minlength="5" maxlength="2000" placeholder="اكتب نبذة عن نشاطك والخدمات التي تقدمها"></textarea></div>
 <div><label for="join-contact">طريقة التواصل المفضلة</label><select id="join-contact"><option value="whatsapp">واتساب</option><option value="call">اتصال هاتفي</option></select></div>
-</div><button class="primary-btn" id="send-join" type="submit">إرسال طلب الانضمام</button><div id="join-status" class="status" role="status" aria-live="polite"></div></form>
+</div><div id="join-verification" style="margin:12px 0;min-height:65px" aria-label="التحقق الأمني"></div><button class="primary-btn" id="send-join" type="submit">إرسال طلب الانضمام</button><div id="join-status" class="status" role="status" aria-live="polite"></div></form>
 </div>
 </section>
 </main>
@@ -222,6 +222,8 @@ function showPage(id,push=true){
  currentPage=id;
  document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));
  window.scrollTo({top:0,behavior:'smooth'});
+ if(id==='cart-page')ensureProtection('booking');
+ if(id==='join-page')ensureProtection('join');
 }
 
 history.replaceState({appPage:'home-page'},'',location.pathname+location.search+'#home-page');
@@ -805,9 +807,67 @@ function normalizePhone(value){
  return '+963'+d;
 }
 
+
+/* Turnstile: public site key only. Server secret stays in Supabase. */
+const protectionWidgets={}, protectionRequests={};
+let bookingSubmitBusy=false;
+function ensureProtection(action){
+ const host=$(action+'-verification');
+ if(!host||protectionWidgets[action]!==undefined)return;
+ if(!window.turnstile){
+  host.textContent='عم نحمّل التحقق الأمني… إذا تأخر، تحقق من الاتصال وأعد تحميل الصفحة.';
+  return;
+ }
+ host.textContent='';
+ protectionWidgets[action]=window.turnstile.render(host,{
+  sitekey:'0x4AAAAAAGD5KV0RuBflVfv_',action,language:'ar',size:'flexible',
+  'response-field':false,
+  'error-callback':()=>{showStatus(action==='booking'?'booking-status':'join-status','تعذر تحميل التحقق الأمني. تحقق من الاتصال وأعد المحاولة.','error');return true},
+  'expired-callback':()=>showStatus(action==='booking'?'booking-status':'join-status','انتهت صلاحية التحقق الأمني؛ انتظر تجديده ثم أرسل الطلب.','info')
+ });
+}
+window.kammletTurnstileReady=()=>{
+ if(currentPage==='cart-page')ensureProtection('booking');
+ if(currentPage==='join-page')ensureProtection('join');
+};
+function protectionToken(action){
+ ensureProtection(action);
+ const id=protectionWidgets[action];
+ const token=id===undefined?'':window.turnstile?.getResponse(id);
+ if(!token)throw new Error('أكمل التحقق الأمني قبل إرسال الطلب.');
+ return token;
+}
+function resetProtection(action){
+ const id=protectionWidgets[action];
+ if(id!==undefined&&window.turnstile)window.turnstile.reset(id);
+}
+async function protectedSubmit(action,payload,token){
+ const serialized=JSON.stringify(payload);
+ if(protectionRequests[action]?.serialized!==serialized)
+  protectionRequests[action]={serialized,id:crypto.randomUUID()};
+ const requestId=protectionRequests[action].id;
+ try{
+  const response=await fetch(SUPABASE_URL+'/functions/v1/public-submit',{
+   method:'POST',headers:{'Content-Type':'application/json',apikey:SUPABASE_KEY},
+   body:JSON.stringify({action,payload,token,request_id:requestId}),
+   signal:AbortSignal.timeout(35000)
+  });
+  const result=await response.json();
+  if(!response.ok||!result?.success)throw new Error(result?.error||'تعذر إرسال الطلب.');
+  delete protectionRequests[action];
+  return {data:result.data,error:null};
+ }catch(error){
+  if(error.name==='TimeoutError'||error.name==='AbortError'||error instanceof TypeError)
+   throw new Error('انقطع الاتصال. أعد المحاولة بنفس البيانات حتى نتحقق من الطلب من دون تكراره.');
+  throw error;
+ }finally{resetProtection(action)}
+}
+
 $('booking-form').addEventListener('submit',async e=>{
  e.preventDefault();
- if(submitting)return;
+ if(submitting||bookingSubmitBusy)return;
+ bookingSubmitBusy=true;
+ try{
  if(!cart.length)return showStatus('booking-status','أضف صنفاً أو مقدم خدمة واحداً على الأقل.','error');
  let phone;
  try{phone=normalizePhone($('customer-phone').value)}catch(err){showStatus('booking-status',err.message,'error');return}
@@ -830,12 +890,14 @@ $('booking-form').addEventListener('submit',async e=>{
  const startsAt=$('booking-start').value,endsAt=$('booking-end').value;
  if(!startsAt||!endsAt||startsAt>=endsAt)return showStatus('booking-status','حدد ساعة بداية ونهاية صحيحتين.','error');
  const payload={starts_at:startsAt,ends_at:endsAt,customer_name:name,customer_phone:phone,service_date:date,service_location:locationText,service_details:extra,country_code:'SY',city,region:region.name_ar,region_id:region.id,timezone:'Asia/Damascus'};
+ let securityToken;
+ try{securityToken=protectionToken('booking')}catch(err){return showStatus('booking-status',err.message,'error')}
  const waWindow=window.open('about:blank','_blank');
  submitting=true;
  const btn=$('submit-booking');btn.disabled=true;btn.textContent='عم نحفظ الطلب…';
  showStatus('booking-status','يتم التحقق من الأسعار والتوفر وحفظ كل صنف بشكل مستقل…','info');
  try{
-  const result=await db.rpc('create_booking_with_items_v2',{p_booking:payload,p_items:items});
+  const result=await protectedSubmit('booking',{booking:payload,items},securityToken);
   if(result.error)throw result.error;
   const data=result.data;
   if(!data||!data.booking_id)throw new Error('لم نستلم رقم الطلب من قاعدة البيانات.');
@@ -860,16 +922,20 @@ $('booking-form').addEventListener('submit',async e=>{
   console.error('booking submit',err);
   showStatus('booking-status','تعذر حفظ الطلب: '+(err.message||'حدث خطأ غير متوقع'),'error');
  }finally{submitting=false;btn.disabled=false;btn.textContent='إرسال الطلب عبر واتساب'}
+ }finally{bookingSubmitBusy=false}
 });
 
 $('join-form').addEventListener('submit',async e=>{
  e.preventDefault();
+ if($('send-join').disabled)return;
  const name=$('join-name').value.trim(),phone=$('join-phone').value.trim(),city=$('join-city').value.trim(),description=$('join-services').value.trim(),contact=$('join-contact').value,selected=[...document.querySelectorAll('#join-categories input:checked')].map(x=>x.value);
  if(!name||!phone||!city||description.length<5)return showStatus('join-status','أكمل البيانات المطلوبة.','error');
  if(!selected.length)return showStatus('join-status','اختر قسماً واحداً على الأقل.','error');
+ let securityToken,normalizedJoinPhone;
+ try{securityToken=protectionToken('join');normalizedJoinPhone=normalizePhone(phone)}catch(err){return showStatus('join-status',err.message,'error')}
  const b=$('send-join');b.disabled=true;b.textContent='عم نرسل الطلب…';
  try{
-  const result=await db.from('provider_join_requests').insert({full_name:name,phone,city,requested_categories:selected,services_description:description,contact_preference:contact,status:'pending'});
+  const result=await protectedSubmit('join',{full_name:name,phone:normalizedJoinPhone,city,requested_categories:selected,services_description:description,contact_preference:contact},securityToken);
   if(result.error)throw result.error;
   $('join-form').reset();renderJoinCategories();
   showStatus('join-status','وصل طلبك بنجاح! رح نتواصل معك عبر الطريقة التي اخترتها لتحديد موعد مقابلة.','success');
@@ -896,5 +962,7 @@ renderCart();
 loadHome();
 
 </script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=kammletTurnstileReady&render=explicit" async defer></script>
 </body>
 </html>
+
