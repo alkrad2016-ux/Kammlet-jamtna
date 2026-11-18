@@ -344,6 +344,13 @@ const originalLoad=window.loadProviders;
 const observer=new MutationObserver(()=>{if(document.getElementById('bookings').classList.contains('active')&&providers.length&&providerSelect.options.length!==providers.length+1)fill()});observer.observe(document.getElementById('bookings'),{attributes:true,attributeFilter:['class']});
 
 })();
+
+(function(){
+const panel=document.createElement('details');panel.style.cssText='margin:16px;padding:16px;border:1px solid #ddd;background:white;border-radius:12px';panel.innerHTML='<summary>طلبات حذف الحسابات</summary><button type="button">تحديث الطلبات</button><div role="status"></div><div class="deletion-list"></div>';document.getElementById('app').prepend(panel);
+const feedback=panel.querySelector('[role=status]'),list=panel.querySelector('.deletion-list');
+async function refresh(){list.replaceChildren();const {data,error}=await db.from('account_deletion_requests').select('*').order('created_at',{ascending:false});if(error){feedback.textContent=error.message;return;}feedback.textContent='عدد الطلبات: '+data.length;for(const row of data){const item=document.createElement('div');item.className='item';const label=document.createElement('p');label.textContent=row.user_id+' — '+row.created_at+' — '+({pending:'بانتظار المعالجة',processing:'قيد المعالجة',completed:'مكتمل'}[row.status]);item.append(label);if(row.status==='pending'){const b=document.createElement('button');b.textContent='بدء المعالجة';b.onclick=async()=>{const {error}=await db.from('account_deletion_requests').update({status:'processing'}).eq('id',row.id).eq('status','pending');if(error)alert(error.message);else refresh()};item.append(b)}if(row.status==='processing'){const b=document.createElement('button');b.textContent='تأكيد اكتمال الحذف';b.onclick=async()=>{if(!confirm('هل تم حذف الحساب والبيانات المطلوبة فعلياً وإبلاغ صاحبه؟ هذا الزر يسجل الاكتمال فقط ولا يحذف الحساب.'))return;const {error}=await db.from('account_deletion_requests').update({status:'completed',completed_at:new Date().toISOString()}).eq('id',row.id).eq('status','processing');if(error)alert(error.message);else refresh()};item.append(b)}list.append(item)}}
+panel.querySelector('button').onclick=refresh;panel.addEventListener('toggle',()=>{if(panel.open)refresh()});
+})();
 </script>
 <style>
 .admin-list-filter{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:12px 0 16px;padding:12px;border:1px solid #ded8c9;border-radius:12px;background:#faf8f2}
