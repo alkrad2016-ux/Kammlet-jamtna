@@ -109,7 +109,14 @@ window.KammletCalendar={mount};
 })();
 
 </script>
-</head>
+<script>
+// These three original, labelled review fixtures are hosted with the website.
+// Ordinary provider media continues to use private Storage signed URLs.
+function hostedReviewMediaUrl(path){
+ const files=['review-fixtures/v1/decor.png','review-fixtures/v1/coordination.png','review-fixtures/v1/preview.mp4'];
+ return files.includes(path)?'https://alkrad2016-ux.github.io/Kammlet-jamtna/'+path:null;
+}
+</script></head>
 <body>
 <header>
 <h1>كملت جمعتنا 🎉</h1>
@@ -252,6 +259,7 @@ async function query(table,params){
 }
 
 async function signedUrl(path){
+ const fixture=hostedReviewMediaUrl(path);if(fixture)return fixture;
  const {data,error}=await db.storage.from(BUCKET).createSignedUrl(path,3600);
  if(error)throw error;
  return data.signedUrl;
