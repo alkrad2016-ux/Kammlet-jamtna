@@ -130,6 +130,21 @@ function hostedReviewMediaUrl(path){
 <main>
 <section class="page active" id="home-page">
 <div class="intro"><h2>خلّي مناسبتك علينا</h2><p>اختار القسم، واستكشف الخدمات ومقدميها، واجمع اختياراتك بسلة واحدة.</p></div>
+
+<section class="panel" aria-labelledby="catalog-search-heading">
+<h2 id="catalog-search-heading" style="margin:0 0 10px;font-size:20px">دور على خدمة لمناسبتك</h2>
+<form id="catalog-search-form" class="form-grid" role="search">
+<div><label for="catalog-query">الخدمة أو اسم مقدم الخدمة أو الباقة</label><input id="catalog-query" type="search" maxlength="100" placeholder="مثلاً: مطرب، حلويات، ديكور" autocomplete="off"></div>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+<div><label for="catalog-region">المحافظة</label><select id="catalog-region"><option value="">كل المحافظات المتاحة</option></select></div>
+<div><label for="catalog-city">المدينة أو البلدة</label><select id="catalog-city" disabled><option value="">كل المدن والبلدات</option></select></div>
+</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="gold-btn" id="catalog-submit" type="submit">بحث</button><button class="small-btn" id="catalog-clear" type="button">مسح البحث</button></div>
+</form>
+<p id="catalog-search-status" class="muted" role="status" aria-live="polite">ابحث بالاسم، أو اختر المنطقة لعرض مقدمي الخدمات فيها.</p>
+<div id="catalog-results" class="list"></div>
+</section>
+
 <h2 class="heading">أقسامنا</h2>
 <div class="service-grid" id="category-grid"><div class="empty">عم نحمّل الأقسام…</div></div>
 <div class="panel"><h3>هل تقدم خدمات للمناسبات؟</h3><p class="muted">انضم إلى شبكة مقدمي الخدمات في كملت جمعتنا. نراجع طلبك ونتواصل معك لتحديد موعد مقابلة.</p><button class="primary-btn" onclick="openJoin()">قدّم طلب انضمام</button></div>
@@ -391,6 +406,7 @@ async function loadHome(){
   const {data,error}=await db.from('promotions').select('*').eq('is_active',true);
   if(!error)promotions=data||[];
  }catch(e){console.warn('promotions',e)}
+ await initCatalogSearch();
 }function renderCategories(){
  const g=$('category-grid');
  g.innerHTML='';
@@ -964,6 +980,133 @@ function localDateValue(date=new Date()){
 
  return p.year+'-'+p.month+'-'+p.day;
 }
+
+
+/* Public catalog search: approval and visibility continue to be enforced by RLS. */
+const catalogSearch={rows:[],loaded:false,loading:null,limit:12,sequence:0};
+const normalizeCatalogText=value=>String(value||'').normalize('NFKD').replace(/[\u064B-\u065F\u0670\u0640]/g,'').replace(/[أإآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').toLocaleLowerCase('ar').replace(/\s+/g,' ').trim();
+async function catalogRows(table,columns,configure=q=>q){
+ const rows=[];
+ for(let offset=0;;offset+=500){
+  const {data,error}=await configure(db.from(table).select(columns)).order('id').range(offset,offset+499);
+  if(error)throw error;
+  rows.push(...(data||[]));
+  if(!data||data.length<500)break;
+ }
+ return rows;
+}
+async function loadCatalogSearch(){
+ if(catalogSearch.loaded)return;
+ if(catalogSearch.loading)return catalogSearch.loading;
+ catalogSearch.loading=(async()=>{
+  if(!governorates.length)await loadLocationData();
+  const [ss,pp,ll,oo]=await Promise.all([
+   catalogRows('services','id,name,description,category_id',q=>q.eq('is_available',true).eq('approval_status','approved')),
+   catalogRows('service_providers','id,service_id,category_id,name,address,description,price,city,region_id,region',q=>q.eq('is_active',true).eq('approval_status','approved')),
+   catalogRows('provider_services','id,provider_id,service_id',q=>q.eq('is_active',true).eq('approval_status','approved')),
+   catalogRows('provider_offerings','id,provider_id,service_id,name,description,price,currency',q=>q.eq('is_available',true).eq('approval_status','approved'))
+  ]);
+  const serviceMap=new Map(ss.map(s=>[String(s.id),s])),providerMap=new Map(pp.map(p=>[String(p.id),p]));
+  const seen=new Set();
+  catalogSearch.rows=[];
+  for(const link of ll){
+   const p=providerMap.get(String(link.provider_id)),s=serviceMap.get(String(link.service_id));
+   if(!p||!s)continue;
+   const region=governorates.find(r=>Number(r.id)===Number(p.region_id)||normalizeCatalogText(r.name_ar)===normalizeCatalogText(p.region));
+   if(!region)continue;
+   const key=p.id+':'+s.id;if(seen.has(key))continue;seen.add(key);
+   const offerings=oo.filter(o=>String(o.provider_id)===String(p.id)&&String(o.service_id)===String(s.id));
+   const category=categories.find(c=>String(c.id)===String(s.category_id));
+   const city=String(p.city||'').trim();
+   catalogSearch.rows.push({p,s,offerings,region,city,cityKey:normalizeCatalogText(city),
+    text:normalizeCatalogText([p.name,p.description,s.name,s.description,category?.name,...offerings.flatMap(o=>[o.name,o.description])].join(' '))});
+  }
+  catalogSearch.loaded=true;
+ })();
+ try{await catalogSearch.loading}finally{catalogSearch.loading=null}
+}
+function populateCatalogCities(){
+ const region=$('catalog-region').value,select=$('catalog-city'),previous=select.value;
+ const cities=new Map();
+ for(const row of catalogSearch.rows){
+  if(region&&String(row.region.id)!==region)continue;
+  if(row.cityKey&&!cities.has(row.cityKey))cities.set(row.cityKey,row.city);
+ }
+ select.replaceChildren(new Option('كل المدن والبلدات',''));
+ [...cities].sort((a,b)=>a[1].localeCompare(b[1],'ar')).forEach(([key,label])=>select.add(new Option(label,key)));
+ select.disabled=!cities.size;
+ if(cities.has(previous))select.value=previous;
+}
+function saveCatalogSearch(){
+ try{sessionStorage.setItem('kammlet_catalog_search_v1',JSON.stringify({query:$('catalog-query').value,region:$('catalog-region').value,city:$('catalog-city').value}))}catch{}
+}
+function renderCatalogResults(){
+ const words=normalizeCatalogText($('catalog-query').value).split(' ').filter(Boolean),region=$('catalog-region').value,city=$('catalog-city').value;
+ const matches=catalogSearch.rows.filter(row=>(!region||String(row.region.id)===region)&&(!city||row.cityKey===city)&&words.every(word=>row.text.includes(word)));
+ const host=$('catalog-results');host.replaceChildren();const sequence=++catalogSearch.sequence;
+ $('catalog-search-status').textContent=matches.length?'وجدنا '+matches.length+' نتيجة من الخدمات المنشورة.':'ما لقينا نتائج مطابقة. جرّب كلمة ثانية أو وسّع المنطقة.';
+ if(!matches.length){
+  const box=document.createElement('div');box.className='empty';box.textContent='لا توجد نتائج منشورة مطابقة حالياً. ';
+  if(city){const b=document.createElement('button');b.type='button';b.className='small-btn';b.textContent=region?'ابحث بكل المحافظة':'ابحث بكل المدن';b.onclick=()=>{$('catalog-city').value='';saveCatalogSearch();renderCatalogResults()};box.append(b)}
+  else if(region){const b=document.createElement('button');b.type='button';b.className='small-btn';b.textContent='ابحث بكل المحافظات';b.onclick=()=>{$('catalog-region').value='';populateCatalogCities();saveCatalogSearch();renderCatalogResults()};box.append(b)}
+  host.append(box);return;
+ }
+ for(const row of matches.slice(0,catalogSearch.limit)){
+  const {p,s,offerings}=row,card=document.createElement('article');card.className='provider-card';
+  const image=document.createElement('div');const name=document.createElement('h3');name.style.margin='0';name.textContent=p.name;
+  const location=document.createElement('p');location.className='muted';location.textContent='📍 '+row.region.name_ar+(row.city?' — '+row.city:' — المدينة غير محددة');
+  const service=document.createElement('strong');service.textContent=s.name;
+  const packages=document.createElement('p');packages.className='muted';packages.textContent=offerings.length?'الباقات: '+offerings.map(o=>o.name+' ('+(o.price==null?'السعر عند التواصل':money(o.price,o.currency))+')').join('، '):'السعر والتفاصيل حسب الاتفاق';
+  const open=document.createElement('button');open.type='button';open.className='gold-btn';open.textContent='عرض الباقات والتفاصيل';
+  open.onclick=async()=>{open.disabled=true;try{
+   const media=await getMedia('provider_media','provider_id',p.id);
+   currentService=s;currentCategory=categories.find(c=>String(c.id)===String(s.category_id))||{id:s.category_id,name:''};
+   await openProvider(p,media);
+  }catch(e){$('catalog-search-status').textContent='تعذر فتح التفاصيل. حاول مجدداً.'}finally{open.disabled=false}};
+  card.append(image,name,location,service,packages,open);host.append(card);
+  getMedia('provider_media','provider_id',p.id).then(media=>{
+   if(sequence!==catalogSearch.sequence)return;
+   const cover=media.find(m=>m.is_cover&&m.media_type==='image')||media.find(m=>m.media_type==='image');
+   if(cover){const img=document.createElement('img');img.className='provider-cover';img.loading='lazy';img.src=cover.url;img.alt=p.name;image.append(img)}
+  }).catch(()=>{});
+ }
+ if(matches.length>catalogSearch.limit){const more=document.createElement('button');more.type='button';more.className='small-btn';more.textContent='عرض المزيد';more.onclick=()=>{catalogSearch.limit+=12;renderCatalogResults()};host.append(more)}
+}
+async function runCatalogSearch(){
+ const button=$('catalog-submit');button.disabled=true;$('catalog-search-status').textContent='عم نبحث بالخدمات المنشورة…';
+ try{await loadCatalogSearch();populateCatalogCities();saveCatalogSearch();catalogSearch.limit=12;renderCatalogResults()}
+ catch(e){$('catalog-search-status').textContent='تعذر تحميل البحث. تحقق من اتصالك واضغط بحث للمحاولة مجدداً.'}
+ finally{button.disabled=false}
+}
+$('catalog-search-form').addEventListener('submit',e=>{e.preventDefault();runCatalogSearch()});
+$('catalog-region').addEventListener('change',async()=>{
+ $('catalog-city').value='';$('catalog-city').disabled=true;
+ await runCatalogSearch();
+});
+$('catalog-city').addEventListener('change',runCatalogSearch);
+$('catalog-clear').onclick=()=>{
+ $('catalog-query').value='';$('catalog-region').value='';$('catalog-city').value='';
+ populateCatalogCities();saveCatalogSearch();catalogSearch.sequence++;$('catalog-results').replaceChildren();
+ $('catalog-search-status').textContent='ابحث بالاسم، أو اختر المنطقة لعرض مقدمي الخدمات فيها.';
+};
+async function initCatalogSearch(){
+ const select=$('catalog-region');select.replaceChildren(new Option('كل المحافظات المتاحة',''));
+ governorates.forEach(r=>select.add(new Option(r.name_ar,String(r.id))));
+ try{
+  const saved=JSON.parse(sessionStorage.getItem('kammlet_catalog_search_v1')||'null');
+  if(saved){
+   $('catalog-query').value=String(saved.query||'').slice(0,100);
+   if(governorates.some(r=>String(r.id)===saved.region))select.value=saved.region;
+   if(saved.query||saved.region||saved.city){
+    await loadCatalogSearch();populateCatalogCities();$('catalog-city').value=saved.city||'';renderCatalogResults();
+   }
+  }
+ }catch{}
+}
+window.addEventListener('popstate',e=>{
+ if(e.state?.appPage==='home-page'&&$('catalog-results').children.length)
+  requestAnimationFrame(()=>$('catalog-search-heading').scrollIntoView({block:'start'}));
+});
 
 $('service-date').min=localDateValue();
 
