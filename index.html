@@ -660,7 +660,7 @@ async function openProvider(p,providerMedia){
     add.className='gold-btn';
     add.textContent='أضف للسلة';
     add.style.marginTop='7px';
-    add.onclick=()=>addOfferingToCart(p,o,promo);
+    add.onclick=()=>addWithFeedback(add,()=>addOfferingToCart(p,o,promo));
     body.append(add);
 
     card.append(mediaBox,body);
@@ -676,7 +676,7 @@ async function openProvider(p,providerMedia){
    const add=document.createElement('button');
    add.className='primary-btn';
    add.textContent='إضافة طلب خدمة للتواصل';
-   add.onclick=()=>addProviderRequestToCart(p);
+   add.onclick=()=>addWithFeedback(add,()=>addProviderRequestToCart(p));
    box.append(add);
   }
 
@@ -687,6 +687,29 @@ async function openProvider(p,providerMedia){
  }catch(e){
   root.innerHTML=`<div class="empty">تعذر تحميل ملف مقدم الخدمة: ${escHtml(e.message)}</div>`;
  }
+}
+
+
+let cartNoticeTimer;
+function showCartNotice(message='تمت الإضافة للسلة ✓'){
+ let notice=document.getElementById('cart-notice');
+ if(!notice){
+  notice=document.createElement('div');notice.id='cart-notice';
+  notice.style.cssText='position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:12px;right:12px;max-width:520px;margin:auto;z-index:10000;display:flex;align-items:center;gap:12px;padding:14px 16px;background:#14213d;color:white;border:2px solid #d4af37;border-radius:12px;box-shadow:0 5px 24px #0004';
+  const text=document.createElement('span');text.id='cart-notice-text';text.setAttribute('role','status');text.setAttribute('aria-live','polite');text.setAttribute('aria-atomic','true');text.style.flex='1';
+  const view=document.createElement('button');view.type='button';view.className='gold-btn';view.textContent='عرض السلة';view.onclick=()=>{clearTimeout(cartNoticeTimer);notice.hidden=true;notice.style.display='none';openCart();};
+  notice.append(text,view);document.body.append(notice);
+ }
+ document.getElementById('cart-notice-text').textContent=message;
+ notice.hidden=false;notice.style.display='flex';clearTimeout(cartNoticeTimer);
+ cartNoticeTimer=setTimeout(()=>{notice.hidden=true;},4500);
+}
+function addWithFeedback(button,add){
+ if(button.disabled)return;
+ const label=button.textContent;
+ button.disabled=true;
+ try{add();button.textContent='تمت الإضافة ✓';}
+ finally{setTimeout(()=>{button.disabled=false;button.textContent=label;},1500);}
 }
 
 function addOfferingToCart(p,o,promo){
@@ -721,13 +744,13 @@ function addOfferingToCart(p,o,promo){
  saveCart();
  renderCart();
  updateCartCount();
- showStatus('booking-status','تمت إضافة الصنف إلى السلة.','success');
+ showCartNotice();
 }
 
 function addProviderRequestToCart(p){
  const key=`p-${p.id}-${currentService.id}`;
  if(cart.some(x=>x.key===key)){
-  alert('هذا الطلب موجود في السلة بالفعل.');
+  showCartNotice('هذا الطلب موجود بالسلة ✓');
   return;
  }
  cart.push({
@@ -748,7 +771,7 @@ function addProviderRequestToCart(p){
  saveCart();
  renderCart();
  updateCartCount();
- alert('تمت إضافة مقدم الخدمة إلى السلة.');
+ showCartNotice();
 }
 
 function renderCart(){
