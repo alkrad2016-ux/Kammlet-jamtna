@@ -1,11 +1,13 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>التحقق الأمني — كملت جمعتنا</title><style>body{margin:0;background:#fff;font:14px Tahoma;color:#14213d}#status{padding:6px}</style></head><body><div id="widget"></div><div id="status" role="status">عم نحمّل التحقق الأمني…</div><script>
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Cache-Control" content="no-store"><title>جاهزية الطلب — كملت جمعتنا</title><style>body{margin:0;background:#fff;font:14px Tahoma;color:#14213d}#status{padding:6px}</style></head><body><div id="status" role="status">يمكنك متابعة إرسال الطلب.</div><script>
 'use strict';
+// Compatibility bridge for installed apps. The server validates and limits submissions;
+// this value is a readiness signal, not a CAPTCHA or an authorization credential.
 const action=new URLSearchParams(location.search).get('action');
 const allowed=new Set(['capacitor://localhost','http://localhost','https://localhost']);
-let parentOrigin=null,loaded=false,widget=null;
-function send(type,token=''){if(parentOrigin)parent.postMessage({channel:'kammlet-verification-v1',action,type,token},parentOrigin);}
-function render(){if(!loaded||!parentOrigin||widget!==null||!['booking','join'].includes(action))return;
-widget=turnstile.render('#widget',{sitekey:'0x4AAAAAAGD5KV0RuBflVfv_',action,language:'ar',size:'flexible','response-field':false,callback:token=>{document.getElementById('status').textContent='تم التحقق';send('token',token)},'expired-callback':()=>send('expired'),'error-callback':()=>{document.getElementById('status').textContent='تعذر التحقق، أعد المحاولة.';send('error');return true;}});}
-addEventListener('message',e=>{if(e.source!==parent||!allowed.has(e.origin)||e.data?.channel!=='kammlet-verification-v1'||e.data.action!==action)return;parentOrigin=e.origin;if(e.data.type==='init')render();if(e.data.type==='reset'&&widget!==null)turnstile.reset(widget);});
-window.verificationReady=()=>{loaded=true;render();};
-</script><script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=verificationReady&render=explicit" async defer></script></body></html>
+addEventListener('message',e=>{
+ if(e.source!==parent||!allowed.has(e.origin)||e.data?.channel!=='kammlet-verification-v1'||e.data.action!==action||!['booking','join'].includes(action))return;
+ if(!['init','reset'].includes(e.data.type))return;
+ parent.postMessage({channel:'kammlet-verification-v1',action,type:'token',token:'server-validated-submission-v1'},e.origin);
+});
+</script></body></html>
