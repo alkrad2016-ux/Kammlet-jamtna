@@ -833,39 +833,15 @@ function normalizePhone(value){
 }
 
 
-/* Turnstile: public site key only. Server secret stays in Supabase. */
-const protectionWidgets={}, protectionRequests={};
+/* Submission retries and per-phone limits are enforced by the server. */
+const protectionRequests={};
 let bookingSubmitBusy=false;
 function ensureProtection(action){
  const host=$(action+'-verification');
- if(!host||protectionWidgets[action]!==undefined)return;
- if(!window.turnstile){
-  host.textContent='عم نحمّل التحقق الأمني… إذا تأخر، تحقق من الاتصال وأعد تحميل الصفحة.';
-  return;
- }
- host.textContent='';
- protectionWidgets[action]=window.turnstile.render(host,{
-  sitekey:'0x4AAAAAAGD5KV0RuBflVfv_',action,language:'ar',size:'flexible',
-  'response-field':false,
-  'error-callback':()=>{showStatus(action==='booking'?'booking-status':'join-status','تعذر تحميل التحقق الأمني. تحقق من الاتصال وأعد المحاولة.','error');return true},
-  'expired-callback':()=>showStatus(action==='booking'?'booking-status':'join-status','انتهت صلاحية التحقق الأمني؛ انتظر تجديده ثم أرسل الطلب.','info')
- });
+ if(host)host.hidden=true;
 }
-window.kammletTurnstileReady=()=>{
- if(currentPage==='cart-page')ensureProtection('booking');
- if(currentPage==='join-page')ensureProtection('join');
-};
-function protectionToken(action){
- ensureProtection(action);
- const id=protectionWidgets[action];
- const token=id===undefined?'':window.turnstile?.getResponse(id);
- if(!token)throw new Error('أكمل التحقق الأمني قبل إرسال الطلب.');
- return token;
-}
-function resetProtection(action){
- const id=protectionWidgets[action];
- if(id!==undefined&&window.turnstile)window.turnstile.reset(id);
-}
+function protectionToken(){return '';}
+function resetProtection(){}
 async function protectedSubmit(action,payload,token){
  const serialized=JSON.stringify(payload);
  if(protectionRequests[action]?.serialized!==serialized)
@@ -1114,7 +1090,6 @@ renderCart();
 loadHome();
 
 </script>
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=kammletTurnstileReady&render=explicit" async defer></script>
 <nav aria-label="روابط الخصوصية والدعم" style="text-align:center;padding:16px;font-size:13px;line-height:2"><a href="privacy.html" style="color:#14213d">سياسة الخصوصية</a> · <a href="delete-data.html" style="color:#14213d">طلب حذف البيانات أو الحساب</a><br><a href="mailto:kammlet.jamtna@gmail.com" style="color:#14213d;direction:ltr;display:inline-block">kammlet.jamtna@gmail.com</a></nav>
 </body>
 </html>
